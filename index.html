@@ -46,10 +46,9 @@
         
         /* কলাপস লজিক */
         .collapsed > .comment-replies { display: none; }
-        .collapsed .collapse-arrow { transform: rotate(-90deg); }
+        .collapsed .collapse-arrow { transform: rotate(-180deg); }
         .collapse-arrow { transition: transform 0.2s; }
         
-        /* মেনশন হাইলাইট */
         .mention { color: #1d9bf0; font-weight: 600; }
     </style>
 </head>
@@ -286,7 +285,7 @@
                         <span class="text-[#1d9bf0] inline-flex items-center" title="ভেরিফাইড এডমিন">
                             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M22.5 12.5c0-1.58-.88-2.95-2.18-3.66.26-1.11.17-2.3-.26-3.36s-1.24-1.9-2.25-2.43c-1.01-.54-2.2-.69-3.32-.42-1.12-.27-2.3-.12-3.32.42-1.01.53-1.82 1.37-2.25 2.43s-.52 2.25-.26 3.36C7.38 9.55 6.5 10.92 6.5 12.5c0 1.58.88 2.95 2.18 3.66-.26 1.11-.17 2.3.26 3.36s1.24 1.9 2.25 2.43c1.01.54 2.2.69 3.32.42 1.12.27 2.3.12 3.32-.42 1.01-.53 1.82-1.37 2.25-2.43s.52-2.25.26-3.36c1.3-0.71 2.18-2.08 2.18-3.66zm-10.46 4.5l-3.3-3.3 1.41-1.41 1.89 1.89 4.89-4.89 1.41 1.41-6.3 6.3z"/></svg>
                         </span>` : ''}
-                    ${userIsOwner && !isAdmin ? '<span class="text-[9px] bg-gray-100 dark:bg-gray-800 px-1.5 rounded-md font-bold text-gray-500">আপনি</span>' : ''}
+                    ${userIsOwner && !isAdmin ? '<span class="text-[9px] bg-gray-100 dark:bg-gray-800 px-1.5 rounded-md font-bold text-gray-500">তুমি</span>' : ''}
                     ${isFeatured ? `
                         <span class="flex items-center gap-0.5 featured-badge" title="নির্বাচিত মন্তব্য">
                             <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
@@ -294,13 +293,6 @@
                         </span>` : ''}
                     ${isAdmin && isReported ? `<span class="text-[9px] bg-red-100 dark:bg-red-900/30 px-1.5 rounded-md font-bold text-red-500 border border-red-200 dark:border-red-800">অভিযোগ: ${toBengaliNumber(c.reportCount || 1)}</span>` : ''}
                     <span class="text-[13px] text-gray-500">· ${date}</span>
-                    
-                    ${(depth === 0 && replyCount > 0) ? `
-                        <button onclick="toggleCollapse('${c.id}')" class="flex items-center gap-1 text-[11px] font-bold text-[#1d9bf0] ml-1 bg-blue-50 dark:bg-blue-900/20 px-2 py-0.5 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors">
-                            <svg class="w-2.5 h-2.5 collapse-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7"></path></svg>
-                            ${toBengaliNumber(replyCount)}টি রিপ্লাই
-                        </button>
-                    ` : ''}
                 </div>
 
                 <div class="comment-body">
@@ -315,28 +307,37 @@
                     </div>
                 </div>
 
-                <div class="comment-footer flex items-center gap-6">
-                    <button onclick="toggleReplyForm('${c.id}', '${esc(c.name)}')" class="text-[12px] font-medium text-gray-500 hover:text-[#1d9bf0]">রিপ্লাই</button>
-                    ${userIsOwner ? `
-                        <button onclick="toggleEdit('${c.id}')" class="text-[12px] font-medium text-gray-500 hover:text-green-500">এডিট</button>
-                        <button onclick="openDeleteModal('${c.id}')" class="text-[12px] font-medium text-gray-500 hover:text-red-500">ডিলিট</button>
-                    ` : ''}
-                    ${isAdmin ? `
-                        <button onclick="togglePin('${c.id}', ${!isFeatured})" class="text-[12px] font-medium ${isFeatured ? 'text-amber-500' : 'text-gray-500'} hover:text-amber-600">
-                            ${isFeatured ? 'পিন সরান' : 'পিন করুন'}
-                        </button>
-                        ${isReported ? `<button onclick="clearReport('${c.id}')" class="text-[12px] font-medium text-green-500 hover:text-green-600">অভিযোগ ক্লিয়ার</button>` : ''}
-                    ` : ''}
-                    ${!userIsOwner && !alreadyReported ? `<button onclick="reportComment('${c.id}')" class="text-gray-400 hover:text-red-500 transition-colors" title="অভিযোগ জানান"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"></path></svg></button>` : ''}
-                    
-                    <div class="flex items-center gap-4 text-gray-500">
-                         <button onclick="vote('${c.id}', 1)" class="flex items-center gap-1.5 ${userVote == 1 ? 'voted-up' : ''}">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M5 15l7-7 7 7" /></svg>
-                            <span class="text-[12px] font-bold">${toBengaliNumber(c.votes || 0)}</span>
-                         </button>
-                         <button onclick="vote('${c.id}', -1)" class="${userVote == -1 ? 'voted-down' : ''}">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
-                         </button>
+                <div class="comment-footer flex items-center justify-between mt-1">
+                    <div class="flex items-center gap-4">
+                        <button onclick="toggleReplyForm('${c.id}', '${esc(c.name)}')" class="text-[12px] font-medium text-gray-500 hover:text-[#1d9bf0]">রিপ্লাই</button>
+                        ${userIsOwner ? `
+                            <button onclick="toggleEdit('${c.id}')" class="text-[12px] font-medium text-gray-500 hover:text-green-500">এডিট</button>
+                            <button onclick="openDeleteModal('${c.id}')" class="text-[12px] font-medium text-gray-500 hover:text-red-500">ডিলিট</button>
+                        ` : ''}
+                        ${isAdmin ? `
+                            <button onclick="togglePin('${c.id}', ${!isFeatured})" class="text-[12px] font-medium ${isFeatured ? 'text-amber-500' : 'text-gray-500'} hover:text-amber-600">
+                                ${isFeatured ? 'পিন সরান' : 'পিন করুন'}
+                            </button>
+                        ` : ''}
+                        ${!userIsOwner && !alreadyReported ? `<button onclick="reportComment('${c.id}')" class="text-gray-400 hover:text-red-500 transition-colors" title="অভিযোগ জানান"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"></path></svg></button>` : ''}
+                    </div>
+
+                    <div class="flex items-center gap-4">
+                         ${(depth === 0 && replyCount > 0) ? `
+                            <button onclick="toggleCollapse('${c.id}')" class="flex items-center gap-1 text-[11px] font-bold text-[#1d9bf0] bg-blue-50 dark:bg-blue-900/20 px-2 py-0.5 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors">
+                                <svg class="w-2.5 h-2.5 collapse-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 15l-7-7-7 7"></path></svg>
+                                ${toBengaliNumber(replyCount)}টি রিপ্লাই
+                            </button>
+                        ` : ''}
+                         <div class="flex items-center gap-3 text-gray-500">
+                             <button onclick="vote('${c.id}', 1)" class="flex items-center gap-1 ${userVote == 1 ? 'voted-up' : ''}">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M5 15l7-7 7 7" /></svg>
+                                <span class="text-[12px] font-bold">${toBengaliNumber(c.votes || 0)}</span>
+                             </button>
+                             <button onclick="vote('${c.id}', -1)" class="${userVote == -1 ? 'voted-down' : ''}">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                             </button>
+                         </div>
                     </div>
                 </div>
 
@@ -489,7 +490,6 @@
             if(!pid) { document.getElementById('user-comment').value = ''; toggleInput(); }
             else {
                 document.getElementById(`form-${pid}`).classList.add('hidden');
-                // নতুন রিপ্লাই যোগ হলে অটোমেটিক আন-কলাপস করা যাতে ইউজার দেখতে পায়
                 document.getElementById(`comment-${pid}`).classList.remove('collapsed');
             }
         } catch (e) {
