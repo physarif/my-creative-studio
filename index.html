@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>আলোচনা - ফিজারিফ</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Markdown Parser and Sanitizer -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.2/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
     <script>
@@ -24,110 +23,25 @@
     </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Hind+Siliguri:wght@400;600;700&display=swap');
-        
-        body { 
-            font-family: 'Inter', 'Hind Siliguri', sans-serif; 
-            transition: background-color 0.2s, color 0.2s;
-        }
-
-        /* Markdown Styles */
+        body { font-family: 'Inter', 'Hind Siliguri', sans-serif; transition: background-color 0.2s, color 0.2s; }
         .comment-content p { margin-bottom: 0.5rem; }
-        .comment-content p:last-child { margin-bottom: 0; }
-        .comment-content strong { font-weight: 700; }
-        .comment-content em { font-style: italic; }
-        .comment-content code { 
-            background: rgba(0,0,0,0.05); 
-            padding: 2px 4px; 
-            border-radius: 4px; 
-            font-family: monospace;
-            font-size: 0.9em;
-        }
-        .dark .comment-content code { background: rgba(255,255,255,0.1); }
-        .comment-content pre {
-            background: #f3f4f6;
-            padding: 12px;
-            border-radius: 8px;
-            overflow-x: auto;
-            margin: 8px 0;
-        }
+        .comment-content pre { background: #f3f4f6; padding: 12px; border-radius: 8px; overflow-x: auto; margin: 8px 0; }
         .dark .comment-content pre { background: #1e2126; }
-        .comment-content ul { list-style-type: disc; margin-left: 20px; }
-        .comment-content ol { list-style-type: decimal; margin-left: 20px; }
-        .comment-content a { color: #1d9bf0; text-decoration: underline; }
-
-        .hyvor-input-wrapper {
-            position: relative;
-            background: #f9fafb;
-            border: 1px solid #e5e7eb;
-            border-radius: 16px;
-            transition: all 0.2s ease;
-            overflow: hidden;
-        }
-        .dark .hyvor-input-wrapper {
-            background: #16181c;
-            border-color: #2f3336;
-        }
-
-        .hyvor-input-wrapper:focus-within {
-            background: #fff;
-            border-color: #1d9bf0;
-            box-shadow: 0 0 0 1px #1d9bf0;
-        }
-        .dark .hyvor-input-wrapper:focus-within {
-            background: #000000;
-        }
-
-        .hyvor-textarea {
-            width: 100%;
-            background: transparent;
-            border: none;
-            padding: 16px 20px;
-            font-size: 16px;
-            outline: none;
-            resize: none;
-            min-height: 80px;
-            max-height: 300px;
-        }
-
-        .reply-thread {
-            position: relative;
-            margin-left: 12px;
-            border-left: 2px solid #f3f4f6;
-            padding-left: 16px;
-            margin-top: 12px;
-        }
-        .dark .reply-thread {
-            border-left-color: #2f3336;
-        }
-
-        @media (min-width: 640px) {
-            .reply-thread {
-                margin-left: 20px;
-                padding-left: 20px;
-            }
-        }
-
-        .collapsed .comment-body, 
-        .collapsed .comment-actions,
-        .collapsed .replies-container {
-            display: none;
-        }
-
-        .comment-user-name {
-            cursor: pointer;
-            user-select: none;
-        }
-        .comment-user-name:hover {
-            text-decoration: underline;
-        }
-
+        .hyvor-input-wrapper { position: relative; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 16px; transition: all 0.2s ease; overflow: hidden; }
+        .dark .hyvor-input-wrapper { background: #16181c; border-color: #2f3336; }
+        .hyvor-input-wrapper:focus-within { background: #fff; border-color: #1d9bf0; box-shadow: 0 0 0 1px #1d9bf0; }
+        .dark .hyvor-input-wrapper:focus-within { background: #000000; }
+        .hyvor-textarea { width: 100%; background: transparent; border: none; padding: 16px 20px; font-size: 16px; outline: none; resize: none; min-height: 80px; }
+        .reply-thread { position: relative; margin-left: 12px; border-left: 2px solid #f3f4f6; padding-left: 16px; margin-top: 12px; }
+        .dark .reply-thread { border-left-color: #2f3336; }
         .voted-up { color: #1d9bf0 !important; }
         .voted-down { color: #f91880 !important; }
         
-        button:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
+        #login-trigger-btn:active {
+            background-color: #6b7280 !important;
+            color: white !important;
         }
+        .featured-badge { color: #f59e0b; }
     </style>
 </head>
 <body class="p-4 md:p-8 bg-white text-gray-900 dark:bg-darkBg dark:text-gray-100">
@@ -136,12 +50,15 @@
     <!-- Header -->
     <div class="flex items-center justify-between gap-4 mb-6 px-2">
         <div class="flex items-center gap-3">
-            <h2 class="text-xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+            <h2 class="text-xl font-extrabold tracking-tight">
                 <span id="comment-count">০</span>টি মন্তব্য
             </h2>
-            <div class="flex items-center gap-1.5 bg-green-50 dark:bg-green-500/10 px-2 py-0.5 rounded-full border border-green-100 dark:border-green-500/20">
-                <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
-                <span class="text-[10px] font-bold text-green-700 dark:text-green-500 uppercase">অনলাইন</span>
+            <div id="auth-section">
+                <button onclick="toggleLoginModal()" id="login-trigger-btn" class="text-[11px] font-bold bg-[#1d9bf0] text-white px-4 py-1 rounded-full hover:bg-[#1a8cd8] transition-all uppercase shadow-sm">লগইন</button>
+                <div id="admin-badge" class="hidden flex items-center gap-1.5 bg-blue-50 dark:bg-blue-500/10 px-2 py-0.5 rounded-full border border-blue-100 dark:border-blue-500/20">
+                    <span class="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
+                    <span class="text-[10px] font-bold text-blue-700 dark:text-blue-500 uppercase">এডমিন</span>
+                </div>
             </div>
         </div>
 
@@ -151,45 +68,48 @@
         </button>
     </div>
 
-    <!-- Input Area -->
+    <!-- Main Input Area -->
     <div class="mb-8 relative">
         <div class="hyvor-input-wrapper">
             <textarea id="user-comment" placeholder="আপনার মন্তব্যটি লিখুন..." class="hyvor-textarea dark:text-gray-100" oninput="toggleInput()"></textarea>
-            
             <div class="action-bar flex p-3 border-t border-gray-100 dark:border-darkBorder justify-between items-center bg-gray-50/50 dark:bg-darkCard/50" id="action-bar" style="display: none;">
                 <input type="text" id="user-name" placeholder="আপনার নাম..." class="flex-1 max-w-[200px] text-sm px-3 py-1.5 bg-white dark:bg-darkBg border border-gray-200 dark:border-darkBorder rounded-full outline-none focus:border-[#1d9bf0] dark:text-white">
-                <button onclick="postData(null)" id="submit-btn" class="bg-[#1d9bf0] hover:bg-[#1a8cd8] text-white font-bold py-1.5 px-6 rounded-full transition-all shadow-sm text-sm ml-2 min-w-[80px]">
-                    পোস্ট
-                </button>
+                <button onclick="postData(null)" id="submit-btn" class="bg-[#1d9bf0] hover:bg-[#1a8cd8] text-white font-bold py-1.5 px-6 rounded-full transition-all shadow-sm text-sm ml-2">পোস্ট</button>
             </div>
         </div>
-        <div id="warning-null" class="hidden absolute -bottom-6 left-2 text-[11px] text-red-500 font-medium">
-            আপনার নাম লিখুন
-        </div>
+        <div id="warning-null" class="hidden text-[11px] text-red-500 font-medium mt-1 ml-2">আপনার নাম ও মন্তব্য লিখুন</div>
+        <div id="posting-status-null" class="hidden text-[11px] text-green-600 dark:text-green-400 font-medium mt-1 ml-2">আপনার মন্তব্য পোস্ট করা হচ্ছে...</div>
     </div>
 
-    <!-- Filter -->
+    <!-- Sorting Tabs -->
     <div class="flex items-center gap-6 mb-8 px-2 text-sm font-bold border-b border-gray-100 dark:border-darkBorder pb-3">
-        <button id="sort-top" onclick="setSort('top')" class="text-[#1d9bf0] transition-colors">সেরা</button>
-        <button id="sort-recent" onclick="setSort('recent')" class="text-gray-500 dark:text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors">সাম্প্রতিক</button>
+        <button id="sort-top" onclick="setSort('top')" class="transition-colors pb-3 -mb-[13px] border-b-2">সেরা</button>
+        <button id="sort-recent" onclick="setSort('recent')" class="transition-colors pb-3 -mb-[13px] border-b-2">সাম্প্রতিক</button>
+        <button id="sort-featured" onclick="setSort('featured')" class="transition-colors pb-3 -mb-[13px] border-b-2">নির্বাচিত</button>
     </div>
 
-    <!-- Comment List -->
-    <div id="comments-container" class="space-y-6 pb-20">
-        <div class="flex justify-center p-10">
-            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1d9bf0]"></div>
+    <div id="comments-container" class="space-y-6 pb-20"></div>
+</div>
+
+<!-- Modals (Login, Delete) -->
+<div id="login-modal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50 p-4 backdrop-blur-sm">
+    <div class="bg-white dark:bg-darkCard p-8 rounded-3xl max-w-sm w-full shadow-2xl">
+        <h3 class="text-xl font-bold mb-6 text-center">এডমিন লগইন</h3>
+        <div class="space-y-4">
+            <input type="email" id="admin-email" placeholder="ইমেইল" class="w-full p-3 bg-gray-50 dark:bg-darkBg border border-gray-200 dark:border-darkBorder rounded-xl outline-none focus:border-[#1d9bf0] dark:text-white">
+            <input type="password" id="admin-password" placeholder="পাসওয়ার্ড" class="w-full p-3 bg-gray-50 dark:bg-darkBg border border-gray-200 dark:border-darkBorder rounded-xl outline-none focus:border-[#1d9bf0] dark:text-white">
+            <button onclick="adminLogin()" id="login-btn" class="w-full bg-[#1d9bf0] text-white py-3 rounded-xl font-bold hover:bg-[#1a8cd8] transition-colors">প্রবেশ করুন</button>
+            <button onclick="toggleLoginModal()" class="w-full text-gray-500 text-sm font-medium">বাতিল</button>
         </div>
     </div>
 </div>
 
-<!-- Simple Confirmation Modal -->
 <div id="delete-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
-    <div class="bg-white dark:bg-darkCard p-6 rounded-2xl max-w-sm w-full shadow-xl">
+    <div class="bg-white dark:bg-darkCard p-6 rounded-2xl max-w-sm w-full">
         <h3 class="text-lg font-bold mb-2">মন্তব্যটি মুছে ফেলতে চান?</h3>
-        <p class="text-sm text-gray-500 mb-6">একবার মুছে ফেললে এটি আর ফিরে পাওয়া যাবে না।</p>
-        <div class="flex gap-3">
-            <button id="confirm-delete-btn" class="flex-1 bg-red-500 text-white py-2 rounded-xl font-bold hover:bg-red-600 transition-colors">মুছে ফেলুন</button>
-            <button onclick="closeDeleteModal()" class="flex-1 bg-gray-100 dark:bg-darkBg py-2 rounded-xl font-bold hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors">বাতিল</button>
+        <div class="flex gap-3 mt-6">
+            <button id="confirm-delete-btn" class="flex-1 bg-red-500 text-white py-2 rounded-xl font-bold">মুছে ফেলুন</button>
+            <button onclick="closeDeleteModal()" class="flex-1 bg-gray-100 dark:bg-darkBg py-2 rounded-xl font-bold">বাতিল</button>
         </div>
     </div>
 </div>
@@ -197,7 +117,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
     import { getFirestore, collection, addDoc, query, onSnapshot, serverTimestamp, updateDoc, doc, deleteDoc, increment } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
-    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+    import { getAuth, signInAnonymously, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyB_xkcJ87-E4jkYIDT2dBxOFJHUQvZxbU8",
@@ -214,48 +134,16 @@
     const pageId = window.location.pathname.replace(/\//g, '_') || 'homepage';
     const commentsCol = collection(db, 'blog_comments', 'pages', pageId);
 
-    // Markdown Parser Settings
-    marked.setOptions({
-        breaks: true,
-        gfm: true,
-        headerIds: false,
-        mangle: false
-    });
-
-    const MY_COMMENTS_KEY = `my_comments_${pageId}`;
-    const getMyComments = () => JSON.parse(localStorage.getItem(MY_COMMENTS_KEY) || "[]");
-    const saveMyComment = (id) => {
-        const ids = getMyComments();
-        ids.push(id);
-        localStorage.setItem(MY_COMMENTS_KEY, JSON.stringify(ids));
-    };
-    const removeMyComment = (id) => {
-        const ids = getMyComments().filter(cid => cid !== id);
-        localStorage.setItem(MY_COMMENTS_KEY, JSON.stringify(ids));
-    };
-    const isOwner = (id) => getMyComments().includes(id);
-
-    const toBengaliNumber = (num) => {
-        const eng = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
-        const bng = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
-        return num.toString().split('').map(char => {
-            const index = eng.indexOf(char);
-            return index !== -1 ? bng[index] : char;
-        }).join('');
-    };
+    let isAdmin = false;
+    let currentSort = 'top';
 
     const themeToggle = document.getElementById('theme-toggle');
     const sunIcon = document.getElementById('sun-icon');
     const moonIcon = document.getElementById('moon-icon');
 
     function updateIcons(isDark) {
-        if (isDark) {
-            sunIcon.classList.remove('hidden');
-            moonIcon.classList.add('hidden');
-        } else {
-            sunIcon.classList.add('hidden');
-            moonIcon.classList.remove('hidden');
-        }
+        if (isDark) { sunIcon.classList.remove('hidden'); moonIcon.classList.add('hidden'); }
+        else { sunIcon.classList.add('hidden'); moonIcon.classList.remove('hidden'); }
     }
 
     if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -278,269 +166,252 @@
         }
     });
 
-    let currentSort = 'top';
+    onAuthStateChanged(auth, (user) => {
+        if (user && !user.isAnonymous) {
+            isAdmin = true;
+            document.getElementById('login-trigger-btn').classList.add('hidden');
+            document.getElementById('admin-badge').classList.remove('hidden');
+        }
+        load();
+    });
+
+    window.adminLogin = async () => {
+        const email = document.getElementById('admin-email').value;
+        const pass = document.getElementById('admin-password').value;
+        const btn = document.getElementById('login-btn');
+        btn.disabled = true; btn.innerText = 'চেক করা হচ্ছে...';
+        try {
+            await signInWithEmailAndPassword(auth, email, pass);
+            toggleLoginModal();
+        } catch (e) {
+            alert("ভুল ইমেইল বা পাসওয়ার্ড");
+        } finally {
+            btn.disabled = false; btn.innerText = 'প্রবেশ করুন';
+        }
+    };
+
+    window.toggleLoginModal = () => {
+        document.getElementById('login-modal').classList.toggle('hidden');
+        document.getElementById('login-modal').classList.toggle('flex');
+    };
+
+    const MY_COMMENTS_KEY = `my_comments_${pageId}`;
+    const getMyComments = () => JSON.parse(localStorage.getItem(MY_COMMENTS_KEY) || "[]");
+    const saveMyComment = (id) => {
+        const ids = getMyComments(); ids.push(id);
+        localStorage.setItem(MY_COMMENTS_KEY, JSON.stringify(ids));
+    };
+    const isOwner = (id) => isAdmin || getMyComments().includes(id);
+
+    const toBengaliNumber = (n) => n.toString().replace(/\d/g, d => "০১২৩৪৫৬৭৮৯"[d]);
 
     window.toggleInput = () => {
-        const actionBar = document.getElementById('action-bar');
-        const comment = document.getElementById('user-comment').value;
-        actionBar.style.display = comment.length > 0 ? 'flex' : 'none';
+        const val = document.getElementById('user-comment').value;
+        document.getElementById('action-bar').style.display = val.length > 0 ? 'flex' : 'none';
     };
 
     window.setSort = (type) => {
         currentSort = type;
-        document.getElementById('sort-top').classList.toggle('text-[#1d9bf0]', type === 'top');
-        document.getElementById('sort-recent').classList.toggle('text-[#1d9bf0]', type === 'recent');
+        updateSortUI();
         load();
     };
 
-    async function start() {
-        try {
-            await signInAnonymously(auth);
-            load();
-        } catch (e) { console.error("Permission denied"); }
+    function updateSortUI() {
+        const tabs = ['top', 'recent', 'featured'];
+        const active = 'text-[#1d9bf0] border-[#1d9bf0]';
+        const inactive = 'text-gray-500 border-transparent';
+        tabs.forEach(t => {
+            const el = document.getElementById(`sort-${t}`);
+            el.className = `transition-colors pb-3 -mb-[13px] border-b-2 ${currentSort === t ? active : inactive}`;
+        });
     }
 
-    function buildTree(comments) {
-        const map = {};
-        const roots = [];
-        comments.forEach(c => map[c.id] = { ...c, replies: [] });
-        comments.forEach(c => {
+    function buildTree(list) {
+        const map = {}, roots = [];
+        list.forEach(c => map[c.id] = { ...c, replies: [] });
+        list.forEach(c => {
             if (c.parentId && map[c.parentId]) map[c.parentId].replies.push(map[c.id]);
             else roots.push(map[c.id]);
         });
         return roots;
     }
 
-    window.toggleCollapse = (id) => {
-        const element = document.getElementById(`comment-wrapper-${id}`);
-        element.classList.toggle('collapsed');
-    };
-
     function renderComment(c, depth = 0) {
         const date = formatTime(c.at);
-        const userVote = getLocalVote(c.id);
-        const displayVotes = toBengaliNumber(c.votes || 0);
+        const userVote = localStorage.getItem(`voted_${pageId}_${c.id}`) || 0;
         const userIsOwner = isOwner(c.id);
-        
-        // Parse Markdown and Sanitize
-        const rawHtml = marked.parse(c.msg);
-        const cleanHtml = DOMPurify.sanitize(rawHtml);
+        const cleanHtml = DOMPurify.sanitize(marked.parse(c.msg));
+        const isFeatured = c.featured === true;
         
         return `
-        <div id="comment-wrapper-${c.id}" class="${depth > 0 ? 'reply-thread' : 'mb-6'}">
+        <div class="${depth > 0 ? 'reply-thread' : 'mb-6'}">
             <div class="flex flex-col">
-                <div class="flex-1 overflow-hidden">
-                    <div class="comment-header flex items-center gap-1.5 mb-0.5">
-                        <span class="comment-user-name font-bold text-[15px] text-gray-900 dark:text-gray-100 truncate" onclick="toggleCollapse('${c.id}')">${esc(c.name)}</span>
-                        ${userIsOwner ? '<span class="text-[10px] bg-gray-100 dark:bg-gray-800 px-1.5 rounded-md font-bold text-gray-500 uppercase">আপনি</span>' : ''}
-                        <span class="text-[13px] text-gray-500 whitespace-nowrap">· ${date}</span>
-                    </div>
-                    
-                    <div id="body-text-${c.id}" class="comment-body comment-content text-[15px] text-gray-800 dark:text-gray-300 leading-normal mb-1 break-words">
-                        ${cleanHtml}
-                    </div>
-
-                    <!-- Edit Field (Hidden) -->
-                    <div id="edit-box-${c.id}" class="hidden my-2">
-                        <textarea id="edit-input-${c.id}" class="w-full p-2 text-sm bg-gray-50 dark:bg-darkBg border border-[#1d9bf0] rounded-lg h-20 outline-none dark:text-white resize-none">${c.msg}</textarea>
-                        <div class="flex gap-2 mt-1">
-                            <button onclick="updateData('${c.id}')" id="update-btn-${c.id}" class="bg-[#1d9bf0] text-white text-[11px] px-3 py-1 rounded-full font-bold">সেভ করুন</button>
-                            <button onclick="toggleEdit('${c.id}')" class="text-gray-500 text-[11px] font-bold px-2">বাতিল</button>
-                        </div>
-                    </div>
-
-                    <div class="comment-actions flex items-center gap-6">
-                        <button onclick="toggleReplyForm('${c.id}')" class="text-[12px] font-medium text-gray-500 hover:text-[#1d9bf0] transition-colors">রিপ্লাই</button>
-                        
-                        ${userIsOwner ? `
-                            <button onclick="toggleEdit('${c.id}')" class="text-[12px] font-medium text-gray-500 hover:text-green-500 transition-colors">এডিট</button>
-                            <button onclick="openDeleteModal('${c.id}')" class="text-[12px] font-medium text-gray-500 hover:text-red-500 transition-colors">ডিলিট</button>
-                        ` : ''}
-
-                        <div class="flex items-center gap-4 text-gray-500">
-                             <button onclick="vote('${c.id}', 1)" class="flex items-center gap-1.5 hover:text-[#1d9bf0] active:scale-125 transition-all ${userVote === 1 ? 'voted-up' : ''}">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" /></svg>
-                                <span class="text-[12px] font-bold">${displayVotes}</span>
-                             </button>
-                             <button onclick="vote('${c.id}', -1)" class="hover:text-[#f91880] active:scale-125 transition-all ${userVote === -1 ? 'voted-down' : ''}">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
-                             </button>
-                        </div>
-                    </div>
-                    
-                    <div id="form-${c.id}" class="hidden mt-3 bg-white dark:bg-darkCard p-3 rounded-2xl border border-gray-100 dark:border-darkBorder shadow-sm relative">
-                        <div class="flex flex-col gap-2">
-                             <textarea id="msg-${c.id}" placeholder="রিপ্লাইটি এখানে লিখুন..." class="w-full p-2 text-sm bg-gray-50 dark:bg-darkBg border border-gray-100 dark:border-darkBorder rounded-lg h-20 outline-none focus:border-[#1d9bf0] dark:text-white resize-none"></textarea>
-                             <div class="flex flex-row gap-2 justify-between items-center">
-                                <input type="text" id="name-${c.id}" placeholder="নাম" class="flex-1 max-w-[200px] p-2 text-xs bg-gray-50 dark:bg-darkBg border border-gray-100 dark:border-darkBorder rounded-full outline-none focus:border-[#1d9bf0] dark:text-white">
-                                <div class="flex gap-1">
-                                    <button onclick="postData('${c.id}')" id="btn-${c.id}" class="bg-[#1d9bf0] text-white text-[11px] px-4 py-1.5 rounded-full font-bold min-w-[60px]">পোস্ট</button>
-                                    <button onclick="toggleReplyForm('${c.id}')" class="text-gray-400 text-[11px] font-bold px-2 hover:text-red-400 text-lg leading-none">×</button>
-                                </div>
-                             </div>
-                        </div>
-                        <div id="warning-${c.id}" class="hidden absolute -bottom-4 left-2 text-[10px] text-red-500">আপনার নাম লিখুন</div>
+                <div class="comment-header flex items-center gap-1.5 mb-0.5">
+                    <span class="font-bold text-[15px] cursor-pointer hover:underline">${esc(c.name)}</span>
+                    ${userIsOwner && !isAdmin ? '<span class="text-[9px] bg-gray-100 dark:bg-gray-800 px-1.5 rounded-md font-bold text-gray-500">আপনি</span>' : ''}
+                    ${isFeatured ? `
+                        <span class="flex items-center gap-0.5 featured-badge" title="নির্বাচিত মন্তব্য">
+                            <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                            <span class="text-[10px] font-bold uppercase">নির্বাচিত</span>
+                        </span>` : ''}
+                    <span class="text-[13px] text-gray-500">· ${date}</span>
+                </div>
+                <div id="body-${c.id}" class="comment-content text-[15px] text-gray-800 dark:text-gray-300 leading-normal mb-1 break-words">${cleanHtml}</div>
+                
+                <div id="edit-box-${c.id}" class="hidden my-2">
+                    <textarea id="edit-in-${c.id}" class="w-full p-2 text-sm bg-gray-50 dark:bg-darkBg border border-[#1d9bf0] rounded-lg h-20 outline-none dark:text-white resize-none">${c.msg}</textarea>
+                    <div class="flex gap-2 mt-1">
+                        <button onclick="updateData('${c.id}')" class="bg-[#1d9bf0] text-white text-[11px] px-3 py-1 rounded-full font-bold">সেভ</button>
+                        <button onclick="toggleEdit('${c.id}')" class="text-gray-500 text-[11px] font-bold">বাতিল</button>
                     </div>
                 </div>
+
+                <div class="flex items-center gap-6">
+                    <button onclick="toggleReplyForm('${c.id}')" class="text-[12px] font-medium text-gray-500 hover:text-[#1d9bf0]">রিপ্লাই</button>
+                    ${userIsOwner ? `
+                        <button onclick="toggleEdit('${c.id}')" class="text-[12px] font-medium text-gray-500 hover:text-green-500">এডিট</button>
+                        <button onclick="openDeleteModal('${c.id}')" class="text-[12px] font-medium text-gray-500 hover:text-red-500">ডিলিট</button>
+                    ` : ''}
+                    ${isAdmin ? `
+                        <button onclick="togglePin('${c.id}', ${!isFeatured})" class="text-[12px] font-medium ${isFeatured ? 'text-amber-500' : 'text-gray-500'} hover:text-amber-600">
+                            ${isFeatured ? 'পিন সরান' : 'পিন করুন'}
+                        </button>
+                    ` : ''}
+                    <div class="flex items-center gap-4 text-gray-500">
+                         <button onclick="vote('${c.id}', 1)" class="flex items-center gap-1.5 ${userVote == 1 ? 'voted-up' : ''}">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M5 15l7-7 7 7" /></svg>
+                            <span class="text-[12px] font-bold">${toBengaliNumber(c.votes || 0)}</span>
+                         </button>
+                         <button onclick="vote('${c.id}', -1)" class="${userVote == -1 ? 'voted-down' : ''}">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                         </button>
+                    </div>
+                </div>
+
+                <div id="form-${c.id}" class="hidden mt-3">
+                    <div class="bg-white dark:bg-darkCard p-3 rounded-2xl border border-gray-100 dark:border-darkBorder shadow-sm">
+                        <textarea id="msg-${c.id}" placeholder="আপনার রিপ্লাইটি এখানে লিখুন..." class="w-full p-2 text-sm bg-gray-50 dark:bg-darkBg border rounded-lg h-20 outline-none focus:border-[#1d9bf0] dark:text-white resize-none"></textarea>
+                        <div class="flex justify-between items-center mt-2">
+                            <input type="text" id="name-${c.id}" placeholder="আপনার নাম..." class="flex-1 max-w-[150px] p-2 text-xs bg-gray-50 dark:bg-darkBg border rounded-full outline-none focus:border-[#1d9bf0] dark:text-white">
+                            <button onclick="postData('${c.id}')" id="btn-${c.id}" class="bg-[#1d9bf0] text-white text-[11px] px-4 py-1.5 rounded-full font-bold">পোস্ট</button>
+                        </div>
+                    </div>
+                    <div id="warning-${c.id}" class="hidden text-[11px] text-red-500 mt-1 ml-2">আপনার নাম ও রিপ্লাই লিখুন</div>
+                    <div id="posting-status-${c.id}" class="hidden text-[11px] text-green-600 dark:text-green-400 font-medium mt-1 ml-2">আপনার মন্তব্য পোস্ট করা হচ্ছে...</div>
+                </div>
             </div>
-            <div class="replies-container">
-                ${c.replies.map(r => renderComment(r, depth + 1)).join('')}
-            </div>
+            <div>${c.replies.map(r => renderComment(r, depth + 1)).join('')}</div>
         </div>`;
     }
 
     function load() {
         onSnapshot(query(commentsCol), (snap) => {
             const container = document.getElementById('comments-container');
-            let allDocs = [];
-            snap.forEach(doc => allDocs.push({ id: doc.id, ...doc.data() }));
-            document.getElementById('comment-count').innerText = toBengaliNumber(allDocs.length);
-            const tree = buildTree(allDocs);
-            if(currentSort === 'top') tree.sort((a,b) => (b.votes || 0) - (a.votes || 0));
-            else tree.sort((a,b) => (b.at?.seconds || 0) - (a.at?.seconds || 0));
-            container.innerHTML = tree.length > 0 ? tree.map(c => renderComment(c)).join('') : `<p class="text-center text-gray-500 py-10 italic text-sm">এখনও কোনো মন্তব্য নেই। একটি আলোচনা শুরু করুন!</p>`;
+            let list = []; snap.forEach(doc => list.push({ id: doc.id, ...doc.data() }));
+            document.getElementById('comment-count').innerText = toBengaliNumber(list.length);
+            
+            let tree = buildTree(list);
+            
+            // Apply filtering for 'featured' tab
+            if (currentSort === 'featured') {
+                tree = tree.filter(c => c.featured === true);
+            }
+
+            // Apply sorting
+            tree.sort((a,b) => {
+                if (currentSort === 'top') return (b.votes - a.votes);
+                return (b.at?.seconds - a.at?.seconds); // featured and recent both use time order
+            });
+
+            container.innerHTML = tree.length > 0 ? tree.map(c => renderComment(c)).join('') : `<p class="text-center text-gray-400 py-10 italic text-sm">${currentSort === 'featured' ? 'কোনো নির্বাচিত মন্তব্য নেই।' : 'কোনো মন্তব্য নেই।'}</p>`;
         });
     }
 
-    window.toggleReplyForm = (id) => {
-        document.getElementById(`form-${id}`).classList.toggle('hidden');
+    window.toggleReplyForm = (id) => document.getElementById(`form-${id}`).classList.toggle('hidden');
+    window.toggleEdit = (id) => {
+        document.getElementById(`body-${id}`).classList.toggle('hidden');
+        document.getElementById(`edit-box-${id}`).classList.toggle('hidden');
     };
 
-    window.toggleEdit = (id) => {
-        const bodyText = document.getElementById(`body-text-${id}`);
-        const editBox = document.getElementById(`edit-box-${id}`);
-        bodyText.classList.toggle('hidden');
-        editBox.classList.toggle('hidden');
+    window.togglePin = async (id, isFeatured) => {
+        if (!isAdmin) return;
+        try {
+            await updateDoc(doc(db, 'blog_comments', 'pages', pageId, id), { featured: isFeatured });
+        } catch (e) { console.error(e); }
     };
 
     window.vote = async (id, val) => {
-        const voteKey = `voted_${pageId}_${id}`;
-        const existingVote = localStorage.getItem(voteKey);
-        if (existingVote == val) return;
-        const commentRef = doc(db, 'blog_comments', 'pages', pageId, id);
+        const key = `voted_${pageId}_${id}`;
+        if (localStorage.getItem(key) == val) return;
         try {
-            let incrementVal = val;
-            if (existingVote && existingVote != val) incrementVal = val * 2; 
-            await updateDoc(commentRef, { votes: increment(incrementVal) });
-            localStorage.setItem(voteKey, val);
-        } catch (e) { console.error("Vote failed"); }
+            const ref = doc(db, 'blog_comments', 'pages', pageId, id);
+            let inc = parseInt(val);
+            if (localStorage.getItem(key)) inc = val * 2;
+            await updateDoc(ref, { votes: increment(inc) });
+            localStorage.setItem(key, val);
+        } catch (e) {}
     };
 
-    function getLocalVote(id) {
-        const val = localStorage.getItem(`voted_${pageId}_${id}`);
-        return val ? parseInt(val) : 0;
-    }
+    window.postData = async (pid) => {
+        const n = pid ? document.getElementById(`name-${pid}`).value : document.getElementById('user-name').value;
+        const m = pid ? document.getElementById(`msg-${pid}`).value : document.getElementById('user-comment').value;
+        const btn = pid ? document.getElementById(`btn-${pid}`) : document.getElementById('submit-btn');
+        const statusDiv = document.getElementById(pid ? `posting-status-${pid}` : 'posting-status-null');
 
-    window.showWarning = (id) => {
-        const warning = document.getElementById(id ? `warning-${id}` : 'warning-null');
-        warning.classList.remove('hidden');
-        setTimeout(() => warning.classList.add('hidden'), 4000);
-    };
-
-    window.postData = async (parentId) => {
-        const nameInput = parentId ? document.getElementById(`name-${parentId}`) : document.getElementById('user-name');
-        const msgInput = parentId ? document.getElementById(`msg-${parentId}`) : document.getElementById('user-comment');
-        const submitBtn = parentId ? document.getElementById(`btn-${parentId}`) : document.getElementById('submit-btn');
-        
-        const name = nameInput.value.trim();
-        const msg = msgInput.value.trim();
-        
-        if(!name || !msg) {
-            showWarning(parentId);
+        if(!n.trim() || !m.trim()) {
+            const w = document.getElementById(pid ? `warning-${pid}` : 'warning-null');
+            w.classList.remove('hidden'); setTimeout(() => w.classList.add('hidden'), 3000);
             return;
         }
 
-        const originalText = submitBtn.innerText;
-        submitBtn.innerText = 'পোস্ট হচ্ছে...';
-        submitBtn.disabled = true;
+        btn.disabled = true;
+        statusDiv.classList.remove('hidden');
 
         try {
-            const newDoc = await addDoc(commentsCol, { name, msg, parentId, votes: 0, at: serverTimestamp() });
-            saveMyComment(newDoc.id); 
-            msgInput.value = '';
-            if(parentId) document.getElementById(`form-${parentId}`).classList.add('hidden');
-        } catch (e) { 
-            console.error("Post failed"); 
-        } finally {
-            submitBtn.innerText = originalText;
-            submitBtn.disabled = false;
+            const res = await addDoc(commentsCol, { 
+                name: n, 
+                msg: m, 
+                parentId: pid, 
+                votes: 0, 
+                featured: false,
+                at: serverTimestamp() 
+            });
+            saveMyComment(res.id);
+            if(!pid) { document.getElementById('user-comment').value = ''; toggleInput(); }
+            else document.getElementById(`form-${pid}`).classList.add('hidden');
+        } catch (e) {
+            console.error(e);
+        } finally { 
+            btn.disabled = false; 
+            statusDiv.classList.add('hidden');
         }
     };
 
     window.updateData = async (id) => {
-        const input = document.getElementById(`edit-input-${id}`);
-        const btn = document.getElementById(`update-btn-${id}`);
-        const newMsg = input.value.trim();
-        
-        if(!newMsg) return;
-
-        btn.innerText = 'আপডেট...';
-        btn.disabled = true;
-
-        try {
-            const ref = doc(db, 'blog_comments', 'pages', pageId, id);
-            await updateDoc(ref, { msg: newMsg });
-            toggleEdit(id);
-        } catch (e) {
-            console.error("Update failed");
-        } finally {
-            btn.innerText = 'সেভ করুন';
-            btn.disabled = false;
-        }
+        const msg = document.getElementById(`edit-in-${id}`).value;
+        if(!msg.trim()) return;
+        try { await updateDoc(doc(db, 'blog_comments', 'pages', pageId, id), { msg }); toggleEdit(id); } catch (e) {}
     };
 
-    let deleteTargetId = null;
-    window.openDeleteModal = (id) => {
-        deleteTargetId = id;
-        document.getElementById('delete-modal').classList.remove('hidden');
-        document.getElementById('delete-modal').classList.add('flex');
-    };
-
-    window.closeDeleteModal = () => {
-        deleteTargetId = null;
-        document.getElementById('delete-modal').classList.add('hidden');
-        document.getElementById('delete-modal').classList.remove('flex');
-    };
-
+    let delId = null;
+    window.openDeleteModal = (id) => { delId = id; document.getElementById('delete-modal').classList.replace('hidden', 'flex'); };
+    window.closeDeleteModal = () => document.getElementById('delete-modal').classList.replace('flex', 'hidden');
     document.getElementById('confirm-delete-btn').onclick = async () => {
-        if(!deleteTargetId) return;
-        
-        const btn = document.getElementById('confirm-delete-btn');
-        btn.innerText = 'মুছে ফেলা হচ্ছে...';
-        btn.disabled = true;
-
-        try {
-            const ref = doc(db, 'blog_comments', 'pages', pageId, deleteTargetId);
-            await deleteDoc(ref);
-            removeMyComment(deleteTargetId);
-            closeDeleteModal();
-        } catch (e) {
-            console.error("Delete failed");
-        } finally {
-            btn.innerText = 'মুছে ফেলুন';
-            btn.disabled = false;
-        }
+        try { await deleteDoc(doc(db, 'blog_comments', 'pages', pageId, delId)); closeDeleteModal(); } catch (e) {}
     };
 
-    function formatTime(timestamp) {
-        if(!timestamp) return 'এইমাত্র';
-        const date = new Date(timestamp.seconds * 1000);
-        const diff = Math.floor((new Date() - date) / 1000);
-        if (diff < 60) return 'এখন';
-        if (diff < 3600) return toBengaliNumber(Math.floor(diff/60)) + ' মি';
-        if (diff < 86400) return toBengaliNumber(Math.floor(diff/3600)) + ' ঘ';
-        const day = toBengaliNumber(date.getDate());
-        const month = date.toLocaleDateString('bn-BD', { month: 'short' });
-        return `${day} ${month}`;
+    function formatTime(ts) {
+        if(!ts) return 'এখন';
+        const s = Math.floor((new Date() - new Date(ts.seconds * 1000))/1000);
+        if(s < 60) return 'এখন';
+        if(s < 3600) return toBengaliNumber(Math.floor(s/60)) + ' মি';
+        if(s < 86400) return toBengaliNumber(Math.floor(s/3600)) + ' ঘ';
+        return toBengaliNumber(new Date(ts.seconds*1000).getDate()) + ' ' + new Date(ts.seconds*1000).toLocaleDateString('bn-BD', {month:'short'});
     }
 
-    function esc(t) {
-        const d = document.createElement('div');
-        d.textContent = t;
-        return d.innerHTML;
-    }
+    function esc(t) { let d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
 
-    start();
+    signInAnonymously(auth).then(() => updateSortUI());
 </script>
 </body>
 </html>
