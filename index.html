@@ -6,15 +6,14 @@
     <title>আলোচনা - ফিজারিফ</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        // Tailwind dark mode configuration
         tailwind.config = {
             darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
-                        darkBg: '#000000', // X "Lights Out" style black
-                        darkCard: '#16181c', // X style card color
-                        darkBorder: '#2f3336', // X style border
+                        darkBg: '#000000',
+                        darkCard: '#16181c',
+                        darkBorder: '#2f3336',
                     }
                 }
             }
@@ -42,7 +41,7 @@
 
         .hyvor-input-wrapper:focus-within {
             background: #fff;
-            border-color: #1d9bf0; /* X Blue */
+            border-color: #1d9bf0;
             box-shadow: 0 0 0 1px #1d9bf0;
         }
         .dark .hyvor-input-wrapper:focus-within {
@@ -79,22 +78,24 @@
             }
         }
 
-        .comment-avatar {
+        /* Initial Avatar Styling */
+        .avatar-circle {
             width: 40px;
             height: 40px;
-            border-radius: 9999px; /* X style circular avatars */
-            background: #f3f4f6;
-            object-fit: cover;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 16px;
+            color: white;
             flex-shrink: 0;
-        }
-        .dark .comment-avatar {
-            background: #2f3336;
+            text-transform: uppercase;
         }
 
-        /* Collapse Logic */
         .collapsed .comment-body, 
         .collapsed .comment-actions,
-        .collapsed .comment-avatar,
+        .collapsed .avatar-circle,
         .collapsed .replies-container {
             display: none;
         }
@@ -118,7 +119,7 @@
 <body class="p-4 md:p-8 bg-white text-gray-900 dark:bg-darkBg dark:text-gray-100">
 
 <div class="max-w-2xl mx-auto">
-    <!-- Header: Count, Online, Theme -->
+    <!-- Header -->
     <div class="flex items-center justify-between gap-4 mb-6 px-2">
         <div class="flex items-center gap-3">
             <h2 class="text-xl font-extrabold text-gray-900 dark:text-white tracking-tight">
@@ -187,7 +188,7 @@
     const pageId = window.location.pathname.replace(/\//g, '_') || 'homepage';
     const commentsCol = collection(db, 'blog_comments', 'pages', pageId);
 
-    // --- Dark Mode Logic ---
+    // Dark Mode Logic
     const themeToggle = document.getElementById('theme-toggle');
     const sunIcon = document.getElementById('sun-icon');
     const moonIcon = document.getElementById('moon-icon');
@@ -250,7 +251,14 @@
         } catch (e) { console.error("Permission denied"); }
     }
 
-    const getAvatar = (name) => `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=2f3336&color=ffffff&bold=true&rounded=false&size=128`;
+    // Generate Avatar from Name Initial
+    const colors = ['#1d9bf0', '#7856ff', '#ff7a00', '#00ba7c', '#f91880', '#ffad1f'];
+    function getAvatarElement(name) {
+        const firstChar = name.trim().charAt(0) || '?';
+        const charCode = firstChar.charCodeAt(0);
+        const bgColor = colors[charCode % colors.length];
+        return `<div class="avatar-circle" style="background-color: ${bgColor}">${firstChar}</div>`;
+    }
 
     function buildTree(comments) {
         const map = {};
@@ -270,13 +278,13 @@
 
     function renderComment(c, depth = 0) {
         const date = formatTime(c.at);
-        const avatar = getAvatar(c.name);
+        const avatarHtml = getAvatarElement(c.name);
         const userVote = getLocalVote(c.id);
         
         return `
         <div id="comment-wrapper-${c.id}" class="${depth > 0 ? 'reply-thread' : 'mb-6'}">
             <div class="flex gap-3">
-                <img src="${avatar}" class="comment-avatar" alt="avatar">
+                ${avatarHtml}
                 <div class="flex-1 overflow-hidden">
                     <div class="comment-header flex items-center gap-1.5 mb-0.5">
                         <span class="comment-user-name font-bold text-[15px] text-gray-900 dark:text-gray-100 truncate" onclick="toggleCollapse('${c.id}')">${esc(c.name)}</span>
@@ -300,7 +308,7 @@
                     
                     <div id="form-${c.id}" class="hidden mt-3 bg-white dark:bg-darkCard p-3 rounded-2xl border border-gray-100 dark:border-darkBorder shadow-sm">
                         <input type="text" id="name-${c.id}" placeholder="আপনার নাম" class="w-full mb-2 p-2 text-sm bg-gray-50 dark:bg-darkBg border border-gray-100 dark:border-darkBorder rounded-lg outline-none focus:border-[#1d9bf0] dark:text-white">
-                        <textarea id="msg-${c.id}" placeholder="রিপ্লাইটি লিখুন..." class="w-full p-2 text-sm bg-gray-50 dark:bg-darkBg border border-gray-100 dark:border-darkBorder rounded-lg h-20 outline-none focus:border-[#1d9bf0] dark:text-white resize-none"></textarea>
+                        <textarea id="msg-${c.id}" placeholder="রিপ্লাইটি এখানে লিখুন..." class="w-full p-2 text-sm bg-gray-50 dark:bg-darkBg border border-gray-100 dark:border-darkBorder rounded-lg h-20 outline-none focus:border-[#1d9bf0] dark:text-white resize-none"></textarea>
                         <div class="flex gap-2 mt-2">
                             <button onclick="postData('${c.id}')" class="bg-[#1d9bf0] text-white text-[12px] px-4 py-1.5 rounded-full font-bold">রিপ্লাই</button>
                             <button onclick="toggleReplyForm('${c.id}')" class="text-gray-400 text-[12px] font-bold px-2">বাতিল</button>
