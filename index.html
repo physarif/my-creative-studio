@@ -29,7 +29,6 @@
         .comment-content pre { background: #f3f4f6; padding: 12px; border-radius: 8px; overflow-x: auto; margin: 8px 0; }
         .dark .comment-content pre { background: #1e2126; }
         
-        /* Floating Action Button - Fixed Centering */
         .fab { 
             position: fixed; 
             bottom: 24px; 
@@ -40,20 +39,19 @@
             color: white; 
             border-radius: 50%; 
             display: flex; 
-            align-items: center; /* Vertical center */
-            justify-content: center; /* Horizontal center */
+            align-items: center; 
+            justify-content: center; 
             box-shadow: 0 4px 12px rgba(29, 155, 240, 0.4); 
             cursor: pointer; 
             transition: all 0.2s; 
             z-index: 40; 
             border: none;
-            padding: 0; /* Ensure no padding interferes */
-            line-height: 0; /* Prevent line-height issues */
+            padding: 0; 
+            line-height: 0; 
         }
         .fab:hover { transform: scale(1.05); background-color: #1a8cd8; }
         .fab:active { transform: scale(0.95); }
 
-        /* Post Modal */
         #post-modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.4); backdrop-blur: 4px; display: none; align-items: flex-start; justify-content: center; z-index: 100; padding-top: 50px; }
         .post-modal-content { width: 100%; max-width: 600px; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
         .dark .post-modal-content { background: #000000; border: 1px solid #2f3336; }
@@ -95,8 +93,15 @@
     <div class="flex items-center justify-between gap-4 mb-6 px-2">
         <div class="flex items-center gap-3">
             <div id="auth-section">
+                <!-- User Profile UI -->
+                <div id="user-info-ui" class="hidden flex items-center gap-2">
+                    <img id="user-avatar" src="" class="w-8 h-8 rounded-full border border-gray-200 dark:border-darkBorder">
+                    <button onclick="handleLogout()" class="text-[10px] font-bold text-gray-500 uppercase hover:text-red-500 transition-colors">লগআউট</button>
+                </div>
+                <!-- Login Trigger -->
                 <button onclick="toggleLoginModal()" id="login-trigger-btn" class="text-[11px] font-bold bg-[#1d9bf0] text-white px-4 py-1 rounded-full hover:bg-[#1a8cd8] transition-all uppercase shadow-sm">লগইন</button>
-                <div id="admin-badge-ui" class="hidden flex items-center gap-1.5 bg-blue-50 dark:bg-blue-500/10 px-2 py-0.5 rounded-full border border-blue-100 dark:border-blue-500/20">
+                
+                <div id="admin-badge-ui" class="hidden flex items-center gap-1.5 bg-blue-50 dark:bg-blue-500/10 px-2 py-0.5 rounded-full border border-blue-100 dark:border-blue-500/20 ml-2">
                     <span class="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
                     <span class="text-[10px] font-bold text-blue-700 dark:text-blue-500 uppercase">এডমিন</span>
                 </div>
@@ -143,7 +148,7 @@
         </div>
         <div class="p-4">
             <textarea id="user-comment" placeholder="আপনার পোস্টটি লিখুন..." class="w-full bg-transparent text-lg outline-none min-h-[150px] dark:text-white resize-none" autofocus></textarea>
-            <div class="mt-4 pt-4 border-t border-gray-50 dark:border-darkBorder">
+            <div id="name-input-container" class="mt-4 pt-4 border-t border-gray-50 dark:border-darkBorder">
                 <input type="text" id="user-name" placeholder="আপনার নাম..." class="w-full bg-transparent text-sm font-medium outline-none text-[#1d9bf0] placeholder:text-gray-400">
             </div>
         </div>
@@ -152,14 +157,27 @@
     </div>
 </div>
 
-<!-- Other Modals -->
+<!-- Login Modal -->
 <div id="login-modal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-[110] p-4 backdrop-blur-sm">
     <div class="bg-white dark:bg-darkCard p-8 rounded-3xl max-w-sm w-full shadow-2xl">
-        <h3 class="text-xl font-bold mb-6 text-center">এডমিন লগইন</h3>
+        <h3 class="text-xl font-bold mb-6 text-center">প্রবেশ করুন</h3>
+        
         <div class="space-y-4">
+            <!-- Google Login Button -->
+            <button onclick="googleLogin()" class="w-full flex items-center justify-center gap-3 bg-white border border-gray-300 dark:border-darkBorder py-3 rounded-xl font-bold text-gray-700 dark:text-white dark:bg-darkBg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                <svg class="w-5 h-5" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path></svg>
+                গুগল দিয়ে প্রবেশ করুন
+            </button>
+
+            <div class="relative flex py-2 items-center">
+                <div class="flex-grow border-t border-gray-200 dark:border-darkBorder"></div>
+                <span class="flex-shrink mx-4 text-gray-400 text-xs">অথবা এডমিন</span>
+                <div class="flex-grow border-t border-gray-200 dark:border-darkBorder"></div>
+            </div>
+
             <input type="email" id="admin-email" placeholder="ইমেইল" class="w-full p-3 bg-gray-50 dark:bg-darkBg border border-gray-200 dark:border-darkBorder rounded-xl outline-none focus:border-[#1d9bf0] dark:text-white">
             <input type="password" id="admin-password" placeholder="পাসওয়ার্ড" class="w-full p-3 bg-gray-50 dark:bg-darkBg border border-gray-200 dark:border-darkBorder rounded-xl outline-none focus:border-[#1d9bf0] dark:text-white">
-            <button onclick="adminLogin()" id="login-btn" class="w-full bg-[#1d9bf0] text-white py-3 rounded-xl font-bold hover:bg-[#1a8cd8] transition-colors">প্রবেশ করুন</button>
+            <button onclick="adminLogin()" id="login-btn" class="w-full bg-[#1d9bf0] text-white py-3 rounded-xl font-bold hover:bg-[#1a8cd8] transition-colors">এডমিন লগইন</button>
             <button onclick="toggleLoginModal()" class="w-full text-gray-500 text-sm font-medium">বাতিল</button>
         </div>
     </div>
@@ -178,7 +196,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
     import { getFirestore, collection, addDoc, query, onSnapshot, serverTimestamp, updateDoc, doc, deleteDoc, increment } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
-    import { getAuth, signInAnonymously, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+    import { getAuth, signInAnonymously, signInWithEmailAndPassword, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyB_xkcJ87-E4jkYIDT2dBxOFJHUQvZxbU8",
@@ -192,10 +210,12 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
     const pageId = window.location.pathname.replace(/\//g, '_') || 'homepage';
     const commentsCol = collection(db, 'blog_comments', 'pages', pageId);
 
     let isAdmin = false;
+    let currentUser = null;
     let currentSort = 'top';
     let visibleCount = 10;
     let allRootThreads = [];
@@ -230,19 +250,43 @@
         }
     });
 
-    // Auth
+    // Auth Actions
     onAuthStateChanged(auth, (user) => {
+        currentUser = user;
+        const userInfoUi = document.getElementById('user-info-ui');
+        const userAvatar = document.getElementById('user-avatar');
+        const loginTrigger = document.getElementById('login-trigger-btn');
+        const nameInputContainer = document.getElementById('name-input-container');
+        const adminBadge = document.getElementById('admin-badge-ui');
+
         if (user && !user.isAnonymous) {
-            isAdmin = true;
-            document.getElementById('login-trigger-btn').classList.add('hidden');
-            document.getElementById('admin-badge-ui').classList.remove('hidden');
+            // Logged in
+            isAdmin = user.email === 'admin@fisarif.com'; // Adjust admin logic if needed
+            userInfoUi.classList.remove('hidden');
+            loginTrigger.classList.add('hidden');
+            userAvatar.src = user.photoURL || 'https://www.gravatar.com/avatar/000?d=mp';
+            nameInputContainer.classList.add('hidden'); // No need for name input
+            if (isAdmin) adminBadge.classList.remove('hidden');
+            else adminBadge.classList.add('hidden');
         } else {
+            // Not logged in or Anonymous
             isAdmin = false;
-            document.getElementById('login-trigger-btn').classList.remove('hidden');
-            document.getElementById('admin-badge-ui').classList.add('hidden');
+            userInfoUi.classList.add('hidden');
+            loginTrigger.classList.remove('hidden');
+            nameInputContainer.classList.remove('hidden');
+            adminBadge.classList.add('hidden');
         }
         load();
     });
+
+    window.googleLogin = async () => {
+        try {
+            await signInWithPopup(auth, provider);
+            toggleLoginModal();
+        } catch (e) {
+            console.error("Login failed", e);
+        }
+    };
 
     window.adminLogin = async () => {
         const email = document.getElementById('admin-email').value;
@@ -255,9 +299,11 @@
         } catch (e) {
             alert("ভুল ইমেইল বা পাসওয়ার্ড");
         } finally {
-            btn.disabled = false; btn.innerText = 'প্রবেশ করুন';
+            btn.disabled = false; btn.innerText = 'এডমিন লগইন';
         }
     };
+
+    window.handleLogout = () => signOut(auth);
 
     window.toggleLoginModal = () => {
         document.getElementById('login-modal').classList.toggle('hidden');
@@ -288,7 +334,12 @@
         const ids = getMyComments(); ids.push(id);
         localStorage.setItem(MY_COMMENTS_KEY, JSON.stringify(ids));
     };
-    const isOwner = (id) => isAdmin || getMyComments().includes(id);
+    const isOwner = (comment) => {
+        if (currentUser && !currentUser.isAnonymous) {
+            return isAdmin || comment.userId === currentUser.uid;
+        }
+        return getMyComments().includes(comment.id);
+    };
 
     const toBengaliNumber = (n) => n.toString().replace(/\d/g, d => "০১২৩৪৫৬৭৮৯"[d]);
 
@@ -331,7 +382,7 @@
     function renderComment(c, depth = 0) {
         const date = formatTime(c.at);
         const userVote = localStorage.getItem(`voted_${pageId}_${c.id}`) || 0;
-        const userIsOwner = isOwner(c.id);
+        const userIsOwner = isOwner(c);
         const isCommentFromAdmin = c.isAdmin === true;
         
         let messageHtml = marked.parse(c.msg);
@@ -352,6 +403,7 @@
             <div class="flex flex-col">
                 <div class="comment-header flex items-center gap-2 mb-0.5 flex-wrap">
                     <div class="flex items-center gap-1.5">
+                        ${c.photoURL ? `<img src="${c.photoURL}" class="w-5 h-5 rounded-full border border-gray-100 dark:border-darkBorder">` : ''}
                         <span onclick="toggleCollapse('${c.id}')" class="font-bold text-[15px] name-clickable ${isCommentFromAdmin ? 'admin-name' : ''}">${esc(c.name)}</span>
                         ${userIsOwner && !isAdmin ? '<span class="text-[9px] bg-gray-100 dark:bg-gray-800 px-1.5 rounded-md font-bold text-gray-500">তুমি</span>' : ''}
                     </div>
@@ -403,7 +455,7 @@
                     <div class="bg-white dark:bg-darkCard p-3 rounded-2xl border border-gray-100 dark:border-darkBorder shadow-sm">
                         <textarea id="msg-${c.id}" placeholder="আপনার রিপ্লাইটি এখানে লিখুন..." class="w-full p-2 text-sm bg-gray-50 dark:bg-darkBg border rounded-lg h-20 outline-none focus:border-[#1d9bf0] dark:text-white resize-none"></textarea>
                         <div class="flex justify-between items-center mt-2 gap-2">
-                            <input type="text" id="name-${c.id}" placeholder="আপনার নাম..." class="flex-1 max-w-[150px] p-2 text-xs bg-gray-50 dark:bg-darkBg border rounded-full outline-none focus:border-[#1d9bf0] dark:text-white">
+                            ${!currentUser || currentUser.isAnonymous ? `<input type="text" id="name-${c.id}" placeholder="আপনার নাম..." class="flex-1 max-w-[150px] p-2 text-xs bg-gray-50 dark:bg-darkBg border rounded-full outline-none focus:border-[#1d9bf0] dark:text-white">` : '<div class="flex-1"></div>'}
                             <div class="flex items-center gap-2">
                                 <button onclick="toggleReplyForm('${c.id}')" class="text-gray-500 text-[11px] font-bold px-2">বাতিল</button>
                                 <button onclick="postData('${c.id}')" id="btn-${c.id}" class="bg-[#1d9bf0] text-white text-[11px] px-4 py-1.5 rounded-full font-bold">পোস্ট</button>
@@ -497,12 +549,20 @@
     };
 
     window.postData = async (pid) => {
-        const n = pid ? document.getElementById(`name-${pid}`).value : document.getElementById('user-name').value;
+        let n, photo;
+        if (currentUser && !currentUser.isAnonymous) {
+            n = currentUser.displayName;
+            photo = currentUser.photoURL;
+        } else {
+            n = pid ? document.getElementById(`name-${pid}`).value : document.getElementById('user-name').value;
+            photo = null;
+        }
+
         const m = pid ? document.getElementById(`msg-${pid}`).value : document.getElementById('user-comment').value;
         const btn = pid ? document.getElementById(`btn-${pid}`) : document.getElementById('submit-btn');
         const statusDiv = document.getElementById(pid ? `posting-status-${pid}` : 'posting-status-null');
         
-        if(!n.trim() || !m.trim()) {
+        if(!n || !n.trim() || !m.trim()) {
             const w = document.getElementById(pid ? `warning-${pid}` : 'warning-null');
             w.classList.remove('hidden'); setTimeout(() => w.classList.add('hidden'), 3000);
             return;
@@ -519,9 +579,12 @@
                 reported: false, 
                 reportCount: 0, 
                 isAdmin: isAdmin,
+                photoURL: photo,
+                userId: currentUser?.uid || null,
                 at: serverTimestamp() 
             });
-            saveMyComment(res.id);
+            if (!currentUser || currentUser.isAnonymous) saveMyComment(res.id);
+            
             if(!pid) { 
                 document.getElementById('user-comment').value = ''; 
                 togglePostModal(); 
@@ -556,7 +619,8 @@
 
     function esc(t) { let d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
 
-    signInAnonymously(auth).then(() => updateSortUI());
+    // Always start with anonymous if not logged in to enable listening
+    signInAnonymously(auth).catch(e => console.error("Anonymous auth failed", e));
 </script>
 </body>
 </html>
