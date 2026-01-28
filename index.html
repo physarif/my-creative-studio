@@ -5,13 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>আলোচনা - ফিজারিফ</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Tailwind dark mode configuration
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Hind+Siliguri:wght@400;600;700&display=swap');
         
         body { 
             font-family: 'Inter', 'Hind Siliguri', sans-serif; 
-            background-color: #ffffff;
-            color: #111827;
+            transition: background-color 0.3s, color 0.3s;
         }
 
         .hyvor-input-wrapper {
@@ -21,11 +26,18 @@
             border-radius: 24px;
             transition: all 0.2s ease;
         }
+        .dark .hyvor-input-wrapper {
+            background: #1f2937;
+            border-color: #374151;
+        }
 
         .hyvor-input-wrapper:focus-within {
             background: #fff;
             border-color: #4f46e5;
             box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+        }
+        .dark .hyvor-input-wrapper:focus-within {
+            background: #111827;
         }
 
         .hyvor-textarea {
@@ -40,25 +52,15 @@
             max-height: 200px;
         }
 
-        .action-bar {
-            display: none;
-            padding: 10px 16px;
-            border-top: 1px solid #f3f4f6;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .hyvor-textarea:focus ~ .action-bar,
-        .hyvor-textarea:not(:placeholder-shown) ~ .action-bar {
-            display: flex;
-        }
-
         .reply-thread {
             position: relative;
             margin-left: 12px;
             border-left: 2px solid #f3f4f6;
             padding-left: 16px;
             margin-top: 12px;
+        }
+        .dark .reply-thread {
+            border-left-color: #374151;
         }
 
         @media (min-width: 640px) {
@@ -76,8 +78,11 @@
             object-fit: cover;
             flex-shrink: 0;
         }
+        .dark .comment-avatar {
+            background: #374151;
+        }
 
-        /* কলাপস লজিক */
+        /* Collapse Logic */
         .collapsed .comment-body, 
         .collapsed .comment-actions,
         .collapsed .comment-avatar,
@@ -85,12 +90,10 @@
             display: none;
         }
 
-        /* নাম যখন কলাপস করা যাবে তখন কার্সার পয়েন্টার হবে */
         .comment-user-name {
             cursor: pointer;
             user-select: none;
         }
-
         .comment-user-name:hover {
             text-decoration: underline;
             color: #4f46e5;
@@ -104,27 +107,38 @@
         .voted-down { color: #e11d48 !important; }
     </style>
 </head>
-<body class="p-4 md:p-8">
+<body class="p-4 md:p-8 bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100">
 
 <div class="max-w-3xl mx-auto">
-    <div class="flex justify-between items-center mb-6 px-2">
-        <div class="flex items-center gap-3">
-            <h2 class="text-2xl font-bold text-gray-900"><span id="comment-count">০</span>টি মন্তব্য</h2>
-            <div class="flex items-center gap-1.5 bg-green-50 px-2.5 py-1 rounded-full border border-green-100">
+    <!-- উপরের বার: ডার্ক মোড, মন্তব্য সংখ্যা এবং অনলাইন স্ট্যাটাস একই লাইনে -->
+    <div class="flex flex-wrap items-center justify-between gap-4 mb-8 px-2 border-b border-gray-100 dark:border-gray-800 pb-6">
+        <div class="flex items-center gap-4">
+            <h2 class="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">
+                <span id="comment-count">০</span>টি মন্তব্য
+            </h2>
+            <div class="flex items-center gap-1.5 bg-green-50 dark:bg-green-900/20 px-2.5 py-1 rounded-full border border-green-100 dark:border-green-800">
                 <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
-                <span class="text-[10px] font-bold text-green-700 uppercase">১ জন অনলাইনে</span>
+                <span class="text-[10px] font-bold text-green-700 dark:text-green-400 uppercase tracking-tight">১ জন অনলাইনে</span>
             </div>
         </div>
+
+        <button id="theme-toggle" class="p-2 rounded-lg bg-gray-50 dark:bg-gray-800 hover:ring-2 hover:ring-gray-200 dark:hover:ring-gray-700 transition-all border border-gray-200 dark:border-gray-700">
+            <!-- Sun Icon (Light Mode) -->
+            <svg id="sun-icon" class="w-5 h-5 hidden text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" /></svg>
+            <!-- Moon Icon (Dark Mode) -->
+            <svg id="moon-icon" class="w-5 h-5 hidden text-indigo-400" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" /></svg>
+        </button>
     </div>
 
+    <!-- মূল মন্তব্য ইনপুট বক্স -->
     <div class="mb-10">
         <div class="hyvor-input-wrapper">
             <div id="user-info-bar" class="flex gap-2 p-3 pb-0 hidden">
-                 <input type="text" id="user-name" placeholder="আপনার নাম লিখুন" class="text-sm px-3 py-1.5 bg-white border border-gray-100 rounded-lg outline-none focus:border-indigo-300 w-48">
+                 <input type="text" id="user-name" placeholder="আপনার নাম লিখুন" class="text-sm px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-lg outline-none focus:border-indigo-300 dark:text-white w-48">
             </div>
-            <textarea id="user-comment" placeholder="আপনার মন্তব্যটি এখানে লিখুন..." class="hyvor-textarea" oninput="toggleInput()"></textarea>
+            <textarea id="user-comment" placeholder="আপনার মন্তব্যটি এখানে লিখুন..." class="hyvor-textarea dark:text-gray-200" oninput="toggleInput()"></textarea>
             
-            <div class="action-bar" id="action-bar">
+            <div class="action-bar flex p-3 border-t border-gray-100 dark:border-gray-700 justify-between items-center" id="action-bar" style="display: none;">
                 <span class="text-xs text-gray-400">আলোচনায় অংশ নিন</span>
                 <button onclick="postData(null)" id="submit-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-xl transition-all shadow-sm text-sm">
                     মন্তব্য করুন
@@ -133,11 +147,13 @@
         </div>
     </div>
 
-    <div class="flex items-center gap-6 mb-8 px-2 text-sm font-semibold text-gray-400 border-b border-gray-100 pb-4">
+    <!-- ফিল্টারিং বার -->
+    <div class="flex items-center gap-6 mb-8 px-2 text-sm font-semibold text-gray-400">
         <button id="sort-top" onclick="setSort('top')" class="text-indigo-600 transition-colors flex items-center gap-1">সেরা</button>
-        <button id="sort-recent" onclick="setSort('recent')" class="hover:text-gray-900 transition-colors">সাম্প্রতিক</button>
+        <button id="sort-recent" onclick="setSort('recent')" class="hover:text-gray-900 dark:hover:text-white transition-colors">সাম্প্রতিক</button>
     </div>
 
+    <!-- মন্তব্যের তালিকা -->
     <div id="comments-container" class="space-y-6 pb-20">
         <div class="flex justify-center p-10">
             <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
@@ -165,12 +181,53 @@
     const pageId = window.location.pathname.replace(/\//g, '_') || 'homepage';
     const commentsCol = collection(db, 'blog_comments', 'pages', pageId);
 
+    // --- ডার্ক মোড লজিক ---
+    const themeToggle = document.getElementById('theme-toggle');
+    const sunIcon = document.getElementById('sun-icon');
+    const moonIcon = document.getElementById('moon-icon');
+
+    function updateIcons(isDark) {
+        if (isDark) {
+            sunIcon.classList.remove('hidden');
+            moonIcon.classList.add('hidden');
+        } else {
+            sunIcon.classList.add('hidden');
+            moonIcon.classList.remove('hidden');
+        }
+    }
+
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+        updateIcons(true);
+    } else {
+        document.documentElement.classList.remove('dark');
+        updateIcons(false);
+    }
+
+    themeToggle.addEventListener('click', () => {
+        if (document.documentElement.classList.contains('dark')) {
+            document.documentElement.classList.remove('dark');
+            localStorage.theme = 'light';
+            updateIcons(false);
+        } else {
+            document.documentElement.classList.add('dark');
+            localStorage.theme = 'dark';
+            updateIcons(true);
+        }
+    });
+
     let currentSort = 'top';
 
     window.toggleInput = () => {
         const infoBar = document.getElementById('user-info-bar');
+        const actionBar = document.getElementById('action-bar');
         const comment = document.getElementById('user-comment').value;
-        if(comment.length > 0) infoBar.classList.remove('hidden');
+        if(comment.length > 0) {
+            infoBar.classList.remove('hidden');
+            actionBar.style.display = 'flex';
+        } else {
+            actionBar.style.display = 'none';
+        }
     };
 
     window.setSort = (type) => {
@@ -200,7 +257,6 @@
         return roots;
     }
 
-    // কলাপস টগল ফাংশন
     window.toggleCollapse = (id) => {
         const element = document.getElementById(`comment-wrapper-${id}`);
         element.classList.toggle('collapsed');
@@ -217,28 +273,28 @@
                 <img src="${avatar}" class="comment-avatar" alt="avatar">
                 <div class="flex-1 overflow-hidden">
                     <div class="comment-header flex items-center gap-1 mb-0.5">
-                        <span class="comment-user-name font-bold text-[13px] md:text-[14px] text-gray-900 truncate" onclick="toggleCollapse('${c.id}')">${esc(c.name)}</span>
+                        <span class="comment-user-name font-bold text-[13px] md:text-[14px] text-gray-900 dark:text-gray-100 truncate" onclick="toggleCollapse('${c.id}')">${esc(c.name)}</span>
                         <span class="text-[10px] text-gray-400 whitespace-nowrap ml-1">${date}</span>
                     </div>
-                    <div class="comment-body text-[15px] text-gray-700 leading-relaxed mb-1 break-words">
+                    <div class="comment-body text-[15px] text-gray-700 dark:text-gray-300 leading-relaxed mb-1 break-words">
                         ${esc(c.msg)}
                     </div>
                     <div class="comment-actions flex items-center gap-4">
-                        <button onclick="toggleReplyForm('${c.id}')" class="text-[10px] font-bold text-gray-500 hover:text-indigo-600 uppercase tracking-wider">রিপ্লাই</button>
-                        <div class="flex items-center gap-2 text-gray-400 bg-gray-50 px-2 py-0.5 rounded-lg border border-gray-100">
+                        <button onclick="toggleReplyForm('${c.id}')" class="text-[10px] font-bold text-gray-500 dark:text-gray-400 hover:text-indigo-600 uppercase tracking-wider">রিপ্লাই</button>
+                        <div class="flex items-center gap-2 text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-800 px-2 py-0.5 rounded-lg border border-gray-100 dark:border-gray-700">
                              <button onclick="vote('${c.id}', 1)" class="hover:text-indigo-500 active:scale-125 transition-transform ${userVote === 1 ? 'voted-up' : ''}">
                                 <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd" /></svg>
                              </button>
-                             <span class="text-[11px] font-bold text-gray-700">${c.votes || 0}</span>
+                             <span class="text-[11px] font-bold text-gray-700 dark:text-gray-300">${c.votes || 0}</span>
                              <button onclick="vote('${c.id}', -1)" class="hover:text-rose-500 active:scale-125 transition-transform ${userVote === -1 ? 'voted-down' : ''}">
                                 <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
                              </button>
                         </div>
                     </div>
                     
-                    <div id="form-${c.id}" class="hidden mt-3 bg-white p-3 rounded-xl border border-gray-200 shadow-sm">
-                        <input type="text" id="name-${c.id}" placeholder="আপনার নাম" class="w-full mb-2 p-2 text-sm bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-indigo-400">
-                        <textarea id="msg-${c.id}" placeholder="রিপ্লাইটি এখানে লিখুন..." class="w-full p-2 text-sm bg-gray-50 border border-gray-200 rounded-lg h-20 outline-none focus:border-indigo-400 resize-none"></textarea>
+                    <div id="form-${c.id}" class="hidden mt-3 bg-white dark:bg-gray-800 p-3 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                        <input type="text" id="name-${c.id}" placeholder="আপনার নাম" class="w-full mb-2 p-2 text-sm bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:border-indigo-400 dark:text-white">
+                        <textarea id="msg-${c.id}" placeholder="রিপ্লাইটি এখানে লিখুন..." class="w-full p-2 text-sm bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg h-20 outline-none focus:border-indigo-400 dark:text-white resize-none"></textarea>
                         <div class="flex gap-2 mt-2">
                             <button onclick="postData('${c.id}')" class="bg-indigo-600 text-white text-[11px] px-4 py-1.5 rounded-lg font-bold">রিপ্লাই দিন</button>
                             <button onclick="toggleReplyForm('${c.id}')" class="text-gray-400 text-[11px] font-bold px-2">বাতিল</button>
