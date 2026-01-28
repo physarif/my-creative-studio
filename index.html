@@ -68,12 +68,14 @@
             background: #f3f4f6;
             object-fit: cover;
         }
+
+        .voted-up { color: #4f46e5 !important; }
+        .voted-down { color: #e11d48 !important; }
     </style>
 </head>
 <body class="p-4 md:p-8">
 
 <div class="max-w-3xl mx-auto">
-    <!-- Stats Header -->
     <div class="flex justify-between items-center mb-6 px-2">
         <div class="flex items-center gap-3">
             <h2 class="text-2xl font-bold text-gray-900"><span id="comment-count">0</span> Comments</h2>
@@ -82,10 +84,8 @@
                 <span class="text-[10px] font-bold text-green-700 uppercase">1 Online</span>
             </div>
         </div>
-        <!-- Login Removed -->
     </div>
 
-    <!-- Main Comment Input -->
     <div class="mb-10">
         <div class="hyvor-input-wrapper">
             <div id="user-info-bar" class="flex gap-2 p-3 pb-0 hidden">
@@ -102,12 +102,11 @@
         </div>
     </div>
 
-    <!-- Sort Bar (Default to Top) -->
-    <div class="flex items-center gap-4 mb-8 px-2 text-sm font-semibold text-gray-500 border-b border-gray-100 pb-4">
-        <button class="text-indigo-600 flex items-center gap-1">Top Voted <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></button>
+    <div class="flex items-center gap-6 mb-8 px-2 text-sm font-semibold text-gray-400 border-b border-gray-100 pb-4">
+        <button id="sort-top" onclick="setSort('top')" class="text-indigo-600 transition-colors flex items-center gap-1">Top</button>
+        <button id="sort-recent" onclick="setSort('recent')" class="hover:text-gray-900 transition-colors">Recent</button>
     </div>
 
-    <!-- Comments List -->
     <div id="comments-container" class="space-y-8">
         <div class="flex justify-center p-10">
             <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
@@ -135,10 +134,27 @@
     const pageId = window.location.pathname.replace(/\//g, '_') || 'homepage';
     const commentsCol = collection(db, 'blog_comments', 'pages', pageId);
 
+    let currentSort = 'top';
+
     window.toggleInput = () => {
         const infoBar = document.getElementById('user-info-bar');
         const comment = document.getElementById('user-comment').value;
         if(comment.length > 0) infoBar.classList.remove('hidden');
+    };
+
+    window.setSort = (type) => {
+        currentSort = type;
+        const topBtn = document.getElementById('sort-top');
+        const recentBtn = document.getElementById('sort-recent');
+        
+        if(type === 'top') {
+            topBtn.classList.add('text-indigo-600');
+            recentBtn.classList.remove('text-indigo-600');
+        } else {
+            recentBtn.classList.add('text-indigo-600');
+            topBtn.classList.remove('text-indigo-600');
+        }
+        load();
     };
 
     async function start() {
@@ -160,18 +176,24 @@
             snap.forEach(doc => allDocs.push({ id: doc.id, ...doc.data() }));
             countDisplay.innerText = allDocs.length;
 
-            // Sorting by Votes (Descending)
-            const parents = allDocs.filter(d => !d.parentId).sort((a,b) => (b.votes || 0) - (a.votes || 0));
+            let parents = allDocs.filter(d => !d.parentId);
+            if(currentSort === 'top') {
+                parents.sort((a,b) => (b.votes || 0) - (a.votes || 0));
+            } else {
+                parents.sort((a,b) => (b.at?.seconds || 0) - (a.at?.seconds || 0));
+            }
+
             const replies = allDocs.filter(d => d.parentId);
 
             if (parents.length === 0) {
-                container.innerHTML = `<p class="text-center text-gray-400 py-10 italic">No comments yet. Start the conversation!</p>`;
+                container.innerHTML = `<p class="text-center text-gray-400 py-10 italic">No comments yet.</p>`;
                 return;
             }
 
             parents.forEach(p => {
                 const date = formatTime(p.at);
                 const avatar = getAvatar(p.name);
+                const userVote = getLocalVote(p.id);
                 
                 let html = `
                 <div class="group">
@@ -188,11 +210,11 @@
                             <div class="flex items-center gap-5">
                                 <button onclick="toggleReplyForm('${p.id}')" class="text-xs font-bold text-gray-500 hover:text-indigo-600 transition-colors uppercase tracking-wider">Reply</button>
                                 <div class="flex items-center gap-2 text-gray-400 bg-gray-50 px-2 py-0.5 rounded-lg border border-gray-100">
-                                     <button onclick="vote('${p.id}', 1)" class="hover:text-indigo-500 active:scale-125 transition-transform">
+                                     <button onclick="vote('${p.id}', 1)" class="hover:text-indigo-500 active:scale-125 transition-transform ${userVote === 1 ? 'voted-up' : ''}">
                                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd" /></svg>
                                      </button>
                                      <span class="text-xs font-bold text-gray-700">${p.votes || 0}</span>
-                                     <button onclick="vote('${p.id}', -1)" class="hover:text-rose-500 active:scale-125 transition-transform">
+                                     <button onclick="vote('${p.id}', -1)" class="hover:text-rose-500 active:scale-125 transition-transform ${userVote === -1 ? 'voted-down' : ''}">
                                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
                                      </button>
                                 </div>
@@ -239,21 +261,30 @@
     }
 
     window.vote = async (id, val) => {
+        const voteKey = `voted_${pageId}_${id}`;
+        const existingVote = localStorage.getItem(voteKey);
+        if (existingVote == val) return;
         const commentRef = doc(db, 'blog_comments', 'pages', pageId, id);
         try {
-            await updateDoc(commentRef, { votes: increment(val) });
+            let incrementVal = val;
+            if (existingVote && existingVote != val) incrementVal = val * 2; 
+            await updateDoc(commentRef, { votes: increment(incrementVal) });
+            localStorage.setItem(voteKey, val);
+            load();
         } catch (e) { console.error("Vote failed"); }
+    }
+
+    function getLocalVote(id) {
+        const val = localStorage.getItem(`voted_${pageId}_${id}`);
+        return val ? parseInt(val) : 0;
     }
 
     window.postData = async (parentId) => {
         const nameInput = parentId ? document.getElementById(`name-${parentId}`) : document.getElementById('user-name');
         const msgInput = parentId ? document.getElementById(`msg-${parentId}`) : document.getElementById('user-comment');
-        
         const name = nameInput.value.trim();
         const msg = msgInput.value.trim();
-
         if(!name || !msg) return alert('Name and message are required!');
-
         try {
             await addDoc(commentsCol, { name, msg, parentId, votes: 0, at: serverTimestamp() });
             msgInput.value = '';
@@ -267,7 +298,7 @@
         const diff = Math.floor((new Date() - date) / 1000);
         if (diff < 60) return 'Just now';
         if (diff < 3600) return Math.floor(diff/60) + 'm ago';
-        if (diff < 8400) return Math.floor(diff/3600) + 'h ago';
+        if (diff < 86400) return Math.floor(diff/3600) + 'h ago';
         return date.toLocaleDateString();
     }
 
@@ -281,4 +312,3 @@
 </script>
 </body>
 </html>
-
