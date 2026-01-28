@@ -52,7 +52,7 @@
             </h2>
             <div id="auth-section">
                 <button onclick="toggleLoginModal()" id="login-trigger-btn" class="text-[11px] font-bold bg-[#1d9bf0] text-white px-4 py-1 rounded-full hover:bg-[#1a8cd8] transition-all uppercase shadow-sm">লগইন</button>
-                <div id="admin-badge" class="hidden flex items-center gap-1.5 bg-blue-50 dark:bg-blue-500/10 px-2 py-0.5 rounded-full border border-blue-100 dark:border-blue-500/20">
+                <div id="admin-badge-ui" class="hidden flex items-center gap-1.5 bg-blue-50 dark:bg-blue-500/10 px-2 py-0.5 rounded-full border border-blue-100 dark:border-blue-500/20">
                     <span class="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
                     <span class="text-[10px] font-bold text-blue-700 dark:text-blue-500 uppercase">এডমিন</span>
                 </div>
@@ -168,11 +168,11 @@
         if (user && !user.isAnonymous) {
             isAdmin = true;
             document.getElementById('login-trigger-btn').classList.add('hidden');
-            document.getElementById('admin-badge').classList.remove('hidden');
+            document.getElementById('admin-badge-ui').classList.remove('hidden');
         } else {
             isAdmin = false;
             document.getElementById('login-trigger-btn').classList.remove('hidden');
-            document.getElementById('admin-badge').classList.add('hidden');
+            document.getElementById('admin-badge-ui').classList.add('hidden');
         }
         load();
     });
@@ -247,6 +247,7 @@
         const cleanHtml = DOMPurify.sanitize(marked.parse(c.msg));
         const isFeatured = c.featured === true;
         const isReported = c.reported === true;
+        const isCommentAdmin = c.isAdmin === true;
         const alreadyReported = localStorage.getItem(`reported_${pageId}_${c.id}`);
         
         return `
@@ -254,6 +255,10 @@
             <div class="flex flex-col">
                 <div class="comment-header flex items-center gap-1.5 mb-0.5">
                     <span class="font-bold text-[15px] cursor-pointer hover:underline">${esc(c.name)}</span>
+                    ${isCommentAdmin ? `
+                        <span class="text-[#1d9bf0] inline-flex items-center" title="ভেরিফাইড এডমিন">
+                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M22.5 12.5c0-1.58-.88-2.95-2.18-3.66.26-1.11.17-2.3-.26-3.36s-1.24-1.9-2.25-2.43c-1.01-.54-2.2-.69-3.32-.42-1.12-.27-2.3-.12-3.32.42-1.01.53-1.82 1.37-2.25 2.43s-.52 2.25-.26 3.36C7.38 9.55 6.5 10.92 6.5 12.5c0 1.58.88 2.95 2.18 3.66-.26 1.11-.17 2.3.26 3.36s1.24 1.9 2.25 2.43c1.01.54 2.2.69 3.32.42 1.12.27 2.3.12 3.32-.42 1.01-.53 1.82-1.37 2.25-2.43s.52-2.25.26-3.36c1.3-0.71 2.18-2.08 2.18-3.66zm-10.46 4.5l-3.3-3.3 1.41-1.41 1.89 1.89 4.89-4.89 1.41 1.41-6.3 6.3z"/></svg>
+                        </span>` : ''}
                     ${userIsOwner && !isAdmin ? '<span class="text-[9px] bg-gray-100 dark:bg-gray-800 px-1.5 rounded-md font-bold text-gray-500">আপনি</span>' : ''}
                     ${isFeatured ? `
                         <span class="flex items-center gap-0.5 featured-badge" title="নির্বাচিত মন্তব্য">
@@ -421,6 +426,7 @@
                 featured: false,
                 reported: false,
                 reportCount: 0,
+                isAdmin: isAdmin, // যতি বর্তমানে এডমিন লগইন থাকে তবে এটি ট্রু হবে
                 at: serverTimestamp() 
             });
             saveMyComment(res.id);
