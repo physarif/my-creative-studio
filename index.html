@@ -53,18 +53,12 @@
             display: flex;
         }
 
-        /* Thread lines */
         .reply-thread {
             position: relative;
             margin-left: 12px;
             border-left: 2px solid #f3f4f6;
             padding-left: 16px;
             margin-top: 12px;
-            transition: border-color 0.2s;
-        }
-
-        .reply-thread:hover {
-            border-left-color: #e5e7eb;
         }
 
         @media (min-width: 640px) {
@@ -83,28 +77,38 @@
             flex-shrink: 0;
         }
 
-        /* Global collapsed state */
+        /* Collapse Logic */
         .collapsed .comment-body, 
         .collapsed .comment-actions,
+        .collapsed .comment-avatar,
         .collapsed .replies-container {
             display: none;
         }
 
-        .collapsed .comment-header {
-            opacity: 0.6;
-        }
-
-        .collapsed .comment-header::after {
-            content: "[ + ]";
-            font-size: 10px;
-            margin-left: 8px;
-            color: #6366f1;
-            font-weight: bold;
-        }
-
-        .comment-item {
+        .collapse-btn {
             cursor: pointer;
             user-select: none;
+            font-family: monospace;
+            font-weight: bold;
+            color: #9ca3af;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            transition: color 0.2s;
+        }
+
+        .collapse-btn:hover {
+            color: #4f46e5;
+        }
+
+        .collapsed .collapse-btn::before {
+            content: "+";
+        }
+
+        .collapsed .collapse-btn::after {
+            display: none;
         }
 
         .voted-up { color: #4f46e5 !important; }
@@ -114,7 +118,6 @@
 <body class="p-4 md:p-8">
 
 <div class="max-w-3xl mx-auto">
-    <!-- পরিসংখ্যান অংশ -->
     <div class="flex justify-between items-center mb-6 px-2">
         <div class="flex items-center gap-3">
             <h2 class="text-2xl font-bold text-gray-900"><span id="comment-count">০</span>টি মন্তব্য</h2>
@@ -125,7 +128,6 @@
         </div>
     </div>
 
-    <!-- মূল মন্তব্য ইনপুট বক্স -->
     <div class="mb-10">
         <div class="hyvor-input-wrapper">
             <div id="user-info-bar" class="flex gap-2 p-3 pb-0 hidden">
@@ -142,13 +144,11 @@
         </div>
     </div>
 
-    <!-- ফিল্টারিং বা সর্ট বার -->
     <div class="flex items-center gap-6 mb-8 px-2 text-sm font-semibold text-gray-400 border-b border-gray-100 pb-4">
         <button id="sort-top" onclick="setSort('top')" class="text-indigo-600 transition-colors flex items-center gap-1">সেরা</button>
         <button id="sort-recent" onclick="setSort('recent')" class="hover:text-gray-900 transition-colors">সাম্প্রতিক</button>
     </div>
 
-    <!-- মন্তব্যের তালিকা -->
     <div id="comments-container" class="space-y-6 pb-20">
         <div class="flex justify-center p-10">
             <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
@@ -211,11 +211,7 @@
         return roots;
     }
 
-    // Toggle collapse functionality
-    window.toggleCollapse = (e, id) => {
-        // Don't toggle if clicking on buttons, inputs or textareas
-        if (['BUTTON', 'A', 'INPUT', 'TEXTAREA', 'SVG', 'PATH'].includes(e.target.tagName)) return;
-        
+    window.toggleCollapse = (id) => {
         const element = document.getElementById(`comment-wrapper-${id}`);
         element.classList.toggle('collapsed');
     };
@@ -226,13 +222,14 @@
         const userVote = getLocalVote(c.id);
         
         return `
-        <div id="comment-wrapper-${c.id}" class="comment-item ${depth > 0 ? 'reply-thread' : 'mb-6'}" onclick="toggleCollapse(event, '${c.id}')">
+        <div id="comment-wrapper-${c.id}" class="${depth > 0 ? 'reply-thread' : 'mb-6'}">
             <div class="flex gap-2 md:gap-3">
                 <img src="${avatar}" class="comment-avatar" alt="avatar">
                 <div class="flex-1 overflow-hidden">
-                    <div class="comment-header flex items-center gap-2 mb-0.5">
-                        <span class="font-bold text-[13px] md:text-[14px] text-gray-900 truncate">${esc(c.name)}</span>
-                        <span class="text-[10px] text-gray-400 whitespace-nowrap">${date}</span>
+                    <div class="comment-header flex items-center gap-1 mb-0.5">
+                        <span class="collapse-btn" onclick="toggleCollapse('${c.id}')">—</span>
+                        <span class="font-bold text-[13px] md:text-[14px] text-gray-900 truncate ml-1">${esc(c.name)}</span>
+                        <span class="text-[10px] text-gray-400 whitespace-nowrap ml-1">${date}</span>
                     </div>
                     <div class="comment-body text-[15px] text-gray-700 leading-relaxed mb-1 break-words">
                         ${esc(c.msg)}
@@ -250,7 +247,7 @@
                         </div>
                     </div>
                     
-                    <div id="form-${c.id}" class="hidden mt-3 bg-white p-3 rounded-xl border border-gray-200 shadow-sm" onclick="e => e.stopPropagation()">
+                    <div id="form-${c.id}" class="hidden mt-3 bg-white p-3 rounded-xl border border-gray-200 shadow-sm">
                         <input type="text" id="name-${c.id}" placeholder="আপনার নাম" class="w-full mb-2 p-2 text-sm bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-indigo-400">
                         <textarea id="msg-${c.id}" placeholder="রিপ্লাইটি এখানে লিখুন..." class="w-full p-2 text-sm bg-gray-50 border border-gray-200 rounded-lg h-20 outline-none focus:border-indigo-400 resize-none"></textarea>
                         <div class="flex gap-2 mt-2">
