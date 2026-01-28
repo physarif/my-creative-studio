@@ -31,7 +31,7 @@
             position: relative;
             background: #f9fafb;
             border: 1px solid #e5e7eb;
-            border-radius: 20px;
+            border-radius: 16px;
             transition: all 0.2s ease;
         }
         .dark .hyvor-input-wrapper {
@@ -73,29 +73,13 @@
 
         @media (min-width: 640px) {
             .reply-thread {
-                margin-left: 24px;
-                padding-left: 24px;
+                margin-left: 20px;
+                padding-left: 20px;
             }
-        }
-
-        /* Initial Avatar Styling */
-        .avatar-circle {
-            width: 40px;
-            height: 40px;
-            border-radius: 9999px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 16px;
-            color: white;
-            flex-shrink: 0;
-            text-transform: uppercase;
         }
 
         .collapsed .comment-body, 
         .collapsed .comment-actions,
-        .collapsed .avatar-circle,
         .collapsed .replies-container {
             display: none;
         }
@@ -251,15 +235,6 @@
         } catch (e) { console.error("Permission denied"); }
     }
 
-    // Generate Avatar from Name Initial
-    const colors = ['#1d9bf0', '#7856ff', '#ff7a00', '#00ba7c', '#f91880', '#ffad1f'];
-    function getAvatarElement(name) {
-        const firstChar = name.trim().charAt(0) || '?';
-        const charCode = firstChar.charCodeAt(0);
-        const bgColor = colors[charCode % colors.length];
-        return `<div class="avatar-circle" style="background-color: ${bgColor}">${firstChar}</div>`;
-    }
-
     function buildTree(comments) {
         const map = {};
         const roots = [];
@@ -278,13 +253,11 @@
 
     function renderComment(c, depth = 0) {
         const date = formatTime(c.at);
-        const avatarHtml = getAvatarElement(c.name);
         const userVote = getLocalVote(c.id);
         
         return `
         <div id="comment-wrapper-${c.id}" class="${depth > 0 ? 'reply-thread' : 'mb-6'}">
-            <div class="flex gap-3">
-                ${avatarHtml}
+            <div class="flex flex-col">
                 <div class="flex-1 overflow-hidden">
                     <div class="comment-header flex items-center gap-1.5 mb-0.5">
                         <span class="comment-user-name font-bold text-[15px] text-gray-900 dark:text-gray-100 truncate" onclick="toggleCollapse('${c.id}')">${esc(c.name)}</span>
