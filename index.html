@@ -172,6 +172,16 @@
     const pageId = window.location.pathname.replace(/\//g, '_') || 'homepage';
     const commentsCol = collection(db, 'blog_comments', 'pages', pageId);
 
+    // Number conversion helper
+    const toBengaliNumber = (num) => {
+        const eng = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+        const bng = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+        return num.toString().split('').map(char => {
+            const index = eng.indexOf(char);
+            return index !== -1 ? bng[index] : char;
+        }).join('');
+    };
+
     // Dark Mode Logic
     const themeToggle = document.getElementById('theme-toggle');
     const sunIcon = document.getElementById('sun-icon');
@@ -254,6 +264,7 @@
     function renderComment(c, depth = 0) {
         const date = formatTime(c.at);
         const userVote = getLocalVote(c.id);
+        const displayVotes = toBengaliNumber(c.votes || 0);
         
         return `
         <div id="comment-wrapper-${c.id}" class="${depth > 0 ? 'reply-thread' : 'mb-6'}">
@@ -271,7 +282,7 @@
                         <div class="flex items-center gap-4 text-gray-500">
                              <button onclick="vote('${c.id}', 1)" class="flex items-center gap-1.5 hover:text-[#1d9bf0] active:scale-125 transition-all ${userVote === 1 ? 'voted-up' : ''}">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" /></svg>
-                                <span class="text-[12px] font-bold">${c.votes || 0}</span>
+                                <span class="text-[12px] font-bold">${displayVotes}</span>
                              </button>
                              <button onclick="vote('${c.id}', -1)" class="hover:text-[#f91880] active:scale-125 transition-all ${userVote === -1 ? 'voted-down' : ''}">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
@@ -300,7 +311,7 @@
             const container = document.getElementById('comments-container');
             let allDocs = [];
             snap.forEach(doc => allDocs.push({ id: doc.id, ...doc.data() }));
-            document.getElementById('comment-count').innerText = allDocs.length;
+            document.getElementById('comment-count').innerText = toBengaliNumber(allDocs.length);
             const tree = buildTree(allDocs);
             if(currentSort === 'top') tree.sort((a,b) => (b.votes || 0) - (a.votes || 0));
             else tree.sort((a,b) => (b.at?.seconds || 0) - (a.at?.seconds || 0));
@@ -349,9 +360,12 @@
         const date = new Date(timestamp.seconds * 1000);
         const diff = Math.floor((new Date() - date) / 1000);
         if (diff < 60) return 'এখন';
-        if (diff < 3600) return Math.floor(diff/60) + ' মি';
-        if (diff < 86400) return Math.floor(diff/3600) + ' ঘ';
-        return date.toLocaleDateString('bn-BD', { day: 'numeric', month: 'short' });
+        if (diff < 3600) return toBengaliNumber(Math.floor(diff/60)) + ' মি';
+        if (diff < 86400) return toBengaliNumber(Math.floor(diff/3600)) + ' ঘ';
+        
+        const day = toBengaliNumber(date.getDate());
+        const month = date.toLocaleDateString('bn-BD', { month: 'short' });
+        return `${day} ${month}`;
     }
 
     function esc(t) {
