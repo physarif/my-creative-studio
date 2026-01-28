@@ -271,7 +271,6 @@
         const alreadyReported = localStorage.getItem(`reported_${pageId}_${c.id}`);
         const replyCount = c.replies.length;
         
-        // ডিফল্টভাবে মূল কমেন্টের নিচের সব লেভেলের রিপ্লাই কলাপসড থাকবে
         let threadClass = depth === 0 ? 'collapsed' : '';
         if (depth === 1) threadClass += ' reply-thread-root';
         else if (depth > 1) threadClass += ' reply-thread-deep';
@@ -292,7 +291,14 @@
                             <span class="text-[10px] font-bold uppercase">নির্বাচিত</span>
                         </span>` : ''}
                     ${isAdmin && isReported ? `<span class="text-[9px] bg-red-100 dark:bg-red-900/30 px-1.5 rounded-md font-bold text-red-500 border border-red-200 dark:border-red-800">অভিযোগ: ${toBengaliNumber(c.reportCount || 1)}</span>` : ''}
-                    <span class="text-[13px] text-gray-500">· ${date}</span>
+                    
+                    <!-- Flag Button next to Name -->
+                    ${!userIsOwner && !alreadyReported ? `
+                        <button onclick="reportComment('${c.id}')" class="text-gray-400 hover:text-red-500 transition-colors ml-1" title="অভিযোগ জানান">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"></path></svg>
+                        </button>` : ''}
+
+                    <span class="text-[13px] text-gray-500 ml-auto">· ${date}</span>
                 </div>
 
                 <div class="comment-body">
@@ -307,28 +313,10 @@
                     </div>
                 </div>
 
+                <!-- Footer with Reordered Actions -->
                 <div class="comment-footer flex items-center justify-between mt-1">
                     <div class="flex items-center gap-4">
-                        <button onclick="toggleReplyForm('${c.id}', '${esc(c.name)}')" class="text-[12px] font-medium text-gray-500 hover:text-[#1d9bf0]">রিপ্লাই</button>
-                        ${userIsOwner ? `
-                            <button onclick="toggleEdit('${c.id}')" class="text-[12px] font-medium text-gray-500 hover:text-green-500">এডিট</button>
-                            <button onclick="openDeleteModal('${c.id}')" class="text-[12px] font-medium text-gray-500 hover:text-red-500">ডিলিট</button>
-                        ` : ''}
-                        ${isAdmin ? `
-                            <button onclick="togglePin('${c.id}', ${!isFeatured})" class="text-[12px] font-medium ${isFeatured ? 'text-amber-500' : 'text-gray-500'} hover:text-amber-600">
-                                ${isFeatured ? 'পিন সরান' : 'পিন করুন'}
-                            </button>
-                        ` : ''}
-                        ${!userIsOwner && !alreadyReported ? `<button onclick="reportComment('${c.id}')" class="text-gray-400 hover:text-red-500 transition-colors" title="অভিযোগ জানান"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"></path></svg></button>` : ''}
-                    </div>
-
-                    <div class="flex items-center gap-4">
-                         ${(depth === 0 && replyCount > 0) ? `
-                            <button onclick="toggleCollapse('${c.id}')" class="flex items-center gap-1 text-[11px] font-bold text-[#1d9bf0] bg-blue-50 dark:bg-blue-900/20 px-2 py-0.5 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors">
-                                <svg class="w-2.5 h-2.5 collapse-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 15l-7-7-7 7"></path></svg>
-                                ${toBengaliNumber(replyCount)}টি রিপ্লাই
-                            </button>
-                        ` : ''}
+                         <!-- 1. Upvote/Downvote -->
                          <div class="flex items-center gap-3 text-gray-500">
                              <button onclick="vote('${c.id}', 1)" class="flex items-center gap-1 ${userVote == 1 ? 'voted-up' : ''}">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M5 15l7-7 7 7" /></svg>
@@ -338,6 +326,30 @@
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                              </button>
                          </div>
+
+                         <!-- 2. Reply Button -->
+                         <button onclick="toggleReplyForm('${c.id}', '${esc(c.name)}')" class="text-[12px] font-medium text-gray-500 hover:text-[#1d9bf0]">রিপ্লাই</button>
+                         
+                         <!-- 3. Collapse/Reply Counter Button -->
+                         ${(depth === 0 && replyCount > 0) ? `
+                            <button onclick="toggleCollapse('${c.id}')" class="flex items-center gap-1 text-[11px] font-bold text-[#1d9bf0] bg-blue-50 dark:bg-blue-900/20 px-2 py-0.5 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors">
+                                <svg class="w-2.5 h-2.5 collapse-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 15l-7-7-7 7"></path></svg>
+                                ${toBengaliNumber(replyCount)}টি রিপ্লাই
+                            </button>
+                        ` : ''}
+                    </div>
+
+                    <!-- Admin/Owner Options -->
+                    <div class="flex items-center gap-3">
+                        ${userIsOwner ? `
+                            <button onclick="toggleEdit('${c.id}')" class="text-[12px] font-medium text-gray-500 hover:text-green-500">এডিট</button>
+                            <button onclick="openDeleteModal('${c.id}')" class="text-[12px] font-medium text-gray-500 hover:text-red-500">ডিলিট</button>
+                        ` : ''}
+                        ${isAdmin ? `
+                            <button onclick="togglePin('${c.id}', ${!isFeatured})" class="text-[12px] font-medium ${isFeatured ? 'text-amber-500' : 'text-gray-500'} hover:text-amber-600">
+                                ${isFeatured ? 'পিন সরান' : 'পিন করুন'}
+                            </button>
+                        ` : ''}
                     </div>
                 </div>
 
