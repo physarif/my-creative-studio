@@ -9,6 +9,15 @@
         // Tailwind dark mode configuration
         tailwind.config = {
             darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkBg: '#000000', // X "Lights Out" style black
+                        darkCard: '#16181c', // X style card color
+                        darkBorder: '#2f3336', // X style border
+                    }
+                }
+            }
         }
     </script>
     <style>
@@ -16,28 +25,28 @@
         
         body { 
             font-family: 'Inter', 'Hind Siliguri', sans-serif; 
-            transition: background-color 0.3s, color 0.3s;
+            transition: background-color 0.2s, color 0.2s;
         }
 
         .hyvor-input-wrapper {
             position: relative;
             background: #f9fafb;
             border: 1px solid #e5e7eb;
-            border-radius: 24px;
+            border-radius: 20px;
             transition: all 0.2s ease;
         }
         .dark .hyvor-input-wrapper {
-            background: #1f2937;
-            border-color: #374151;
+            background: #16181c;
+            border-color: #2f3336;
         }
 
         .hyvor-input-wrapper:focus-within {
             background: #fff;
-            border-color: #4f46e5;
-            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+            border-color: #1d9bf0; /* X Blue */
+            box-shadow: 0 0 0 1px #1d9bf0;
         }
         .dark .hyvor-input-wrapper:focus-within {
-            background: #111827;
+            background: #000000;
         }
 
         .hyvor-textarea {
@@ -60,7 +69,7 @@
             margin-top: 12px;
         }
         .dark .reply-thread {
-            border-left-color: #374151;
+            border-left-color: #2f3336;
         }
 
         @media (min-width: 640px) {
@@ -71,15 +80,15 @@
         }
 
         .comment-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
+            width: 40px;
+            height: 40px;
+            border-radius: 9999px; /* X style circular avatars */
             background: #f3f4f6;
             object-fit: cover;
             flex-shrink: 0;
         }
         .dark .comment-avatar {
-            background: #374151;
+            background: #2f3336;
         }
 
         /* Collapse Logic */
@@ -96,67 +105,64 @@
         }
         .comment-user-name:hover {
             text-decoration: underline;
-            color: #4f46e5;
         }
 
         .collapsed .comment-header {
             opacity: 0.5;
         }
 
-        .voted-up { color: #4f46e5 !important; }
-        .voted-down { color: #e11d48 !important; }
+        .voted-up { color: #1d9bf0 !important; }
+        .voted-down { color: #f91880 !important; }
     </style>
 </head>
-<body class="p-4 md:p-8 bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100">
+<body class="p-4 md:p-8 bg-white text-gray-900 dark:bg-darkBg dark:text-gray-100">
 
-<div class="max-w-3xl mx-auto">
-    <!-- উপরের বার: ডার্ক মোড, মন্তব্য সংখ্যা এবং অনলাইন স্ট্যাটাস একই লাইনে -->
-    <div class="flex flex-wrap items-center justify-between gap-4 mb-8 px-2 border-b border-gray-100 dark:border-gray-800 pb-6">
-        <div class="flex items-center gap-4">
-            <h2 class="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">
+<div class="max-w-2xl mx-auto">
+    <!-- Header: Count, Online, Theme -->
+    <div class="flex items-center justify-between gap-4 mb-6 px-2">
+        <div class="flex items-center gap-3">
+            <h2 class="text-xl font-extrabold text-gray-900 dark:text-white tracking-tight">
                 <span id="comment-count">০</span>টি মন্তব্য
             </h2>
-            <div class="flex items-center gap-1.5 bg-green-50 dark:bg-green-900/20 px-2.5 py-1 rounded-full border border-green-100 dark:border-green-800">
+            <div class="flex items-center gap-1.5 bg-green-50 dark:bg-green-500/10 px-2 py-0.5 rounded-full border border-green-100 dark:border-green-500/20">
                 <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
-                <span class="text-[10px] font-bold text-green-700 dark:text-green-400 uppercase tracking-tight">১ জন অনলাইনে</span>
+                <span class="text-[10px] font-bold text-green-700 dark:text-green-500 uppercase">অনলাইন</span>
             </div>
         </div>
 
-        <button id="theme-toggle" class="p-2 rounded-lg bg-gray-50 dark:bg-gray-800 hover:ring-2 hover:ring-gray-200 dark:hover:ring-gray-700 transition-all border border-gray-200 dark:border-gray-700">
-            <!-- Sun Icon (Light Mode) -->
+        <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-darkCard transition-all">
             <svg id="sun-icon" class="w-5 h-5 hidden text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" /></svg>
-            <!-- Moon Icon (Dark Mode) -->
-            <svg id="moon-icon" class="w-5 h-5 hidden text-indigo-400" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" /></svg>
+            <svg id="moon-icon" class="w-5 h-5 hidden text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" /></svg>
         </button>
     </div>
 
-    <!-- মূল মন্তব্য ইনপুট বক্স -->
-    <div class="mb-10">
+    <!-- Input Area -->
+    <div class="mb-8">
         <div class="hyvor-input-wrapper">
             <div id="user-info-bar" class="flex gap-2 p-3 pb-0 hidden">
-                 <input type="text" id="user-name" placeholder="আপনার নাম লিখুন" class="text-sm px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-lg outline-none focus:border-indigo-300 dark:text-white w-48">
+                 <input type="text" id="user-name" placeholder="আপনার নাম..." class="text-sm px-3 py-1.5 bg-white dark:bg-darkBg border border-gray-100 dark:border-darkBorder rounded-lg outline-none focus:border-indigo-300 dark:text-white w-48">
             </div>
-            <textarea id="user-comment" placeholder="আপনার মন্তব্যটি এখানে লিখুন..." class="hyvor-textarea dark:text-gray-200" oninput="toggleInput()"></textarea>
+            <textarea id="user-comment" placeholder="আপনার মন্তব্যটি লিখুন..." class="hyvor-textarea dark:text-gray-100" oninput="toggleInput()"></textarea>
             
-            <div class="action-bar flex p-3 border-t border-gray-100 dark:border-gray-700 justify-between items-center" id="action-bar" style="display: none;">
-                <span class="text-xs text-gray-400">আলোচনায় অংশ নিন</span>
-                <button onclick="postData(null)" id="submit-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-xl transition-all shadow-sm text-sm">
-                    মন্তব্য করুন
+            <div class="action-bar flex p-3 border-t border-gray-100 dark:border-darkBorder justify-between items-center" id="action-bar" style="display: none;">
+                <span class="text-xs text-gray-400">নিচে পোস্ট করুন</span>
+                <button onclick="postData(null)" id="submit-btn" class="bg-[#1d9bf0] hover:bg-[#1a8cd8] text-white font-bold py-1.5 px-5 rounded-full transition-all shadow-sm text-sm">
+                    পোস্ট করুন
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- ফিল্টারিং বার -->
-    <div class="flex items-center gap-6 mb-8 px-2 text-sm font-semibold text-gray-400">
-        <button id="sort-top" onclick="setSort('top')" class="text-indigo-600 transition-colors flex items-center gap-1">সেরা</button>
-        <button id="sort-recent" onclick="setSort('recent')" class="hover:text-gray-900 dark:hover:text-white transition-colors">সাম্প্রতিক</button>
+    <!-- Filter -->
+    <div class="flex items-center gap-6 mb-8 px-2 text-sm font-bold border-b border-gray-100 dark:border-darkBorder pb-3">
+        <button id="sort-top" onclick="setSort('top')" class="text-[#1d9bf0] transition-colors">সেরা</button>
+        <button id="sort-recent" onclick="setSort('recent')" class="text-gray-500 dark:text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors">সাম্প্রতিক</button>
     </div>
 
-    <!-- মন্তব্যের তালিকা -->
+    <!-- Comment List -->
     <div id="comments-container" class="space-y-6 pb-20">
         <div class="flex justify-center p-10">
-            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1d9bf0]"></div>
         </div>
     </div>
 </div>
@@ -181,7 +187,7 @@
     const pageId = window.location.pathname.replace(/\//g, '_') || 'homepage';
     const commentsCol = collection(db, 'blog_comments', 'pages', pageId);
 
-    // --- ডার্ক মোড লজিক ---
+    // --- Dark Mode Logic ---
     const themeToggle = document.getElementById('theme-toggle');
     const sunIcon = document.getElementById('sun-icon');
     const moonIcon = document.getElementById('moon-icon');
@@ -232,8 +238,8 @@
 
     window.setSort = (type) => {
         currentSort = type;
-        document.getElementById('sort-top').classList.toggle('text-indigo-600', type === 'top');
-        document.getElementById('sort-recent').classList.toggle('text-indigo-600', type === 'recent');
+        document.getElementById('sort-top').classList.toggle('text-[#1d9bf0]', type === 'top');
+        document.getElementById('sort-recent').classList.toggle('text-[#1d9bf0]', type === 'recent');
         load();
     };
 
@@ -241,10 +247,10 @@
         try {
             await signInAnonymously(auth);
             load();
-        } catch (e) { console.error("অনুমতি পাওয়া যায়নি"); }
+        } catch (e) { console.error("Permission denied"); }
     }
 
-    const getAvatar = (name) => `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=f3f4f6&color=6366f1&bold=true&rounded=false&size=128`;
+    const getAvatar = (name) => `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=2f3336&color=ffffff&bold=true&rounded=false&size=128`;
 
     function buildTree(comments) {
         const map = {};
@@ -269,35 +275,35 @@
         
         return `
         <div id="comment-wrapper-${c.id}" class="${depth > 0 ? 'reply-thread' : 'mb-6'}">
-            <div class="flex gap-2 md:gap-3">
+            <div class="flex gap-3">
                 <img src="${avatar}" class="comment-avatar" alt="avatar">
                 <div class="flex-1 overflow-hidden">
-                    <div class="comment-header flex items-center gap-1 mb-0.5">
-                        <span class="comment-user-name font-bold text-[13px] md:text-[14px] text-gray-900 dark:text-gray-100 truncate" onclick="toggleCollapse('${c.id}')">${esc(c.name)}</span>
-                        <span class="text-[10px] text-gray-400 whitespace-nowrap ml-1">${date}</span>
+                    <div class="comment-header flex items-center gap-1.5 mb-0.5">
+                        <span class="comment-user-name font-bold text-[15px] text-gray-900 dark:text-gray-100 truncate" onclick="toggleCollapse('${c.id}')">${esc(c.name)}</span>
+                        <span class="text-[13px] text-gray-500 whitespace-nowrap">· ${date}</span>
                     </div>
-                    <div class="comment-body text-[15px] text-gray-700 dark:text-gray-300 leading-relaxed mb-1 break-words">
+                    <div class="comment-body text-[15px] text-gray-800 dark:text-gray-300 leading-normal mb-1 break-words">
                         ${esc(c.msg)}
                     </div>
-                    <div class="comment-actions flex items-center gap-4">
-                        <button onclick="toggleReplyForm('${c.id}')" class="text-[10px] font-bold text-gray-500 dark:text-gray-400 hover:text-indigo-600 uppercase tracking-wider">রিপ্লাই</button>
-                        <div class="flex items-center gap-2 text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-800 px-2 py-0.5 rounded-lg border border-gray-100 dark:border-gray-700">
-                             <button onclick="vote('${c.id}', 1)" class="hover:text-indigo-500 active:scale-125 transition-transform ${userVote === 1 ? 'voted-up' : ''}">
-                                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd" /></svg>
+                    <div class="comment-actions flex items-center gap-6">
+                        <button onclick="toggleReplyForm('${c.id}')" class="text-[12px] font-medium text-gray-500 hover:text-[#1d9bf0] transition-colors">রিপ্লাই</button>
+                        <div class="flex items-center gap-4 text-gray-500">
+                             <button onclick="vote('${c.id}', 1)" class="flex items-center gap-1.5 hover:text-[#1d9bf0] active:scale-125 transition-all ${userVote === 1 ? 'voted-up' : ''}">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" /></svg>
+                                <span class="text-[12px] font-bold">${c.votes || 0}</span>
                              </button>
-                             <span class="text-[11px] font-bold text-gray-700 dark:text-gray-300">${c.votes || 0}</span>
-                             <button onclick="vote('${c.id}', -1)" class="hover:text-rose-500 active:scale-125 transition-transform ${userVote === -1 ? 'voted-down' : ''}">
-                                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                             <button onclick="vote('${c.id}', -1)" class="hover:text-[#f91880] active:scale-125 transition-all ${userVote === -1 ? 'voted-down' : ''}">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                              </button>
                         </div>
                     </div>
                     
-                    <div id="form-${c.id}" class="hidden mt-3 bg-white dark:bg-gray-800 p-3 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-                        <input type="text" id="name-${c.id}" placeholder="আপনার নাম" class="w-full mb-2 p-2 text-sm bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:border-indigo-400 dark:text-white">
-                        <textarea id="msg-${c.id}" placeholder="রিপ্লাইটি এখানে লিখুন..." class="w-full p-2 text-sm bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg h-20 outline-none focus:border-indigo-400 dark:text-white resize-none"></textarea>
+                    <div id="form-${c.id}" class="hidden mt-3 bg-white dark:bg-darkCard p-3 rounded-2xl border border-gray-100 dark:border-darkBorder shadow-sm">
+                        <input type="text" id="name-${c.id}" placeholder="আপনার নাম" class="w-full mb-2 p-2 text-sm bg-gray-50 dark:bg-darkBg border border-gray-100 dark:border-darkBorder rounded-lg outline-none focus:border-[#1d9bf0] dark:text-white">
+                        <textarea id="msg-${c.id}" placeholder="রিপ্লাইটি লিখুন..." class="w-full p-2 text-sm bg-gray-50 dark:bg-darkBg border border-gray-100 dark:border-darkBorder rounded-lg h-20 outline-none focus:border-[#1d9bf0] dark:text-white resize-none"></textarea>
                         <div class="flex gap-2 mt-2">
-                            <button onclick="postData('${c.id}')" class="bg-indigo-600 text-white text-[11px] px-4 py-1.5 rounded-lg font-bold">রিপ্লাই দিন</button>
-                            <button onclick="toggleReplyForm('${c.id}')" class="text-gray-400 text-[11px] font-bold px-2">বাতিল</button>
+                            <button onclick="postData('${c.id}')" class="bg-[#1d9bf0] text-white text-[12px] px-4 py-1.5 rounded-full font-bold">রিপ্লাই</button>
+                            <button onclick="toggleReplyForm('${c.id}')" class="text-gray-400 text-[12px] font-bold px-2">বাতিল</button>
                         </div>
                     </div>
                 </div>
@@ -317,7 +323,7 @@
             const tree = buildTree(allDocs);
             if(currentSort === 'top') tree.sort((a,b) => (b.votes || 0) - (a.votes || 0));
             else tree.sort((a,b) => (b.at?.seconds || 0) - (a.at?.seconds || 0));
-            container.innerHTML = tree.length > 0 ? tree.map(c => renderComment(c)).join('') : `<p class="text-center text-gray-400 py-10 italic text-sm">এখনও কোনো মন্তব্য নেই।</p>`;
+            container.innerHTML = tree.length > 0 ? tree.map(c => renderComment(c)).join('') : `<p class="text-center text-gray-500 py-10 italic text-sm">এখনও কোনো মন্তব্য নেই। একটি আলোচনা শুরু করুন!</p>`;
         });
     }
 
@@ -336,7 +342,7 @@
             if (existingVote && existingVote != val) incrementVal = val * 2; 
             await updateDoc(commentRef, { votes: increment(incrementVal) });
             localStorage.setItem(voteKey, val);
-        } catch (e) { console.error("ভোট দেওয়া সম্ভব হয়নি"); }
+        } catch (e) { console.error("Vote failed"); }
     }
 
     function getLocalVote(id) {
@@ -354,16 +360,16 @@
             await addDoc(commentsCol, { name, msg, parentId, votes: 0, at: serverTimestamp() });
             msgInput.value = '';
             if(parentId) document.getElementById(`form-${parentId}`).classList.add('hidden');
-        } catch (e) { alert('দুঃখিত, মন্তব্যটি পোস্ট করা যায়নি।'); }
+        } catch (e) { console.error("Post failed"); }
     }
 
     function formatTime(timestamp) {
         if(!timestamp) return 'এইমাত্র';
         const date = new Date(timestamp.seconds * 1000);
         const diff = Math.floor((new Date() - date) / 1000);
-        if (diff < 60) return 'এইমাত্র';
-        if (diff < 3600) return Math.floor(diff/60) + ' মি.';
-        if (diff < 86400) return Math.floor(diff/3600) + ' ঘ.';
+        if (diff < 60) return 'এখন';
+        if (diff < 3600) return Math.floor(diff/60) + ' মি';
+        if (diff < 86400) return Math.floor(diff/3600) + ' ঘ';
         return date.toLocaleDateString('bn-BD', { day: 'numeric', month: 'short' });
     }
 
