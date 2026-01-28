@@ -24,18 +24,42 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Hind+Siliguri:wght@400;600;700&display=swap');
         body { font-family: 'Inter', 'Hind Siliguri', sans-serif; transition: background-color 0.2s, color 0.2s; }
+        
         .comment-content p { margin-bottom: 0.5rem; }
         .comment-content pre { background: #f3f4f6; padding: 12px; border-radius: 8px; overflow-x: auto; margin: 8px 0; }
         .dark .comment-content pre { background: #1e2126; }
-        .hyvor-input-wrapper { position: relative; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 16px; transition: all 0.2s ease; overflow: hidden; }
-        .dark .hyvor-input-wrapper { background: #16181c; border-color: #2f3336; }
-        .hyvor-input-wrapper:focus-within { background: #fff; border-color: #1d9bf0; box-shadow: 0 0 0 1px #1d9bf0; }
-        .dark .hyvor-input-wrapper:focus-within { background: #000000; }
-        .hyvor-textarea { width: 100%; background: transparent; border: none; padding: 16px 20px; font-size: 16px; outline: none; resize: none; min-height: 80px; }
+        
+        /* Floating Action Button - Fixed Centering */
+        .fab { 
+            position: fixed; 
+            bottom: 24px; 
+            right: 24px; 
+            width: 56px; 
+            height: 56px; 
+            background-color: #1d9bf0; 
+            color: white; 
+            border-radius: 50%; 
+            display: flex; 
+            align-items: center; /* Vertical center */
+            justify-content: center; /* Horizontal center */
+            box-shadow: 0 4px 12px rgba(29, 155, 240, 0.4); 
+            cursor: pointer; 
+            transition: all 0.2s; 
+            z-index: 40; 
+            border: none;
+            padding: 0; /* Ensure no padding interferes */
+            line-height: 0; /* Prevent line-height issues */
+        }
+        .fab:hover { transform: scale(1.05); background-color: #1a8cd8; }
+        .fab:active { transform: scale(0.95); }
+
+        /* Post Modal */
+        #post-modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.4); backdrop-blur: 4px; display: none; align-items: flex-start; justify-content: center; z-index: 100; padding-top: 50px; }
+        .post-modal-content { width: 100%; max-width: 600px; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
+        .dark .post-modal-content { background: #000000; border: 1px solid #2f3336; }
         
         .reply-thread-root { position: relative; margin-left: 12px; border-left: 2px solid #f3f4f6; padding-left: 16px; margin-top: 12px; }
         .dark .reply-thread-root { border-left-color: #2f3336; }
-        
         .reply-thread-deep { position: relative; margin-left: 0; border-left: none; padding-left: 0; margin-top: 12px; }
 
         .voted-up { color: #1d9bf0 !important; }
@@ -46,10 +70,8 @@
         
         .collapsed > .flex > .comment-body, 
         .collapsed > .flex > .comment-footer { display: none; }
-        
         .collapsed { opacity: 0.6; }
         .collapse-arrow { transition: transform 0.2s; }
-        
         .collapsed-parent > .comment-replies { display: none; }
         .collapsed-parent .collapse-arrow { transform: rotate(-180deg); }
         
@@ -59,17 +81,19 @@
         
         .admin-name { color: #1d9bf0; }
         .dark .admin-name { color: #38bdf8; }
+
+        @media (max-width: 640px) {
+            #post-modal-overlay { padding-top: 0; align-items: flex-end; }
+            .post-modal-content { border-radius: 16px 16px 0 0; }
+        }
     </style>
 </head>
-<body class="p-4 md:p-8 bg-white text-gray-900 dark:bg-darkBg dark:text-gray-100">
+<body class="p-4 md:p-8 bg-white text-gray-900 dark:bg-darkBg dark:text-gray-100 pb-24">
 
 <div class="max-w-2xl mx-auto">
     <!-- Header -->
     <div class="flex items-center justify-between gap-4 mb-6 px-2">
         <div class="flex items-center gap-3">
-            <h2 class="text-xl font-extrabold tracking-tight">
-                <span id="comment-count">০</span>টি মন্তব্য
-            </h2>
             <div id="auth-section">
                 <button onclick="toggleLoginModal()" id="login-trigger-btn" class="text-[11px] font-bold bg-[#1d9bf0] text-white px-4 py-1 rounded-full hover:bg-[#1a8cd8] transition-all uppercase shadow-sm">লগইন</button>
                 <div id="admin-badge-ui" class="hidden flex items-center gap-1.5 bg-blue-50 dark:bg-blue-500/10 px-2 py-0.5 rounded-full border border-blue-100 dark:border-blue-500/20">
@@ -85,19 +109,6 @@
         </button>
     </div>
 
-    <!-- Main Input Area -->
-    <div class="mb-8 relative">
-        <div class="hyvor-input-wrapper">
-            <textarea id="user-comment" placeholder="আপনার মন্তব্যটি লিখুন..." class="hyvor-textarea dark:text-gray-100" oninput="toggleInput()"></textarea>
-            <div class="action-bar flex p-3 border-t border-gray-100 dark:border-darkBorder justify-between items-center bg-gray-50/50 dark:bg-darkCard/50" id="action-bar" style="display: none;">
-                <input type="text" id="user-name" placeholder="আপনার নাম..." class="flex-1 max-w-[200px] text-sm px-3 py-1.5 bg-white dark:bg-darkBg border border-gray-200 dark:border-darkBorder rounded-full outline-none focus:border-[#1d9bf0] dark:text-white">
-                <button onclick="postData(null)" id="submit-btn" class="bg-[#1d9bf0] hover:bg-[#1a8cd8] text-white font-bold py-1.5 px-6 rounded-full transition-all shadow-sm text-sm ml-2">পোস্ট</button>
-            </div>
-        </div>
-        <div id="warning-null" class="hidden text-[11px] text-red-500 font-medium mt-1 ml-2">আপনার নাম ও মন্তব্য লিখুন</div>
-        <div id="posting-status-null" class="hidden text-[11px] text-green-600 dark:text-green-400 font-medium mt-1 ml-2">আপনার মন্তব্য পোস্ট করা হচ্ছে...</div>
-    </div>
-
     <!-- Sorting Tabs -->
     <div class="flex items-center gap-6 mb-8 px-2 text-sm font-bold tab-border-container">
         <button id="sort-top" onclick="setSort('top')" class="transition-colors pb-3 -mb-[2px] border-b-2">সেরা</button>
@@ -109,15 +120,40 @@
     <div id="comments-container" class="space-y-6"></div>
 
     <!-- Load More Button -->
-    <div id="load-more-container" class="flex justify-center mt-10 pb-20 hidden">
+    <div id="load-more-container" class="flex justify-center mt-10 hidden">
         <button onclick="loadMore()" class="text-sm font-bold text-[#1d9bf0] bg-blue-50 dark:bg-blue-900/20 px-6 py-2 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-all border border-blue-100 dark:border-blue-900/40">
             আরো লোড করুন
         </button>
     </div>
 </div>
 
-<!-- Modals -->
-<div id="login-modal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50 p-4 backdrop-blur-sm">
+<!-- Floating Action Button -->
+<button onclick="togglePostModal()" class="fab">
+    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path>
+    </svg>
+</button>
+
+<!-- Post Modal Overlay -->
+<div id="post-modal-overlay" onclick="closeModalOnOutsideClick(event)">
+    <div class="post-modal-content">
+        <div class="flex items-center justify-between p-4 border-b border-gray-100 dark:border-darkBorder">
+            <button onclick="togglePostModal()" class="text-gray-500 dark:text-gray-400 font-medium text-sm">বাতিল</button>
+            <button onclick="postData(null)" id="submit-btn" class="bg-[#1d9bf0] hover:bg-[#1a8cd8] text-white font-bold py-1.5 px-6 rounded-full transition-all shadow-sm text-sm">পোস্ট</button>
+        </div>
+        <div class="p-4">
+            <textarea id="user-comment" placeholder="আপনার পোস্টটি লিখুন..." class="w-full bg-transparent text-lg outline-none min-h-[150px] dark:text-white resize-none" autofocus></textarea>
+            <div class="mt-4 pt-4 border-t border-gray-50 dark:border-darkBorder">
+                <input type="text" id="user-name" placeholder="আপনার নাম..." class="w-full bg-transparent text-sm font-medium outline-none text-[#1d9bf0] placeholder:text-gray-400">
+            </div>
+        </div>
+        <div id="warning-null" class="hidden text-[12px] text-red-500 font-medium p-4 text-center">আপনার নাম ও পোস্টটি লিখুন</div>
+        <div id="posting-status-null" class="hidden text-[12px] text-green-600 dark:text-green-400 font-medium p-4 text-center">আপনার পোস্টটি শেয়ার করা হচ্ছে...</div>
+    </div>
+</div>
+
+<!-- Other Modals -->
+<div id="login-modal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-[110] p-4 backdrop-blur-sm">
     <div class="bg-white dark:bg-darkCard p-8 rounded-3xl max-w-sm w-full shadow-2xl">
         <h3 class="text-xl font-bold mb-6 text-center">এডমিন লগইন</h3>
         <div class="space-y-4">
@@ -129,9 +165,9 @@
     </div>
 </div>
 
-<div id="delete-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+<div id="delete-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-[110] p-4">
     <div class="bg-white dark:bg-darkCard p-6 rounded-2xl max-w-sm w-full">
-        <h3 class="text-lg font-bold mb-2">মন্তব্যটি মুছে ফেলতে চান?</h3>
+        <h3 class="text-lg font-bold mb-2">পোস্টটি মুছে ফেলতে চান?</h3>
         <div class="flex gap-3 mt-6">
             <button id="confirm-delete-btn" class="flex-1 bg-red-500 text-white py-2 rounded-xl font-bold">মুছে ফেলুন</button>
             <button onclick="closeDeleteModal()" class="flex-1 bg-gray-100 dark:bg-darkBg py-2 rounded-xl font-bold">বাতিল</button>
@@ -164,6 +200,7 @@
     let visibleCount = 10;
     let allRootThreads = [];
 
+    // Theme Management
     const themeToggle = document.getElementById('theme-toggle');
     const sunIcon = document.getElementById('sun-icon');
     const moonIcon = document.getElementById('moon-icon');
@@ -193,6 +230,7 @@
         }
     });
 
+    // Auth
     onAuthStateChanged(auth, (user) => {
         if (user && !user.isAnonymous) {
             isAdmin = true;
@@ -226,6 +264,24 @@
         document.getElementById('login-modal').classList.toggle('flex');
     };
 
+    // Modal Control
+    window.togglePostModal = () => {
+        const overlay = document.getElementById('post-modal-overlay');
+        const isHidden = overlay.style.display === 'none' || overlay.style.display === '';
+        overlay.style.display = isHidden ? 'flex' : 'none';
+        if (isHidden) {
+            document.body.style.overflow = 'hidden';
+            setTimeout(() => document.getElementById('user-comment').focus(), 50);
+        } else {
+            document.body.style.overflow = '';
+        }
+    };
+
+    window.closeModalOnOutsideClick = (e) => {
+        if (e.target.id === 'post-modal-overlay') togglePostModal();
+    };
+
+    // Data Helpers
     const MY_COMMENTS_KEY = `my_comments_${pageId}`;
     const getMyComments = () => JSON.parse(localStorage.getItem(MY_COMMENTS_KEY) || "[]");
     const saveMyComment = (id) => {
@@ -235,11 +291,6 @@
     const isOwner = (id) => isAdmin || getMyComments().includes(id);
 
     const toBengaliNumber = (n) => n.toString().replace(/\d/g, d => "০১২৩৪৫৬৭৮৯"[d]);
-
-    window.toggleInput = () => {
-        const val = document.getElementById('user-comment').value;
-        document.getElementById('action-bar').style.display = val.length > 0 ? 'flex' : 'none';
-    };
 
     window.setSort = (type) => {
         currentSort = type;
@@ -273,11 +324,8 @@
     window.toggleCollapse = (id) => {
         const el = document.getElementById(`comment-${id}`);
         const depth = parseInt(el.dataset.depth);
-        if (depth === 0) {
-            el.classList.toggle('collapsed-parent');
-        } else {
-            el.classList.toggle('collapsed');
-        }
+        if (depth === 0) el.classList.toggle('collapsed-parent');
+        else el.classList.toggle('collapsed');
     };
 
     function renderComment(c, depth = 0) {
@@ -307,7 +355,6 @@
                         <span onclick="toggleCollapse('${c.id}')" class="font-bold text-[15px] name-clickable ${isCommentFromAdmin ? 'admin-name' : ''}">${esc(c.name)}</span>
                         ${userIsOwner && !isAdmin ? '<span class="text-[9px] bg-gray-100 dark:bg-gray-800 px-1.5 rounded-md font-bold text-gray-500">তুমি</span>' : ''}
                     </div>
-
                     <div class="flex items-center gap-1.5 text-gray-400">
                         <span class="text-[13px] text-gray-500">· ${date}</span>
                         ${!userIsOwner && !alreadyReported ? `
@@ -315,20 +362,13 @@
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"></path></svg>
                             </button>` : ''}
                     </div>
-
                     <div class="flex items-center gap-1.5">
-                        ${isFeatured ? `
-                            <span class="flex items-center gap-0.5 featured-badge" title="নির্বাচিত মন্তব্য">
-                                <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
-                                <span class="text-[10px] font-bold uppercase">নির্বাচিত</span>
-                            </span>` : ''}
+                        ${isFeatured ? `<span class="flex items-center gap-0.5 featured-badge"><svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg><span class="text-[10px] font-bold uppercase">নির্বাচিত</span></span>` : ''}
                         ${isAdmin && isReported ? `<span class="text-[9px] bg-red-100 dark:bg-red-900/30 px-1.5 rounded-md font-bold text-red-500 border border-red-200 dark:border-red-800">অভিযোগ: ${toBengaliNumber(c.reportCount || 1)}</span>` : ''}
                     </div>
                 </div>
-
                 <div class="comment-body">
                     <div id="body-${c.id}" class="comment-content text-[15px] text-gray-800 dark:text-gray-300 leading-normal mb-1 break-words">${cleanHtml}</div>
-                    
                     <div id="edit-box-${c.id}" class="hidden my-2">
                         <textarea id="edit-in-${c.id}" class="w-full p-2 text-sm bg-gray-50 dark:bg-darkBg border border-[#1d9bf0] rounded-lg h-20 outline-none dark:text-white resize-none">${c.msg}</textarea>
                         <div class="flex gap-2 mt-1">
@@ -337,7 +377,6 @@
                         </div>
                     </div>
                 </div>
-
                 <div class="comment-footer flex items-center justify-between mt-1">
                     <div class="flex items-center gap-4">
                          <div class="flex items-center gap-3 text-gray-500">
@@ -345,9 +384,7 @@
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M5 15l7-7 7 7" /></svg>
                                 <span class="text-[12px] font-bold">${toBengaliNumber(c.votes || 0)}</span>
                              </button>
-                             <button onclick="vote('${c.id}', -1)" class="${userVote == -1 ? 'voted-down' : ''}">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
-                             </button>
+                             <button onclick="vote('${c.id}', -1)" class="${userVote == -1 ? 'voted-down' : ''}"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M19 9l-7 7-7-7" /></svg></button>
                          </div>
                          <button onclick="toggleReplyForm('${c.id}', '${esc(c.name)}')" class="text-[12px] font-medium text-gray-500 hover:text-[#1d9bf0]">রিপ্লাই</button>
                          ${depth === 0 ? `
@@ -358,18 +395,10 @@
                         ` : ''}
                     </div>
                     <div class="flex items-center gap-3">
-                        ${userIsOwner ? `
-                            <button onclick="toggleEdit('${c.id}')" class="text-[12px] font-medium text-gray-500 hover:text-green-500">এডিট</button>
-                            <button onclick="openDeleteModal('${c.id}')" class="text-[12px] font-medium text-gray-500 hover:text-red-500">ডিলিট</button>
-                        ` : ''}
-                        ${isAdmin ? `
-                            <button onclick="togglePin('${c.id}', ${!isFeatured})" class="text-[12px] font-medium ${isFeatured ? 'text-amber-500' : 'text-gray-500'} hover:text-amber-600">
-                                ${isFeatured ? 'পিন সরান' : 'পিন করুন'}
-                            </button>
-                        ` : ''}
+                        ${userIsOwner ? `<button onclick="toggleEdit('${c.id}')" class="text-[12px] font-medium text-gray-500 hover:text-green-500">এডিট</button><button onclick="openDeleteModal('${c.id}')" class="text-[12px] font-medium text-gray-500 hover:text-red-500">ডিলিট</button>` : ''}
+                        ${isAdmin ? `<button onclick="togglePin('${c.id}', ${!isFeatured})" class="text-[12px] font-medium ${isFeatured ? 'text-amber-500' : 'text-gray-500'} hover:text-amber-600">${isFeatured ? 'পিন সরান' : 'পিন করুন'}</button>` : ''}
                     </div>
                 </div>
-
                 <div id="form-${c.id}" class="hidden mt-3 comment-body">
                     <div class="bg-white dark:bg-darkCard p-3 rounded-2xl border border-gray-100 dark:border-darkBorder shadow-sm">
                         <textarea id="msg-${c.id}" placeholder="আপনার রিপ্লাইটি এখানে লিখুন..." class="w-full p-2 text-sm bg-gray-50 dark:bg-darkBg border rounded-lg h-20 outline-none focus:border-[#1d9bf0] dark:text-white resize-none"></textarea>
@@ -392,49 +421,31 @@
     function renderDisplay() {
         const container = document.getElementById('comments-container');
         const loadMoreBtn = document.getElementById('load-more-container');
-        
         const subset = allRootThreads.slice(0, visibleCount);
-        container.innerHTML = subset.length > 0 ? subset.map(c => renderComment(c)).join('') : `<p class="text-center text-gray-400 py-10 italic text-sm">${currentSort === 'featured' ? 'কোনো নির্বাচিত মন্তব্য নেই।' : (currentSort === 'reports' ? 'কোনো অভিযোগ সম্বলিত মন্তব্য নেই।' : 'কোনো মন্তব্য নেই।')}</p>`;
-        
-        if (allRootThreads.length > visibleCount) {
-            loadMoreBtn.classList.remove('hidden');
-        } else {
-            loadMoreBtn.classList.add('hidden');
-        }
+        container.innerHTML = subset.length > 0 ? subset.map(c => renderComment(c)).join('') : `<p class="text-center text-gray-400 py-10 italic text-sm">${currentSort === 'featured' ? 'কোনো নির্বাচিত পোস্ট নেই।' : (currentSort === 'reports' ? 'কোনো অভিযোগ সম্বলিত পোস্ট নেই।' : 'কোনো পোস্ট নেই।')}</p>`;
+        if (allRootThreads.length > visibleCount) loadMoreBtn.classList.remove('hidden');
+        else loadMoreBtn.classList.add('hidden');
     }
 
-    window.loadMore = () => {
-        visibleCount += 10;
-        renderDisplay();
-    };
+    window.loadMore = () => { visibleCount += 10; renderDisplay(); };
 
     function load() {
         onSnapshot(query(commentsCol), (snap) => {
             const container = document.getElementById('comments-container');
             let list = []; snap.forEach(doc => list.push({ id: doc.id, ...doc.data() }));
-            document.getElementById('comment-count').innerText = toBengaliNumber(list.length);
-            
             if (currentSort === 'reports' && !isAdmin) {
-                container.innerHTML = `<div class="flex flex-col items-center justify-center py-20 px-4 text-center">
-                    <div class="w-12 h-12 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-full flex items-center justify-center mb-4">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m0 0v2m0-2h2m-2 0H10m11-3V5a2 2 0 00-2-2h-4l-1-1H5a2 2 0 00-2 2v12a2 2 0 002 2h10l4 4V13z"></path></svg>
-                    </div>
-                    <p class="text-sm font-bold text-gray-500 dark:text-gray-400">শুধুমাত্র এডমিন অভিযোগ দেখতে পাবেন।</p>
-                </div>`;
+                container.innerHTML = `<div class="flex flex-col items-center justify-center py-20 px-4 text-center"><div class="w-12 h-12 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-full flex items-center justify-center mb-4"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m0 0v2m0-2h2m-2 0H10m11-3V5a2 2 0 00-2-2h-4l-1-1H5a2 2 0 00-2 2v12a2 2 0 002 2h10l4 4V13z"></path></svg></div><p class="text-sm font-bold text-gray-500 dark:text-gray-400">শুধুমাত্র এডমিন অভিযোগ দেখতে পাবেন।</p></div>`;
                 document.getElementById('load-more-container').classList.add('hidden');
                 return;
             }
-
             let tree = buildTree(list);
             if (currentSort === 'featured') tree = tree.filter(c => c.featured === true);
             else if (currentSort === 'reports') tree = tree.filter(c => c.reported === true);
-
             tree.sort((a,b) => {
                 if (currentSort === 'top') return (b.votes - a.votes);
                 if (currentSort === 'reports') return (b.reportCount || 0) - (a.reportCount || 0);
                 return (b.at?.seconds - a.at?.seconds);
             });
-
             allRootThreads = tree;
             renderDisplay();
         });
@@ -490,11 +501,13 @@
         const m = pid ? document.getElementById(`msg-${pid}`).value : document.getElementById('user-comment').value;
         const btn = pid ? document.getElementById(`btn-${pid}`) : document.getElementById('submit-btn');
         const statusDiv = document.getElementById(pid ? `posting-status-${pid}` : 'posting-status-null');
+        
         if(!n.trim() || !m.trim()) {
             const w = document.getElementById(pid ? `warning-${pid}` : 'warning-null');
             w.classList.remove('hidden'); setTimeout(() => w.classList.add('hidden'), 3000);
             return;
         }
+        
         btn.disabled = true; statusDiv.classList.remove('hidden');
         try {
             const res = await addDoc(commentsCol, { 
@@ -509,8 +522,13 @@
                 at: serverTimestamp() 
             });
             saveMyComment(res.id);
-            if(!pid) { document.getElementById('user-comment').value = ''; toggleInput(); }
-            else { document.getElementById(`form-${pid}`).classList.add('hidden'); document.getElementById(`comment-${pid}`).classList.remove('collapsed-parent'); }
+            if(!pid) { 
+                document.getElementById('user-comment').value = ''; 
+                togglePostModal(); 
+            } else { 
+                document.getElementById(`form-${pid}`).classList.add('hidden'); 
+                document.getElementById(`comment-${pid}`).classList.remove('collapsed-parent'); 
+            }
         } catch (e) {} finally { btn.disabled = false; statusDiv.classList.add('hidden'); }
     };
 
