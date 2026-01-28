@@ -253,7 +253,11 @@
 
     window.toggleCollapse = (id) => {
         const el = document.getElementById(`comment-${id}`);
-        el.classList.toggle('collapsed');
+        // শুধুমাত্র যদি রিপ্লাই থাকে তখনই কলাপস টগল হবে, নতুবা না
+        const replies = el.querySelector('.comment-replies');
+        if (replies && replies.children.length > 0) {
+            el.classList.toggle('collapsed');
+        }
     };
 
     function renderComment(c, depth = 0) {
@@ -271,34 +275,43 @@
         const alreadyReported = localStorage.getItem(`reported_${pageId}_${c.id}`);
         const replyCount = c.replies.length;
         
-        let threadClass = depth === 0 ? 'collapsed' : '';
+        // ডিফল্টভাবে কলাপসড থাকবে শুধুমাত্র যদি রিপ্লাই থাকে।
+        let threadClass = (depth === 0 && replyCount > 0) ? 'collapsed' : '';
         if (depth === 1) threadClass += ' reply-thread-root';
         else if (depth > 1) threadClass += ' reply-thread-deep';
 
         return `
         <div id="comment-${c.id}" class="${threadClass} mb-6">
             <div class="flex flex-col">
-                <div class="comment-header flex items-center gap-1.5 mb-0.5">
-                    <span class="font-bold text-[15px]">${esc(c.name)}</span>
-                    ${isCommentAdmin ? `
-                        <span class="text-[#1d9bf0] inline-flex items-center" title="ভেরিফাইড এডমিন">
-                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M22.5 12.5c0-1.58-.88-2.95-2.18-3.66.26-1.11.17-2.3-.26-3.36s-1.24-1.9-2.25-2.43c-1.01-.54-2.2-.69-3.32-.42-1.12-.27-2.3-.12-3.32.42-1.01.53-1.82 1.37-2.25 2.43s-.52 2.25-.26 3.36C7.38 9.55 6.5 10.92 6.5 12.5c0 1.58.88 2.95 2.18 3.66-.26 1.11-.17 2.3.26 3.36s1.24 1.9 2.25 2.43c1.01.54 2.2.69 3.32.42 1.12.27 2.3.12 3.32-.42 1.01-.53 1.82-1.37 2.25-2.43s.52-2.25.26-3.36c1.3-0.71 2.18-2.08 2.18-3.66zm-10.46 4.5l-3.3-3.3 1.41-1.41 1.89 1.89 4.89-4.89 1.41 1.41-6.3 6.3z"/></svg>
-                        </span>` : ''}
-                    ${userIsOwner && !isAdmin ? '<span class="text-[9px] bg-gray-100 dark:bg-gray-800 px-1.5 rounded-md font-bold text-gray-500">তুমি</span>' : ''}
-                    ${isFeatured ? `
-                        <span class="flex items-center gap-0.5 featured-badge" title="নির্বাচিত মন্তব্য">
-                            <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
-                            <span class="text-[10px] font-bold uppercase">নির্বাচিত</span>
-                        </span>` : ''}
-                    ${isAdmin && isReported ? `<span class="text-[9px] bg-red-100 dark:bg-red-900/30 px-1.5 rounded-md font-bold text-red-500 border border-red-200 dark:border-red-800">অভিযোগ: ${toBengaliNumber(c.reportCount || 1)}</span>` : ''}
-                    
-                    <!-- Flag Button next to Name -->
-                    ${!userIsOwner && !alreadyReported ? `
-                        <button onclick="reportComment('${c.id}')" class="text-gray-400 hover:text-red-500 transition-colors ml-1" title="অভিযোগ জানান">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"></path></svg>
-                        </button>` : ''}
+                <div class="comment-header flex items-center gap-2 mb-0.5 flex-wrap">
+                    <!-- Name and Admin Icon -->
+                    <div class="flex items-center gap-1.5">
+                        <span class="font-bold text-[15px]">${esc(c.name)}</span>
+                        ${isCommentAdmin ? `
+                            <span class="text-[#1d9bf0] inline-flex items-center" title="ভেরিফাইড এডমিন">
+                                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M22.5 12.5c0-1.58-.88-2.95-2.18-3.66.26-1.11.17-2.3-.26-3.36s-1.24-1.9-2.25-2.43c-1.01-.54-2.2-.69-3.32-.42-1.12-.27-2.3-.12-3.32.42-1.01.53-1.82 1.37-2.25 2.43s-.52 2.25-.26 3.36C7.38 9.55 6.5 10.92 6.5 12.5c0 1.58.88 2.95 2.18 3.66-.26 1.11-.17 2.3.26 3.36s1.24 1.9 2.25 2.43c1.01.54 2.2.69 3.32.42 1.12.27 2.3.12 3.32-.42 1.01-.53 1.82-1.37 2.25-2.43s.52-2.25.26-3.36c1.3-0.71 2.18-2.08 2.18-3.66zm-10.46 4.5l-3.3-3.3 1.41-1.41 1.89 1.89 4.89-4.89 1.41 1.41-6.3 6.3z"/></svg>
+                            </span>` : ''}
+                        ${userIsOwner && !isAdmin ? '<span class="text-[9px] bg-gray-100 dark:bg-gray-800 px-1.5 rounded-md font-bold text-gray-500">তুমি</span>' : ''}
+                    </div>
 
-                    <span class="text-[13px] text-gray-500 ml-auto">· ${date}</span>
+                    <!-- Meta: Time and Flag -->
+                    <div class="flex items-center gap-1.5 text-gray-400">
+                        <span class="text-[13px] text-gray-500">· ${date}</span>
+                        ${!userIsOwner && !alreadyReported ? `
+                            <button onclick="reportComment('${c.id}')" class="hover:text-red-500 transition-colors" title="অভিযোগ জানান">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"></path></svg>
+                            </button>` : ''}
+                    </div>
+
+                    <!-- Badges: Featured/Reported -->
+                    <div class="flex items-center gap-1.5">
+                        ${isFeatured ? `
+                            <span class="flex items-center gap-0.5 featured-badge" title="নির্বাচিত মন্তব্য">
+                                <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                                <span class="text-[10px] font-bold uppercase">নির্বাচিত</span>
+                            </span>` : ''}
+                        ${isAdmin && isReported ? `<span class="text-[9px] bg-red-100 dark:bg-red-900/30 px-1.5 rounded-md font-bold text-red-500 border border-red-200 dark:border-red-800">অভিযোগ: ${toBengaliNumber(c.reportCount || 1)}</span>` : ''}
+                    </div>
                 </div>
 
                 <div class="comment-body">
@@ -313,10 +326,9 @@
                     </div>
                 </div>
 
-                <!-- Footer with Reordered Actions -->
+                <!-- Footer Actions -->
                 <div class="comment-footer flex items-center justify-between mt-1">
                     <div class="flex items-center gap-4">
-                         <!-- 1. Upvote/Downvote -->
                          <div class="flex items-center gap-3 text-gray-500">
                              <button onclick="vote('${c.id}', 1)" class="flex items-center gap-1 ${userVote == 1 ? 'voted-up' : ''}">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M5 15l7-7 7 7" /></svg>
@@ -326,20 +338,14 @@
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                              </button>
                          </div>
-
-                         <!-- 2. Reply Button -->
                          <button onclick="toggleReplyForm('${c.id}', '${esc(c.name)}')" class="text-[12px] font-medium text-gray-500 hover:text-[#1d9bf0]">রিপ্লাই</button>
-                         
-                         <!-- 3. Collapse/Reply Counter Button -->
-                         ${(depth === 0 && replyCount > 0) ? `
+                         ${depth === 0 ? `
                             <button onclick="toggleCollapse('${c.id}')" class="flex items-center gap-1 text-[11px] font-bold text-[#1d9bf0] bg-blue-50 dark:bg-blue-900/20 px-2 py-0.5 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors">
-                                <svg class="w-2.5 h-2.5 collapse-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 15l-7-7-7 7"></path></svg>
+                                <svg class="w-2.5 h-2.5 collapse-arrow ${replyCount === 0 ? 'opacity-30' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 15l-7-7-7 7"></path></svg>
                                 ${toBengaliNumber(replyCount)}টি রিপ্লাই
                             </button>
                         ` : ''}
                     </div>
-
-                    <!-- Admin/Owner Options -->
                     <div class="flex items-center gap-3">
                         ${userIsOwner ? `
                             <button onclick="toggleEdit('${c.id}')" class="text-[12px] font-medium text-gray-500 hover:text-green-500">এডিট</button>
@@ -389,12 +395,8 @@
             }
 
             let tree = buildTree(list);
-            
-            if (currentSort === 'featured') {
-                tree = tree.filter(c => c.featured === true);
-            } else if (currentSort === 'reports') {
-                tree = tree.filter(c => c.reported === true);
-            }
+            if (currentSort === 'featured') tree = tree.filter(c => c.featured === true);
+            else if (currentSort === 'reports') tree = tree.filter(c => c.reported === true);
 
             tree.sort((a,b) => {
                 if (currentSort === 'top') return (b.votes - a.votes);
@@ -410,14 +412,10 @@
         const form = document.getElementById(`form-${id}`);
         const textarea = document.getElementById(`msg-${id}`);
         const isOpening = form.classList.contains('hidden');
-        
         form.classList.toggle('hidden');
-        
         if (isOpening && authorName) {
             const mention = `@${authorName.replace(/\s+/g, '')} `;
-            if (!textarea.value.includes(mention)) {
-                textarea.value = mention + textarea.value;
-            }
+            if (!textarea.value.includes(mention)) textarea.value = mention + textarea.value;
             textarea.focus();
             textarea.setSelectionRange(textarea.value.length, textarea.value.length);
         }
@@ -426,37 +424,21 @@
     window.toggleEdit = (id) => {
         const body = document.getElementById(`body-${id}`);
         const box = document.getElementById(`edit-box-${id}`);
-        body.classList.toggle('hidden');
-        box.classList.toggle('hidden');
+        body.classList.toggle('hidden'); box.classList.toggle('hidden');
     };
 
     window.togglePin = async (id, isFeatured) => {
         if (!isAdmin) return;
-        try {
-            await updateDoc(doc(db, 'blog_comments', 'pages', pageId, id), { featured: isFeatured });
-        } catch (e) { console.error(e); }
+        try { await updateDoc(doc(db, 'blog_comments', 'pages', pageId, id), { featured: isFeatured }); } catch (e) {}
     };
 
     window.reportComment = async (id) => {
         if (localStorage.getItem(`reported_${pageId}_${id}`)) return;
         try {
             const ref = doc(db, 'blog_comments', 'pages', pageId, id);
-            await updateDoc(ref, { 
-                reported: true, 
-                reportCount: increment(1) 
-            });
+            await updateDoc(ref, { reported: true, reportCount: increment(1) });
             localStorage.setItem(`reported_${pageId}_${id}`, 'true');
-        } catch (e) { console.error(e); }
-    };
-
-    window.clearReport = async (id) => {
-        if (!isAdmin) return;
-        try {
-            await updateDoc(doc(db, 'blog_comments', 'pages', pageId, id), { 
-                reported: false, 
-                reportCount: 0 
-            });
-        } catch (e) { console.error(e); }
+        } catch (e) {}
     };
 
     window.vote = async (id, val) => {
@@ -476,40 +458,18 @@
         const m = pid ? document.getElementById(`msg-${pid}`).value : document.getElementById('user-comment').value;
         const btn = pid ? document.getElementById(`btn-${pid}`) : document.getElementById('submit-btn');
         const statusDiv = document.getElementById(pid ? `posting-status-${pid}` : 'posting-status-null');
-
         if(!n.trim() || !m.trim()) {
             const w = document.getElementById(pid ? `warning-${pid}` : 'warning-null');
             w.classList.remove('hidden'); setTimeout(() => w.classList.add('hidden'), 3000);
             return;
         }
-
-        btn.disabled = true;
-        statusDiv.classList.remove('hidden');
-
+        btn.disabled = true; statusDiv.classList.remove('hidden');
         try {
-            const res = await addDoc(commentsCol, { 
-                name: n, 
-                msg: m, 
-                parentId: pid, 
-                votes: 0, 
-                featured: false,
-                reported: false,
-                reportCount: 0,
-                isAdmin: isAdmin,
-                at: serverTimestamp() 
-            });
+            const res = await addDoc(commentsCol, { name: n, msg: m, parentId: pid, votes: 0, featured: false, reported: false, reportCount: 0, isAdmin: isAdmin, at: serverTimestamp() });
             saveMyComment(res.id);
             if(!pid) { document.getElementById('user-comment').value = ''; toggleInput(); }
-            else {
-                document.getElementById(`form-${pid}`).classList.add('hidden');
-                document.getElementById(`comment-${pid}`).classList.remove('collapsed');
-            }
-        } catch (e) {
-            console.error(e);
-        } finally { 
-            btn.disabled = false; 
-            statusDiv.classList.add('hidden');
-        }
+            else { document.getElementById(`form-${pid}`).classList.add('hidden'); document.getElementById(`comment-${pid}`).classList.remove('collapsed'); }
+        } catch (e) {} finally { btn.disabled = false; statusDiv.classList.add('hidden'); }
     };
 
     window.updateData = async (id) => {
