@@ -1,15 +1,15 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Physarif Discussion</title>
+    <title>আলোচনা - ফিজারিফ</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Hind+Siliguri:wght@400;600;700&display=swap');
         
         body { 
-            font-family: 'Inter', sans-serif; 
+            font-family: 'Inter', 'Hind Siliguri', sans-serif; 
             background-color: #ffffff;
             color: #111827;
         }
@@ -82,41 +82,41 @@
 <body class="p-4 md:p-8">
 
 <div class="max-w-3xl mx-auto">
-    <!-- Stats Header -->
+    <!-- পরিসংখ্যান অংশ -->
     <div class="flex justify-between items-center mb-6 px-2">
         <div class="flex items-center gap-3">
-            <h2 class="text-2xl font-bold text-gray-900"><span id="comment-count">0</span> Comments</h2>
+            <h2 class="text-2xl font-bold text-gray-900"><span id="comment-count">০</span>টি মন্তব্য</h2>
             <div class="flex items-center gap-1.5 bg-green-50 px-2.5 py-1 rounded-full border border-green-100">
                 <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
-                <span class="text-[10px] font-bold text-green-700 uppercase">1 Online</span>
+                <span class="text-[10px] font-bold text-green-700 uppercase">১ জন অনলাইনে</span>
             </div>
         </div>
     </div>
 
-    <!-- Main Comment Input -->
+    <!-- মূল মন্তব্য ইনপুট বক্স -->
     <div class="mb-10">
         <div class="hyvor-input-wrapper">
             <div id="user-info-bar" class="flex gap-2 p-3 pb-0 hidden">
-                 <input type="text" id="user-name" placeholder="আপনার নাম" class="text-sm px-3 py-1.5 bg-white border border-gray-100 rounded-lg outline-none focus:border-indigo-300 w-48">
+                 <input type="text" id="user-name" placeholder="আপনার নাম লিখুন" class="text-sm px-3 py-1.5 bg-white border border-gray-100 rounded-lg outline-none focus:border-indigo-300 w-48">
             </div>
-            <textarea id="user-comment" placeholder="আপনার মন্তব্য লিখুন..." class="hyvor-textarea" oninput="toggleInput()"></textarea>
+            <textarea id="user-comment" placeholder="আপনার মন্তব্যটি এখানে লিখুন..." class="hyvor-textarea" oninput="toggleInput()"></textarea>
             
             <div class="action-bar" id="action-bar">
                 <span class="text-xs text-gray-400">আলোচনায় অংশ নিন</span>
                 <button onclick="postData(null)" id="submit-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-xl transition-all shadow-sm text-sm">
-                    Post Comment
+                    মন্তব্য করুন
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Sort Bar -->
+    <!-- ফিল্টারিং বা সর্ট বার -->
     <div class="flex items-center gap-6 mb-8 px-2 text-sm font-semibold text-gray-400 border-b border-gray-100 pb-4">
-        <button id="sort-top" onclick="setSort('top')" class="text-indigo-600 transition-colors flex items-center gap-1">Top</button>
-        <button id="sort-recent" onclick="setSort('recent')" class="hover:text-gray-900 transition-colors">Recent</button>
+        <button id="sort-top" onclick="setSort('top')" class="text-indigo-600 transition-colors flex items-center gap-1">সেরা</button>
+        <button id="sort-recent" onclick="setSort('recent')" class="hover:text-gray-900 transition-colors">সাম্প্রতিক</button>
     </div>
 
-    <!-- Comments List -->
+    <!-- মন্তব্যের তালিকা -->
     <div id="comments-container" class="space-y-8 pb-20">
         <div class="flex justify-center p-10">
             <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
@@ -129,6 +129,7 @@
     import { getFirestore, collection, addDoc, query, onSnapshot, serverTimestamp, updateDoc, doc, increment } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
     import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
 
+    // ফায়ারবেস কনফিগারেশন
     const firebaseConfig = {
         apiKey: "AIzaSyB_xkcJ87-E4jkYIDT2dBxOFJHUQvZxbU8",
         authDomain: "myblogcomments-22808.firebaseapp.com",
@@ -146,12 +147,14 @@
 
     let currentSort = 'top';
 
+    // ইনপুট বক্সের নাম ফিল্ড টগল করা
     window.toggleInput = () => {
         const infoBar = document.getElementById('user-info-bar');
         const comment = document.getElementById('user-comment').value;
         if(comment.length > 0) infoBar.classList.remove('hidden');
     };
 
+    // সর্টিং মোড পরিবর্তন করা
     window.setSort = (type) => {
         currentSort = type;
         const topBtn = document.getElementById('sort-top');
@@ -167,15 +170,18 @@
         load();
     };
 
+    // অ্যাপ শুরু করা এবং অ্যানোনিমাস লগইন
     async function start() {
         try {
             await signInAnonymously(auth);
             load();
-        } catch (e) { console.error("Auth failed"); }
+        } catch (e) { console.error("অনুমতি পাওয়া যায়নি"); }
     }
 
+    // অ্যাভাটার তৈরি করা
     const getAvatar = (name) => `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=f3f4f6&color=6366f1&bold=true&rounded=false&size=128`;
 
+    // কমেন্টগুলোকে ট্রি স্ট্রাকচারে সাজানো
     function buildTree(comments) {
         const map = {};
         const roots = [];
@@ -192,6 +198,7 @@
         return roots;
     }
 
+    // একটি কমেন্ট রেন্ডার করা (রিকার্সিভলি)
     function renderComment(c, depth = 0) {
         const date = formatTime(c.at);
         const avatar = getAvatar(c.name);
@@ -210,7 +217,7 @@
                         ${esc(c.msg)}
                     </div>
                     <div class="flex items-center gap-4">
-                        <button onclick="toggleReplyForm('${c.id}')" class="text-[11px] font-bold text-gray-500 hover:text-indigo-600 transition-colors uppercase tracking-wider">Reply</button>
+                        <button onclick="toggleReplyForm('${c.id}')" class="text-[11px] font-bold text-gray-500 hover:text-indigo-600 transition-colors uppercase tracking-wider">রিপ্লাই</button>
                         <div class="flex items-center gap-2 text-gray-400 bg-gray-50 px-2 py-0.5 rounded-lg border border-gray-100">
                              <button onclick="vote('${c.id}', 1)" class="hover:text-indigo-500 active:scale-125 transition-transform ${userVote === 1 ? 'voted-up' : ''}">
                                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd" /></svg>
@@ -224,10 +231,10 @@
                     
                     <div id="form-${c.id}" class="hidden mt-3 bg-gray-50 p-3 rounded-2xl border border-gray-100">
                         <input type="text" id="name-${c.id}" placeholder="আপনার নাম" class="w-full mb-2 p-2 text-sm bg-white border border-gray-200 rounded-lg outline-none focus:border-indigo-400">
-                        <textarea id="msg-${c.id}" placeholder="রিপ্লাই লিখুন..." class="w-full p-2 text-sm bg-white border border-gray-200 rounded-lg h-20 outline-none focus:border-indigo-400 resize-none"></textarea>
+                        <textarea id="msg-${c.id}" placeholder="রিপ্লাইটি এখানে লিখুন..." class="w-full p-2 text-sm bg-white border border-gray-200 rounded-lg h-20 outline-none focus:border-indigo-400 resize-none"></textarea>
                         <div class="flex gap-2 mt-2">
-                            <button onclick="postData('${c.id}')" class="bg-indigo-600 text-white text-[11px] px-4 py-1.5 rounded-lg font-bold">Reply</button>
-                            <button onclick="toggleReplyForm('${c.id}')" class="text-gray-400 text-[11px] font-bold px-2">Cancel</button>
+                            <button onclick="postData('${c.id}')" class="bg-indigo-600 text-white text-[11px] px-4 py-1.5 rounded-lg font-bold">রিপ্লাই দিন</button>
+                            <button onclick="toggleReplyForm('${c.id}')" class="text-gray-400 text-[11px] font-bold px-2">বাতিল</button>
                         </div>
                     </div>
                 </div>
@@ -239,6 +246,7 @@
         return html;
     }
 
+    // ডেটা লোড করা
     function load() {
         onSnapshot(query(commentsCol), (snap) => {
             const container = document.getElementById('comments-container');
@@ -260,10 +268,12 @@
         });
     }
 
+    // রিপ্লাই ফর্ম দেখানো বা লুকানো
     window.toggleReplyForm = (id) => {
         document.getElementById(`form-${id}`).classList.toggle('hidden');
     }
 
+    // ভোট দেওয়া
     window.vote = async (id, val) => {
         const voteKey = `voted_${pageId}_${id}`;
         const existingVote = localStorage.getItem(voteKey);
@@ -275,14 +285,16 @@
             await updateDoc(commentRef, { votes: increment(incrementVal) });
             localStorage.setItem(voteKey, val);
             load();
-        } catch (e) { console.error("Vote failed"); }
+        } catch (e) { console.error("ভোট দেওয়া সম্ভব হয়নি"); }
     }
 
+    // লোকাল স্টোরেজ থেকে ভোটের অবস্থা দেখা
     function getLocalVote(id) {
         const val = localStorage.getItem(`voted_${pageId}_${id}`);
         return val ? parseInt(val) : 0;
     }
 
+    // নতুন ডেটা বা মন্তব্য পোস্ট করা
     window.postData = async (parentId) => {
         const nameInput = parentId ? document.getElementById(`name-${parentId}`) : document.getElementById('user-name');
         const msgInput = parentId ? document.getElementById(`msg-${parentId}`) : document.getElementById('user-comment');
@@ -293,19 +305,21 @@
             await addDoc(commentsCol, { name, msg, parentId, votes: 0, at: serverTimestamp() });
             msgInput.value = '';
             if(parentId) document.getElementById(`form-${parentId}`).classList.add('hidden');
-        } catch (e) { alert('Error posting.'); }
+        } catch (e) { alert('দুঃখিত, মন্তব্যটি পোস্ট করা যায়নি।'); }
     }
 
+    // সময় ফরম্যাট করা (বাংলায়)
     function formatTime(timestamp) {
         if(!timestamp) return 'এইমাত্র';
         const date = new Date(timestamp.seconds * 1000);
         const diff = Math.floor((new Date() - date) / 1000);
         if (diff < 60) return 'এইমাত্র';
-        if (diff < 3600) return Math.floor(diff/60) + 'মি. আগে';
-        if (diff < 86400) return Math.floor(diff/3600) + 'ঘণ্টা আগে';
+        if (diff < 3600) return Math.floor(diff/60) + ' মি. আগে';
+        if (diff < 86400) return Math.floor(diff/3600) + ' ঘণ্টা আগে';
         return date.toLocaleDateString('bn-BD');
     }
 
+    // HTML এসকেপ করা (নিরাপত্তার জন্য)
     function esc(t) {
         const d = document.createElement('div');
         d.textContent = t;
