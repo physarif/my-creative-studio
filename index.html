@@ -36,12 +36,9 @@
         .dark .reply-thread { border-left-color: #2f3336; }
         .voted-up { color: #1d9bf0 !important; }
         .voted-down { color: #f91880 !important; }
-        
-        #login-trigger-btn:active {
-            background-color: #6b7280 !important;
-            color: white !important;
-        }
         .featured-badge { color: #f59e0b; }
+        .tab-border-container { border-bottom: 2px solid #f3f4f6; }
+        .dark .tab-border-container { border-bottom: 2px solid #2f3336; }
     </style>
 </head>
 <body class="p-4 md:p-8 bg-white text-gray-900 dark:bg-darkBg dark:text-gray-100">
@@ -82,16 +79,17 @@
     </div>
 
     <!-- Sorting Tabs -->
-    <div class="flex items-center gap-6 mb-8 px-2 text-sm font-bold border-b border-gray-100 dark:border-darkBorder pb-3">
-        <button id="sort-top" onclick="setSort('top')" class="transition-colors pb-3 -mb-[13px] border-b-2">সেরা</button>
-        <button id="sort-recent" onclick="setSort('recent')" class="transition-colors pb-3 -mb-[13px] border-b-2">সাম্প্রতিক</button>
-        <button id="sort-featured" onclick="setSort('featured')" class="transition-colors pb-3 -mb-[13px] border-b-2">নির্বাচিত</button>
+    <div class="flex items-center gap-6 mb-8 px-2 text-sm font-bold tab-border-container">
+        <button id="sort-top" onclick="setSort('top')" class="transition-colors pb-3 -mb-[2px] border-b-2">সেরা</button>
+        <button id="sort-recent" onclick="setSort('recent')" class="transition-colors pb-3 -mb-[2px] border-b-2">সাম্প্রতিক</button>
+        <button id="sort-featured" onclick="setSort('featured')" class="transition-colors pb-3 -mb-[2px] border-b-2">নির্বাচিত</button>
+        <button id="sort-reports" onclick="setSort('reports')" class="hidden transition-colors pb-3 -mb-[2px] border-b-2 text-red-500 border-transparent">রিপোর্ট</button>
     </div>
 
     <div id="comments-container" class="space-y-6 pb-20"></div>
 </div>
 
-<!-- Modals (Login, Delete) -->
+<!-- Modals -->
 <div id="login-modal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50 p-4 backdrop-blur-sm">
     <div class="bg-white dark:bg-darkCard p-8 rounded-3xl max-w-sm w-full shadow-2xl">
         <h3 class="text-xl font-bold mb-6 text-center">এডমিন লগইন</h3>
@@ -171,6 +169,7 @@
             isAdmin = true;
             document.getElementById('login-trigger-btn').classList.add('hidden');
             document.getElementById('admin-badge').classList.remove('hidden');
+            document.getElementById('sort-reports').classList.remove('hidden');
         }
         load();
     });
@@ -217,12 +216,14 @@
     };
 
     function updateSortUI() {
-        const tabs = ['top', 'recent', 'featured'];
-        const active = 'text-[#1d9bf0] border-[#1d9bf0]';
-        const inactive = 'text-gray-500 border-transparent';
+        const tabs = ['top', 'recent', 'featured', 'reports'];
         tabs.forEach(t => {
             const el = document.getElementById(`sort-${t}`);
-            el.className = `transition-colors pb-3 -mb-[13px] border-b-2 ${currentSort === t ? active : inactive}`;
+            if(!el) return;
+            const isActive = currentSort === t;
+            const activeClass = t === 'reports' ? 'text-red-500 border-red-500' : 'text-[#1d9bf0] border-[#1d9bf0]';
+            const inactiveClass = t === 'reports' ? 'text-red-300 border-transparent' : 'text-gray-500 border-transparent';
+            el.className = `transition-colors pb-3 -mb-[2px] border-b-2 ${isActive ? activeClass : inactiveClass}`;
         });
     }
 
@@ -242,6 +243,8 @@
         const userIsOwner = isOwner(c.id);
         const cleanHtml = DOMPurify.sanitize(marked.parse(c.msg));
         const isFeatured = c.featured === true;
+        const isReported = c.reported === true;
+        const alreadyReported = localStorage.getItem(`reported_${pageId}_${c.id}`);
         
         return `
         <div class="${depth > 0 ? 'reply-thread' : 'mb-6'}">
@@ -254,6 +257,7 @@
                             <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
                             <span class="text-[10px] font-bold uppercase">নির্বাচিত</span>
                         </span>` : ''}
+                    ${isAdmin && isReported ? `<span class="text-[9px] bg-red-100 dark:bg-red-900/30 px-1.5 rounded-md font-bold text-red-500 border border-red-200 dark:border-red-800">রিপোর্ট: ${toBengaliNumber(c.reportCount || 1)}</span>` : ''}
                     <span class="text-[13px] text-gray-500">· ${date}</span>
                 </div>
                 <div id="body-${c.id}" class="comment-content text-[15px] text-gray-800 dark:text-gray-300 leading-normal mb-1 break-words">${cleanHtml}</div>
@@ -276,7 +280,10 @@
                         <button onclick="togglePin('${c.id}', ${!isFeatured})" class="text-[12px] font-medium ${isFeatured ? 'text-amber-500' : 'text-gray-500'} hover:text-amber-600">
                             ${isFeatured ? 'পিন সরান' : 'পিন করুন'}
                         </button>
+                        ${isReported ? `<button onclick="clearReport('${c.id}')" class="text-[12px] font-medium text-green-500 hover:text-green-600">রিপোর্ট ক্লিয়ার</button>` : ''}
                     ` : ''}
+                    ${!userIsOwner && !alreadyReported ? `<button onclick="reportComment('${c.id}')" class="text-gray-400 hover:text-red-500 transition-colors" title="রিপোর্ট করুন"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"></path></svg></button>` : ''}
+                    
                     <div class="flex items-center gap-4 text-gray-500">
                          <button onclick="vote('${c.id}', 1)" class="flex items-center gap-1.5 ${userVote == 1 ? 'voted-up' : ''}">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M5 15l7-7 7 7" /></svg>
@@ -312,18 +319,19 @@
             
             let tree = buildTree(list);
             
-            // Apply filtering for 'featured' tab
             if (currentSort === 'featured') {
                 tree = tree.filter(c => c.featured === true);
+            } else if (currentSort === 'reports') {
+                tree = tree.filter(c => c.reported === true);
             }
 
-            // Apply sorting
             tree.sort((a,b) => {
                 if (currentSort === 'top') return (b.votes - a.votes);
-                return (b.at?.seconds - a.at?.seconds); // featured and recent both use time order
+                if (currentSort === 'reports') return (b.reportCount || 0) - (a.reportCount || 0);
+                return (b.at?.seconds - a.at?.seconds);
             });
 
-            container.innerHTML = tree.length > 0 ? tree.map(c => renderComment(c)).join('') : `<p class="text-center text-gray-400 py-10 italic text-sm">${currentSort === 'featured' ? 'কোনো নির্বাচিত মন্তব্য নেই।' : 'কোনো মন্তব্য নেই।'}</p>`;
+            container.innerHTML = tree.length > 0 ? tree.map(c => renderComment(c)).join('') : `<p class="text-center text-gray-400 py-10 italic text-sm">${currentSort === 'featured' ? 'কোনো নির্বাচিত মন্তব্য নেই।' : (currentSort === 'reports' ? 'কোনো রিপোর্টেড মন্তব্য নেই।' : 'কোনো মন্তব্য নেই।')}</p>`;
         });
     }
 
@@ -337,6 +345,29 @@
         if (!isAdmin) return;
         try {
             await updateDoc(doc(db, 'blog_comments', 'pages', pageId, id), { featured: isFeatured });
+        } catch (e) { console.error(e); }
+    };
+
+    window.reportComment = async (id) => {
+        if (localStorage.getItem(`reported_${pageId}_${id}`)) return;
+        try {
+            const ref = doc(db, 'blog_comments', 'pages', pageId, id);
+            await updateDoc(ref, { 
+                reported: true, 
+                reportCount: increment(1) 
+            });
+            localStorage.setItem(`reported_${pageId}_${id}`, 'true');
+            load(); // Refresh view to hide report button
+        } catch (e) { console.error(e); }
+    };
+
+    window.clearReport = async (id) => {
+        if (!isAdmin) return;
+        try {
+            await updateDoc(doc(db, 'blog_comments', 'pages', pageId, id), { 
+                reported: false, 
+                reportCount: 0 
+            });
         } catch (e) { console.error(e); }
     };
 
@@ -374,6 +405,8 @@
                 parentId: pid, 
                 votes: 0, 
                 featured: false,
+                reported: false,
+                reportCount: 0,
                 at: serverTimestamp() 
             });
             saveMyComment(res.id);
