@@ -93,10 +93,6 @@
             text-decoration: underline;
         }
 
-        .collapsed .comment-header {
-            opacity: 0.5;
-        }
-
         .voted-up { color: #1d9bf0 !important; }
         .voted-down { color: #f91880 !important; }
         
@@ -139,7 +135,6 @@
                 </button>
             </div>
         </div>
-        <!-- Warning Message -->
         <div id="warning-null" class="hidden absolute -bottom-6 left-2 text-[11px] text-red-500 font-medium">
             আপনার নাম লিখুন
         </div>
@@ -159,9 +154,21 @@
     </div>
 </div>
 
+<!-- Simple Confirmation Modal -->
+<div id="delete-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white dark:bg-darkCard p-6 rounded-2xl max-w-sm w-full shadow-xl">
+        <h3 class="text-lg font-bold mb-2">মন্তব্যটি মুছে ফেলতে চান?</h3>
+        <p class="text-sm text-gray-500 mb-6">একবার মুছে ফেললে এটি আর ফিরে পাওয়া যাবে না।</p>
+        <div class="flex gap-3">
+            <button id="confirm-delete-btn" class="flex-1 bg-red-500 text-white py-2 rounded-xl font-bold hover:bg-red-600 transition-colors">মুছে ফেলুন</button>
+            <button onclick="closeDeleteModal()" class="flex-1 bg-gray-100 dark:bg-darkBg py-2 rounded-xl font-bold hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors">বাতিল</button>
+        </div>
+    </div>
+</div>
+
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-    import { getFirestore, collection, addDoc, query, onSnapshot, serverTimestamp, updateDoc, doc, increment } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, query, onSnapshot, serverTimestamp, updateDoc, doc, deleteDoc, increment } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
     import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
 
     const firebaseConfig = {
@@ -178,6 +185,20 @@
     const auth = getAuth(app);
     const pageId = window.location.pathname.replace(/\//g, '_') || 'homepage';
     const commentsCol = collection(db, 'blog_comments', 'pages', pageId);
+
+    // Track user's own comments via LocalStorage
+    const MY_COMMENTS_KEY = `my_comments_${pageId}`;
+    const getMyComments = () => JSON.parse(localStorage.getItem(MY_COMMENTS_KEY) || "[]");
+    const saveMyComment = (id) => {
+        const ids = getMyComments();
+        ids.push(id);
+        localStorage.setItem(MY_COMMENTS_KEY, JSON.stringify(ids));
+    };
+    const removeMyComment = (id) => {
+        const ids = getMyComments().filter(cid => cid !== id);
+        localStorage.setItem(MY_COMMENTS_KEY, JSON.stringify(ids));
+    };
+    const isOwner = (id) => getMyComments().includes(id);
 
     // Number conversion helper
     const toBengaliNumber = (num) => {
@@ -229,11 +250,7 @@
     window.toggleInput = () => {
         const actionBar = document.getElementById('action-bar');
         const comment = document.getElementById('user-comment').value;
-        if(comment.length > 0) {
-            actionBar.style.display = 'flex';
-        } else {
-            actionBar.style.display = 'none';
-        }
+        actionBar.style.display = comment.length > 0 ? 'flex' : 'none';
     };
 
     window.setSort = (type) => {
@@ -270,6 +287,7 @@
         const date = formatTime(c.at);
         const userVote = getLocalVote(c.id);
         const displayVotes = toBengaliNumber(c.votes || 0);
+        const userIsOwner = isOwner(c.id);
         
         return `
         <div id="comment-wrapper-${c.id}" class="${depth > 0 ? 'reply-thread' : 'mb-6'}">
@@ -277,13 +295,31 @@
                 <div class="flex-1 overflow-hidden">
                     <div class="comment-header flex items-center gap-1.5 mb-0.5">
                         <span class="comment-user-name font-bold text-[15px] text-gray-900 dark:text-gray-100 truncate" onclick="toggleCollapse('${c.id}')">${esc(c.name)}</span>
+                        ${userIsOwner ? '<span class="text-[10px] bg-gray-100 dark:bg-gray-800 px-1.5 rounded-md font-bold text-gray-500 uppercase">আপনি</span>' : ''}
                         <span class="text-[13px] text-gray-500 whitespace-nowrap">· ${date}</span>
                     </div>
-                    <div class="comment-body text-[15px] text-gray-800 dark:text-gray-300 leading-normal mb-1 break-words">
+                    
+                    <div id="body-text-${c.id}" class="comment-body text-[15px] text-gray-800 dark:text-gray-300 leading-normal mb-1 break-words">
                         ${esc(c.msg)}
                     </div>
+
+                    <!-- Edit Field (Hidden) -->
+                    <div id="edit-box-${c.id}" class="hidden my-2">
+                        <textarea id="edit-input-${c.id}" class="w-full p-2 text-sm bg-gray-50 dark:bg-darkBg border border-[#1d9bf0] rounded-lg h-20 outline-none dark:text-white resize-none">${c.msg}</textarea>
+                        <div class="flex gap-2 mt-1">
+                            <button onclick="updateData('${c.id}')" id="update-btn-${c.id}" class="bg-[#1d9bf0] text-white text-[11px] px-3 py-1 rounded-full font-bold">সেভ করুন</button>
+                            <button onclick="toggleEdit('${c.id}')" class="text-gray-500 text-[11px] font-bold px-2">বাতিল</button>
+                        </div>
+                    </div>
+
                     <div class="comment-actions flex items-center gap-6">
                         <button onclick="toggleReplyForm('${c.id}')" class="text-[12px] font-medium text-gray-500 hover:text-[#1d9bf0] transition-colors">রিপ্লাই</button>
+                        
+                        ${userIsOwner ? `
+                            <button onclick="toggleEdit('${c.id}')" class="text-[12px] font-medium text-gray-500 hover:text-green-500 transition-colors">এডিট</button>
+                            <button onclick="openDeleteModal('${c.id}')" class="text-[12px] font-medium text-gray-500 hover:text-red-500 transition-colors">ডিলিট</button>
+                        ` : ''}
+
                         <div class="flex items-center gap-4 text-gray-500">
                              <button onclick="vote('${c.id}', 1)" class="flex items-center gap-1.5 hover:text-[#1d9bf0] active:scale-125 transition-all ${userVote === 1 ? 'voted-up' : ''}">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" /></svg>
@@ -296,13 +332,13 @@
                     </div>
                     
                     <div id="form-${c.id}" class="hidden mt-3 bg-white dark:bg-darkCard p-3 rounded-2xl border border-gray-100 dark:border-darkBorder shadow-sm relative">
-                        <div class="flex flex-col sm:flex-row gap-2">
-                             <textarea id="msg-${c.id}" placeholder="রিপ্লাইটি এখানে লিখুন..." class="flex-1 p-2 text-sm bg-gray-50 dark:bg-darkBg border border-gray-100 dark:border-darkBorder rounded-lg h-20 outline-none focus:border-[#1d9bf0] dark:text-white resize-none"></textarea>
-                             <div class="flex flex-row sm:flex-col gap-2 justify-end">
-                                <input type="text" id="name-${c.id}" placeholder="নাম" class="w-24 sm:w-32 p-2 text-xs bg-gray-50 dark:bg-darkBg border border-gray-100 dark:border-darkBorder rounded-lg outline-none focus:border-[#1d9bf0] dark:text-white">
+                        <div class="flex flex-col gap-2">
+                             <textarea id="msg-${c.id}" placeholder="রিপ্লাইটি এখানে লিখুন..." class="w-full p-2 text-sm bg-gray-50 dark:bg-darkBg border border-gray-100 dark:border-darkBorder rounded-lg h-20 outline-none focus:border-[#1d9bf0] dark:text-white resize-none"></textarea>
+                             <div class="flex flex-row gap-2 justify-between items-center">
+                                <input type="text" id="name-${c.id}" placeholder="নাম" class="flex-1 max-w-[200px] p-2 text-xs bg-gray-50 dark:bg-darkBg border border-gray-100 dark:border-darkBorder rounded-full outline-none focus:border-[#1d9bf0] dark:text-white">
                                 <div class="flex gap-1">
-                                    <button onclick="postData('${c.id}')" id="btn-${c.id}" class="bg-[#1d9bf0] text-white text-[11px] px-3 py-1.5 rounded-full font-bold flex-1 min-w-[60px]">পোস্ট</button>
-                                    <button onclick="toggleReplyForm('${c.id}')" class="text-gray-400 text-[11px] font-bold px-2 hover:text-red-400">×</button>
+                                    <button onclick="postData('${c.id}')" id="btn-${c.id}" class="bg-[#1d9bf0] text-white text-[11px] px-4 py-1.5 rounded-full font-bold min-w-[60px]">পোস্ট</button>
+                                    <button onclick="toggleReplyForm('${c.id}')" class="text-gray-400 text-[11px] font-bold px-2 hover:text-red-400 text-lg leading-none">×</button>
                                 </div>
                              </div>
                         </div>
@@ -330,9 +366,15 @@
     }
 
     window.toggleReplyForm = (id) => {
-        const form = document.getElementById(`form-${id}`);
-        form.classList.toggle('hidden');
-    }
+        document.getElementById(`form-${id}`).classList.toggle('hidden');
+    };
+
+    window.toggleEdit = (id) => {
+        const bodyText = document.getElementById(`body-text-${id}`);
+        const editBox = document.getElementById(`edit-box-${id}`);
+        bodyText.classList.toggle('hidden');
+        editBox.classList.toggle('hidden');
+    };
 
     window.vote = async (id, val) => {
         const voteKey = `voted_${pageId}_${id}`;
@@ -345,7 +387,7 @@
             await updateDoc(commentRef, { votes: increment(incrementVal) });
             localStorage.setItem(voteKey, val);
         } catch (e) { console.error("Vote failed"); }
-    }
+    };
 
     function getLocalVote(id) {
         const val = localStorage.getItem(`voted_${pageId}_${id}`);
@@ -356,7 +398,7 @@
         const warning = document.getElementById(id ? `warning-${id}` : 'warning-null');
         warning.classList.remove('hidden');
         setTimeout(() => warning.classList.add('hidden'), 4000);
-    }
+    };
 
     window.postData = async (parentId) => {
         const nameInput = parentId ? document.getElementById(`name-${parentId}`) : document.getElementById('user-name');
@@ -371,25 +413,77 @@
             return;
         }
 
-        // Disable button and show loading text
         const originalText = submitBtn.innerText;
         submitBtn.innerText = 'পোস্ট হচ্ছে...';
         submitBtn.disabled = true;
 
         try {
-            await addDoc(commentsCol, { name, msg, parentId, votes: 0, at: serverTimestamp() });
+            const newDoc = await addDoc(commentsCol, { name, msg, parentId, votes: 0, at: serverTimestamp() });
+            saveMyComment(newDoc.id); // Save ownership locally
             msgInput.value = '';
-            if(parentId) {
-                document.getElementById(`form-${parentId}`).classList.add('hidden');
-            }
+            if(parentId) document.getElementById(`form-${parentId}`).classList.add('hidden');
         } catch (e) { 
             console.error("Post failed"); 
         } finally {
-            // Restore button
             submitBtn.innerText = originalText;
             submitBtn.disabled = false;
         }
-    }
+    };
+
+    window.updateData = async (id) => {
+        const input = document.getElementById(`edit-input-${id}`);
+        const btn = document.getElementById(`update-btn-${id}`);
+        const newMsg = input.value.trim();
+        
+        if(!newMsg) return;
+
+        btn.innerText = 'আপডেট...';
+        btn.disabled = true;
+
+        try {
+            const ref = doc(db, 'blog_comments', 'pages', pageId, id);
+            await updateDoc(ref, { msg: newMsg });
+            toggleEdit(id);
+        } catch (e) {
+            console.error("Update failed");
+        } finally {
+            btn.innerText = 'সেভ করুন';
+            btn.disabled = false;
+        }
+    };
+
+    let deleteTargetId = null;
+    window.openDeleteModal = (id) => {
+        deleteTargetId = id;
+        document.getElementById('delete-modal').classList.remove('hidden');
+        document.getElementById('delete-modal').classList.add('flex');
+    };
+
+    window.closeDeleteModal = () => {
+        deleteTargetId = null;
+        document.getElementById('delete-modal').classList.add('hidden');
+        document.getElementById('delete-modal').classList.remove('flex');
+    };
+
+    document.getElementById('confirm-delete-btn').onclick = async () => {
+        if(!deleteTargetId) return;
+        
+        const btn = document.getElementById('confirm-delete-btn');
+        btn.innerText = 'মুছে ফেলা হচ্ছে...';
+        btn.disabled = true;
+
+        try {
+            const ref = doc(db, 'blog_comments', 'pages', pageId, deleteTargetId);
+            await deleteDoc(ref);
+            removeMyComment(deleteTargetId);
+            closeDeleteModal();
+        } catch (e) {
+            console.error("Delete failed");
+        } finally {
+            btn.innerText = 'মুছে ফেলুন';
+            btn.disabled = false;
+        }
+    };
 
     function formatTime(timestamp) {
         if(!timestamp) return 'এইমাত্র';
@@ -398,7 +492,6 @@
         if (diff < 60) return 'এখন';
         if (diff < 3600) return toBengaliNumber(Math.floor(diff/60)) + ' মি';
         if (diff < 86400) return toBengaliNumber(Math.floor(diff/3600)) + ' ঘ';
-        
         const day = toBengaliNumber(date.getDate());
         const month = date.toLocaleDateString('bn-BD', { month: 'short' });
         return `${day} ${month}`;
