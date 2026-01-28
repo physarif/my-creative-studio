@@ -83,7 +83,7 @@
         <button id="sort-top" onclick="setSort('top')" class="transition-colors pb-3 -mb-[2px] border-b-2">সেরা</button>
         <button id="sort-recent" onclick="setSort('recent')" class="transition-colors pb-3 -mb-[2px] border-b-2">সাম্প্রতিক</button>
         <button id="sort-featured" onclick="setSort('featured')" class="transition-colors pb-3 -mb-[2px] border-b-2">নির্বাচিত</button>
-        <button id="sort-reports" onclick="setSort('reports')" class="hidden transition-colors pb-3 -mb-[2px] border-b-2 text-red-500 border-transparent">রিপোর্ট</button>
+        <button id="sort-reports" onclick="setSort('reports')" class="transition-colors pb-3 -mb-[2px] border-b-2 text-red-500 border-transparent">অভিযোগ</button>
     </div>
 
     <div id="comments-container" class="space-y-6 pb-20"></div>
@@ -169,7 +169,10 @@
             isAdmin = true;
             document.getElementById('login-trigger-btn').classList.add('hidden');
             document.getElementById('admin-badge').classList.remove('hidden');
-            document.getElementById('sort-reports').classList.remove('hidden');
+        } else {
+            isAdmin = false;
+            document.getElementById('login-trigger-btn').classList.remove('hidden');
+            document.getElementById('admin-badge').classList.add('hidden');
         }
         load();
     });
@@ -257,7 +260,7 @@
                             <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
                             <span class="text-[10px] font-bold uppercase">নির্বাচিত</span>
                         </span>` : ''}
-                    ${isAdmin && isReported ? `<span class="text-[9px] bg-red-100 dark:bg-red-900/30 px-1.5 rounded-md font-bold text-red-500 border border-red-200 dark:border-red-800">রিপোর্ট: ${toBengaliNumber(c.reportCount || 1)}</span>` : ''}
+                    ${isAdmin && isReported ? `<span class="text-[9px] bg-red-100 dark:bg-red-900/30 px-1.5 rounded-md font-bold text-red-500 border border-red-200 dark:border-red-800">অভিযোগ: ${toBengaliNumber(c.reportCount || 1)}</span>` : ''}
                     <span class="text-[13px] text-gray-500">· ${date}</span>
                 </div>
                 <div id="body-${c.id}" class="comment-content text-[15px] text-gray-800 dark:text-gray-300 leading-normal mb-1 break-words">${cleanHtml}</div>
@@ -280,9 +283,9 @@
                         <button onclick="togglePin('${c.id}', ${!isFeatured})" class="text-[12px] font-medium ${isFeatured ? 'text-amber-500' : 'text-gray-500'} hover:text-amber-600">
                             ${isFeatured ? 'পিন সরান' : 'পিন করুন'}
                         </button>
-                        ${isReported ? `<button onclick="clearReport('${c.id}')" class="text-[12px] font-medium text-green-500 hover:text-green-600">রিপোর্ট ক্লিয়ার</button>` : ''}
+                        ${isReported ? `<button onclick="clearReport('${c.id}')" class="text-[12px] font-medium text-green-500 hover:text-green-600">অভিযোগ ক্লিয়ার</button>` : ''}
                     ` : ''}
-                    ${!userIsOwner && !alreadyReported ? `<button onclick="reportComment('${c.id}')" class="text-gray-400 hover:text-red-500 transition-colors" title="রিপোর্ট করুন"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"></path></svg></button>` : ''}
+                    ${!userIsOwner && !alreadyReported ? `<button onclick="reportComment('${c.id}')" class="text-gray-400 hover:text-red-500 transition-colors" title="অভিযোগ জানান"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"></path></svg></button>` : ''}
                     
                     <div class="flex items-center gap-4 text-gray-500">
                          <button onclick="vote('${c.id}', 1)" class="flex items-center gap-1.5 ${userVote == 1 ? 'voted-up' : ''}">
@@ -317,6 +320,17 @@
             let list = []; snap.forEach(doc => list.push({ id: doc.id, ...doc.data() }));
             document.getElementById('comment-count').innerText = toBengaliNumber(list.length);
             
+            // Non-admins can't see reported comments list
+            if (currentSort === 'reports' && !isAdmin) {
+                container.innerHTML = `<div class="flex flex-col items-center justify-center py-20 px-4 text-center">
+                    <div class="w-12 h-12 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-full flex items-center justify-center mb-4">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m0 0v2m0-2h2m-2 0H10m11-3V5a2 2 0 00-2-2h-4l-1-1H5a2 2 0 00-2 2v12a2 2 0 002 2h10l4 4V13z"></path></svg>
+                    </div>
+                    <p class="text-sm font-bold text-gray-500 dark:text-gray-400">শুধুমাত্র এডমিন অভিযোগ দেখতে পাবেন।</p>
+                </div>`;
+                return;
+            }
+
             let tree = buildTree(list);
             
             if (currentSort === 'featured') {
@@ -331,7 +345,7 @@
                 return (b.at?.seconds - a.at?.seconds);
             });
 
-            container.innerHTML = tree.length > 0 ? tree.map(c => renderComment(c)).join('') : `<p class="text-center text-gray-400 py-10 italic text-sm">${currentSort === 'featured' ? 'কোনো নির্বাচিত মন্তব্য নেই।' : (currentSort === 'reports' ? 'কোনো রিপোর্টেড মন্তব্য নেই।' : 'কোনো মন্তব্য নেই।')}</p>`;
+            container.innerHTML = tree.length > 0 ? tree.map(c => renderComment(c)).join('') : `<p class="text-center text-gray-400 py-10 italic text-sm">${currentSort === 'featured' ? 'কোনো নির্বাচিত মন্তব্য নেই।' : (currentSort === 'reports' ? 'কোনো অভিযোগ সম্বলিত মন্তব্য নেই।' : 'কোনো মন্তব্য নেই।')}</p>`;
         });
     }
 
@@ -357,7 +371,7 @@
                 reportCount: increment(1) 
             });
             localStorage.setItem(`reported_${pageId}_${id}`, 'true');
-            load(); // Refresh view to hide report button
+            load();
         } catch (e) { console.error(e); }
     };
 
