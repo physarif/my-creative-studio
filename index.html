@@ -44,14 +44,15 @@
         .tab-border-container { border-bottom: 2px solid #f3f4f6; }
         .dark .tab-border-container { border-bottom: 2px solid #2f3336; }
         
-        /* কলাপস লজিক */
+        /* কলাপস লজিক - শুধুমাত্র রিপ্লাইয়ের ক্ষেত্রে */
         .collapsed > .flex > .comment-body, 
         .collapsed > .flex > .comment-footer,
         .collapsed > .comment-replies { display: none; }
         
         .collapsed { opacity: 0.6; }
         .collapse-arrow { transition: transform 0.2s; }
-        .collapsed .collapse-arrow { transform: rotate(-180deg); }
+        .collapsed-parent > .comment-replies { display: none; }
+        .collapsed-parent .collapse-arrow { transform: rotate(-180deg); }
         
         .mention { color: #1d9bf0; font-weight: 600; }
         .name-clickable { cursor: pointer; user-select: none; }
@@ -259,7 +260,14 @@
 
     window.toggleCollapse = (id) => {
         const el = document.getElementById(`comment-${id}`);
-        el.classList.toggle('collapsed');
+        // শুধুমাত্র যদি রিপ্লাই হয় (অথবা মেইন কমেন্টের কাউন্টার বাটন হয়) তখন কাজ করবে
+        if (el.dataset.depth === "0") {
+            // মেইন কমেন্টের ক্ষেত্রে শুধুমাত্র থ্রেড বা রিপ্লাইগুলো হাইড করবে, নিজেকে নয়
+            el.classList.toggle('collapsed-parent');
+        } else {
+            // রিপ্লাইয়ের ক্ষেত্রে নিজেকে হাইড করবে
+            el.classList.toggle('collapsed');
+        }
     };
 
     function renderComment(c, depth = 0) {
@@ -277,18 +285,17 @@
         const alreadyReported = localStorage.getItem(`reported_${pageId}_${c.id}`);
         const replyCount = c.replies.length;
         
-        // ডিফল্টভাবে কলাপসড থাকবে শুধুমাত্র যদি রিপ্লাই থাকে (শুধুমাত্র মেইন কমেন্টের ক্ষেত্রে)
-        let threadClass = (depth === 0 && replyCount > 0) ? 'collapsed' : '';
+        // ডিফল্টভাবে কলাপসড থাকবে শুধুমাত্র মেইন কমেন্টের রিপ্লাইগুলো
+        let threadClass = (depth === 0 && replyCount > 0) ? 'collapsed-parent' : '';
         if (depth === 1) threadClass += ' reply-thread-root';
         else if (depth > 1) threadClass += ' reply-thread-deep';
 
         return `
-        <div id="comment-${c.id}" class="${threadClass} mb-6 transition-opacity">
+        <div id="comment-${c.id}" class="${threadClass} mb-6 transition-all" data-depth="${depth}">
             <div class="flex flex-col">
                 <div class="comment-header flex items-center gap-2 mb-0.5 flex-wrap">
-                    <!-- Name and Admin Icon -->
                     <div class="flex items-center gap-1.5">
-                        <span onclick="toggleCollapse('${c.id}')" class="font-bold text-[15px] name-clickable">${esc(c.name)}</span>
+                        <span ${depth > 0 ? `onclick="toggleCollapse('${c.id}')"` : ''} class="font-bold text-[15px] ${depth > 0 ? 'name-clickable' : ''}">${esc(c.name)}</span>
                         ${isCommentAdmin ? `
                             <span class="text-[#1d9bf0] inline-flex items-center" title="ভেরিফাইড এডমিন">
                                 <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M22.5 12.5c0-1.58-.88-2.95-2.18-3.66.26-1.11.17-2.3-.26-3.36s-1.24-1.9-2.25-2.43c-1.01-.54-2.2-.69-3.32-.42-1.12-.27-2.3-.12-3.32.42-1.01.53-1.82 1.37-2.25 2.43s-.52 2.25-.26 3.36C7.38 9.55 6.5 10.92 6.5 12.5c0 1.58.88 2.95 2.18 3.66-.26 1.11-.17 2.3.26 3.36s1.24 1.9 2.25 2.43c1.01.54 2.2.69 3.32.42 1.12.27 2.3.12 3.32-.42 1.01-.53 1.82-1.37 2.25-2.43s.52-2.25.26-3.36c1.3-0.71 2.18-2.08 2.18-3.66zm-10.46 4.5l-3.3-3.3 1.41-1.41 1.89 1.89 4.89-4.89 1.41 1.41-6.3 6.3z"/></svg>
@@ -296,7 +303,6 @@
                         ${userIsOwner && !isAdmin ? '<span class="text-[9px] bg-gray-100 dark:bg-gray-800 px-1.5 rounded-md font-bold text-gray-500">তুমি</span>' : ''}
                     </div>
 
-                    <!-- Meta: Time and Flag -->
                     <div class="flex items-center gap-1.5 text-gray-400">
                         <span class="text-[13px] text-gray-500">· ${date}</span>
                         ${!userIsOwner && !alreadyReported ? `
@@ -305,7 +311,6 @@
                             </button>` : ''}
                     </div>
 
-                    <!-- Badges: Featured/Reported -->
                     <div class="flex items-center gap-1.5">
                         ${isFeatured ? `
                             <span class="flex items-center gap-0.5 featured-badge" title="নির্বাচিত মন্তব্য">
@@ -328,7 +333,6 @@
                     </div>
                 </div>
 
-                <!-- Footer Actions -->
                 <div class="comment-footer flex items-center justify-between mt-1">
                     <div class="flex items-center gap-4">
                          <div class="flex items-center gap-3 text-gray-500">
@@ -470,7 +474,7 @@
             const res = await addDoc(commentsCol, { name: n, msg: m, parentId: pid, votes: 0, featured: false, reported: false, reportCount: 0, isAdmin: isAdmin, at: serverTimestamp() });
             saveMyComment(res.id);
             if(!pid) { document.getElementById('user-comment').value = ''; toggleInput(); }
-            else { document.getElementById(`form-${pid}`).classList.add('hidden'); document.getElementById(`comment-${pid}`).classList.remove('collapsed'); }
+            else { document.getElementById(`form-${pid}`).classList.add('hidden'); document.getElementById(`comment-${pid}`).classList.remove('collapsed-parent'); }
         } catch (e) {} finally { btn.disabled = false; statusDiv.classList.add('hidden'); }
     };
 
