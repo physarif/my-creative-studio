@@ -57,7 +57,6 @@
         .name-clickable { cursor: pointer; user-select: none; }
         .name-clickable:hover { text-decoration: underline; }
         
-        /* এডমিন নামের স্টাইল */
         .admin-name { color: #1d9bf0; }
         .dark .admin-name { color: #38bdf8; }
     </style>
@@ -107,7 +106,14 @@
         <button id="sort-reports" onclick="setSort('reports')" class="transition-colors pb-3 -mb-[2px] border-b-2 text-red-500 border-transparent">অভিযোগ</button>
     </div>
 
-    <div id="comments-container" class="space-y-6 pb-20"></div>
+    <div id="comments-container" class="space-y-6"></div>
+
+    <!-- Load More Button -->
+    <div id="load-more-container" class="flex justify-center mt-10 pb-20 hidden">
+        <button onclick="loadMore()" class="text-sm font-bold text-[#1d9bf0] bg-blue-50 dark:bg-blue-900/20 px-6 py-2 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-all border border-blue-100 dark:border-blue-900/40">
+            আরো লোড করুন
+        </button>
+    </div>
 </div>
 
 <!-- Modals -->
@@ -155,6 +161,8 @@
 
     let isAdmin = false;
     let currentSort = 'top';
+    let visibleCount = 10;
+    let allRootThreads = [];
 
     const themeToggle = document.getElementById('theme-toggle');
     const sunIcon = document.getElementById('sun-icon');
@@ -235,6 +243,7 @@
 
     window.setSort = (type) => {
         currentSort = type;
+        visibleCount = 10;
         updateSortUI();
         load();
     };
@@ -380,6 +389,25 @@
         </div>`;
     }
 
+    function renderDisplay() {
+        const container = document.getElementById('comments-container');
+        const loadMoreBtn = document.getElementById('load-more-container');
+        
+        const subset = allRootThreads.slice(0, visibleCount);
+        container.innerHTML = subset.length > 0 ? subset.map(c => renderComment(c)).join('') : `<p class="text-center text-gray-400 py-10 italic text-sm">${currentSort === 'featured' ? 'কোনো নির্বাচিত মন্তব্য নেই।' : (currentSort === 'reports' ? 'কোনো অভিযোগ সম্বলিত মন্তব্য নেই।' : 'কোনো মন্তব্য নেই।')}</p>`;
+        
+        if (allRootThreads.length > visibleCount) {
+            loadMoreBtn.classList.remove('hidden');
+        } else {
+            loadMoreBtn.classList.add('hidden');
+        }
+    }
+
+    window.loadMore = () => {
+        visibleCount += 10;
+        renderDisplay();
+    };
+
     function load() {
         onSnapshot(query(commentsCol), (snap) => {
             const container = document.getElementById('comments-container');
@@ -393,6 +421,7 @@
                     </div>
                     <p class="text-sm font-bold text-gray-500 dark:text-gray-400">শুধুমাত্র এডমিন অভিযোগ দেখতে পাবেন।</p>
                 </div>`;
+                document.getElementById('load-more-container').classList.add('hidden');
                 return;
             }
 
@@ -406,7 +435,8 @@
                 return (b.at?.seconds - a.at?.seconds);
             });
 
-            container.innerHTML = tree.length > 0 ? tree.map(c => renderComment(c)).join('') : `<p class="text-center text-gray-400 py-10 italic text-sm">${currentSort === 'featured' ? 'কোনো নির্বাচিত মন্তব্য নেই।' : (currentSort === 'reports' ? 'কোনো অভিযোগ সম্বলিত মন্তব্য নেই।' : 'কোনো মন্তব্য নেই।')}</p>`;
+            allRootThreads = tree;
+            renderDisplay();
         });
     }
 
@@ -475,7 +505,7 @@
                 featured: false, 
                 reported: false, 
                 reportCount: 0, 
-                isAdmin: isAdmin, // বর্তমান ইউজার এডমিন কি না তা সেভ করা হচ্ছে
+                isAdmin: isAdmin,
                 at: serverTimestamp() 
             });
             saveMyComment(res.id);
