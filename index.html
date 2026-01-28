@@ -53,26 +53,58 @@
             display: flex;
         }
 
+        /* Thread lines */
         .reply-thread {
             position: relative;
-            margin-left: 20px;
+            margin-left: 12px;
             border-left: 2px solid #f3f4f6;
-            padding-left: 20px;
-            margin-top: 16px;
+            padding-left: 16px;
+            margin-top: 12px;
+            transition: border-color 0.2s;
+        }
+
+        .reply-thread:hover {
+            border-left-color: #e5e7eb;
         }
 
         @media (min-width: 640px) {
             .reply-thread {
-                margin-left: 48px;
+                margin-left: 24px;
+                padding-left: 24px;
             }
         }
 
         .comment-avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
             background: #f3f4f6;
             object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        /* Global collapsed state */
+        .collapsed .comment-body, 
+        .collapsed .comment-actions,
+        .collapsed .replies-container {
+            display: none;
+        }
+
+        .collapsed .comment-header {
+            opacity: 0.6;
+        }
+
+        .collapsed .comment-header::after {
+            content: "[ + ]";
+            font-size: 10px;
+            margin-left: 8px;
+            color: #6366f1;
+            font-weight: bold;
+        }
+
+        .comment-item {
+            cursor: pointer;
+            user-select: none;
         }
 
         .voted-up { color: #4f46e5 !important; }
@@ -117,7 +149,7 @@
     </div>
 
     <!-- মন্তব্যের তালিকা -->
-    <div id="comments-container" class="space-y-8 pb-20">
+    <div id="comments-container" class="space-y-6 pb-20">
         <div class="flex justify-center p-10">
             <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
         </div>
@@ -129,7 +161,6 @@
     import { getFirestore, collection, addDoc, query, onSnapshot, serverTimestamp, updateDoc, doc, increment } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
     import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
 
-    // ফায়ারবেস কনফিগারেশন
     const firebaseConfig = {
         apiKey: "AIzaSyB_xkcJ87-E4jkYIDT2dBxOFJHUQvZxbU8",
         authDomain: "myblogcomments-22808.firebaseapp.com",
@@ -147,30 +178,19 @@
 
     let currentSort = 'top';
 
-    // ইনপুট বক্সের নাম ফিল্ড টগল করা
     window.toggleInput = () => {
         const infoBar = document.getElementById('user-info-bar');
         const comment = document.getElementById('user-comment').value;
         if(comment.length > 0) infoBar.classList.remove('hidden');
     };
 
-    // সর্টিং মোড পরিবর্তন করা
     window.setSort = (type) => {
         currentSort = type;
-        const topBtn = document.getElementById('sort-top');
-        const recentBtn = document.getElementById('sort-recent');
-        
-        if(type === 'top') {
-            topBtn.classList.add('text-indigo-600');
-            recentBtn.classList.remove('text-indigo-600');
-        } else {
-            recentBtn.classList.add('text-indigo-600');
-            topBtn.classList.remove('text-indigo-600');
-        }
+        document.getElementById('sort-top').classList.toggle('text-indigo-600', type === 'top');
+        document.getElementById('sort-recent').classList.toggle('text-indigo-600', type === 'recent');
         load();
     };
 
-    // অ্যাপ শুরু করা এবং অ্যানোনিমাস লগইন
     async function start() {
         try {
             await signInAnonymously(auth);
@@ -178,60 +198,61 @@
         } catch (e) { console.error("অনুমতি পাওয়া যায়নি"); }
     }
 
-    // অ্যাভাটার তৈরি করা
     const getAvatar = (name) => `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=f3f4f6&color=6366f1&bold=true&rounded=false&size=128`;
 
-    // কমেন্টগুলোকে ট্রি স্ট্রাকচারে সাজানো
     function buildTree(comments) {
         const map = {};
         const roots = [];
+        comments.forEach(c => map[c.id] = { ...c, replies: [] });
         comments.forEach(c => {
-            map[c.id] = { ...c, replies: [] };
-        });
-        comments.forEach(c => {
-            if (c.parentId && map[c.parentId]) {
-                map[c.parentId].replies.push(map[c.id]);
-            } else {
-                roots.push(map[c.id]);
-            }
+            if (c.parentId && map[c.parentId]) map[c.parentId].replies.push(map[c.id]);
+            else roots.push(map[c.id]);
         });
         return roots;
     }
 
-    // একটি কমেন্ট রেন্ডার করা (রিকার্সিভলি)
+    // Toggle collapse functionality
+    window.toggleCollapse = (e, id) => {
+        // Don't toggle if clicking on buttons, inputs or textareas
+        if (['BUTTON', 'A', 'INPUT', 'TEXTAREA', 'SVG', 'PATH'].includes(e.target.tagName)) return;
+        
+        const element = document.getElementById(`comment-wrapper-${id}`);
+        element.classList.toggle('collapsed');
+    };
+
     function renderComment(c, depth = 0) {
         const date = formatTime(c.at);
         const avatar = getAvatar(c.name);
         const userVote = getLocalVote(c.id);
         
-        let html = `
-        <div class="${depth > 0 ? 'reply-thread' : 'mb-8'}">
-            <div class="flex gap-3 md:gap-4">
+        return `
+        <div id="comment-wrapper-${c.id}" class="comment-item ${depth > 0 ? 'reply-thread' : 'mb-6'}" onclick="toggleCollapse(event, '${c.id}')">
+            <div class="flex gap-2 md:gap-3">
                 <img src="${avatar}" class="comment-avatar" alt="avatar">
-                <div class="flex-1">
-                    <div class="flex items-center gap-2 mb-0.5">
-                        <span class="font-bold text-[14px] md:text-[15px] text-gray-900">${esc(c.name)}</span>
-                        <span class="text-[11px] text-gray-400">${date}</span>
+                <div class="flex-1 overflow-hidden">
+                    <div class="comment-header flex items-center gap-2 mb-0.5">
+                        <span class="font-bold text-[13px] md:text-[14px] text-gray-900 truncate">${esc(c.name)}</span>
+                        <span class="text-[10px] text-gray-400 whitespace-nowrap">${date}</span>
                     </div>
-                    <div class="text-[15px] md:text-[16px] text-gray-700 leading-relaxed mb-2">
+                    <div class="comment-body text-[15px] text-gray-700 leading-relaxed mb-1 break-words">
                         ${esc(c.msg)}
                     </div>
-                    <div class="flex items-center gap-4">
-                        <button onclick="toggleReplyForm('${c.id}')" class="text-[11px] font-bold text-gray-500 hover:text-indigo-600 transition-colors uppercase tracking-wider">রিপ্লাই</button>
+                    <div class="comment-actions flex items-center gap-4">
+                        <button onclick="toggleReplyForm('${c.id}')" class="text-[10px] font-bold text-gray-500 hover:text-indigo-600 uppercase tracking-wider">রিপ্লাই</button>
                         <div class="flex items-center gap-2 text-gray-400 bg-gray-50 px-2 py-0.5 rounded-lg border border-gray-100">
                              <button onclick="vote('${c.id}', 1)" class="hover:text-indigo-500 active:scale-125 transition-transform ${userVote === 1 ? 'voted-up' : ''}">
-                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd" /></svg>
+                                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd" /></svg>
                              </button>
                              <span class="text-[11px] font-bold text-gray-700">${c.votes || 0}</span>
                              <button onclick="vote('${c.id}', -1)" class="hover:text-rose-500 active:scale-125 transition-transform ${userVote === -1 ? 'voted-down' : ''}">
-                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
                              </button>
                         </div>
                     </div>
                     
-                    <div id="form-${c.id}" class="hidden mt-3 bg-gray-50 p-3 rounded-2xl border border-gray-100">
-                        <input type="text" id="name-${c.id}" placeholder="আপনার নাম" class="w-full mb-2 p-2 text-sm bg-white border border-gray-200 rounded-lg outline-none focus:border-indigo-400">
-                        <textarea id="msg-${c.id}" placeholder="রিপ্লাইটি এখানে লিখুন..." class="w-full p-2 text-sm bg-white border border-gray-200 rounded-lg h-20 outline-none focus:border-indigo-400 resize-none"></textarea>
+                    <div id="form-${c.id}" class="hidden mt-3 bg-white p-3 rounded-xl border border-gray-200 shadow-sm" onclick="e => e.stopPropagation()">
+                        <input type="text" id="name-${c.id}" placeholder="আপনার নাম" class="w-full mb-2 p-2 text-sm bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-indigo-400">
+                        <textarea id="msg-${c.id}" placeholder="রিপ্লাইটি এখানে লিখুন..." class="w-full p-2 text-sm bg-gray-50 border border-gray-200 rounded-lg h-20 outline-none focus:border-indigo-400 resize-none"></textarea>
                         <div class="flex gap-2 mt-2">
                             <button onclick="postData('${c.id}')" class="bg-indigo-600 text-white text-[11px] px-4 py-1.5 rounded-lg font-bold">রিপ্লাই দিন</button>
                             <button onclick="toggleReplyForm('${c.id}')" class="text-gray-400 text-[11px] font-bold px-2">বাতিল</button>
@@ -239,41 +260,30 @@
                     </div>
                 </div>
             </div>
-            <div id="replies-${c.id}">
+            <div class="replies-container">
                 ${c.replies.map(r => renderComment(r, depth + 1)).join('')}
             </div>
         </div>`;
-        return html;
     }
 
-    // ডেটা লোড করা
     function load() {
         onSnapshot(query(commentsCol), (snap) => {
             const container = document.getElementById('comments-container');
-            const countDisplay = document.getElementById('comment-count');
-            
             let allDocs = [];
             snap.forEach(doc => allDocs.push({ id: doc.id, ...doc.data() }));
-            countDisplay.innerText = allDocs.length;
-
+            document.getElementById('comment-count').innerText = allDocs.length;
             const tree = buildTree(allDocs);
-            
-            if(currentSort === 'top') {
-                tree.sort((a,b) => (b.votes || 0) - (a.votes || 0));
-            } else {
-                tree.sort((a,b) => (b.at?.seconds || 0) - (a.at?.seconds || 0));
-            }
-
-            container.innerHTML = tree.length > 0 ? tree.map(c => renderComment(c)).join('') : `<p class="text-center text-gray-400 py-10 italic">এখনও কোনো মন্তব্য নেই। আলোচনা শুরু করুন!</p>`;
+            if(currentSort === 'top') tree.sort((a,b) => (b.votes || 0) - (a.votes || 0));
+            else tree.sort((a,b) => (b.at?.seconds || 0) - (a.at?.seconds || 0));
+            container.innerHTML = tree.length > 0 ? tree.map(c => renderComment(c)).join('') : `<p class="text-center text-gray-400 py-10 italic text-sm">এখনও কোনো মন্তব্য নেই।</p>`;
         });
     }
 
-    // রিপ্লাই ফর্ম দেখানো বা লুকানো
     window.toggleReplyForm = (id) => {
-        document.getElementById(`form-${id}`).classList.toggle('hidden');
+        const form = document.getElementById(`form-${id}`);
+        form.classList.toggle('hidden');
     }
 
-    // ভোট দেওয়া
     window.vote = async (id, val) => {
         const voteKey = `voted_${pageId}_${id}`;
         const existingVote = localStorage.getItem(voteKey);
@@ -284,17 +294,14 @@
             if (existingVote && existingVote != val) incrementVal = val * 2; 
             await updateDoc(commentRef, { votes: increment(incrementVal) });
             localStorage.setItem(voteKey, val);
-            load();
         } catch (e) { console.error("ভোট দেওয়া সম্ভব হয়নি"); }
     }
 
-    // লোকাল স্টোরেজ থেকে ভোটের অবস্থা দেখা
     function getLocalVote(id) {
         const val = localStorage.getItem(`voted_${pageId}_${id}`);
         return val ? parseInt(val) : 0;
     }
 
-    // নতুন ডেটা বা মন্তব্য পোস্ট করা
     window.postData = async (parentId) => {
         const nameInput = parentId ? document.getElementById(`name-${parentId}`) : document.getElementById('user-name');
         const msgInput = parentId ? document.getElementById(`msg-${parentId}`) : document.getElementById('user-comment');
@@ -308,18 +315,16 @@
         } catch (e) { alert('দুঃখিত, মন্তব্যটি পোস্ট করা যায়নি।'); }
     }
 
-    // সময় ফরম্যাট করা (বাংলায়)
     function formatTime(timestamp) {
         if(!timestamp) return 'এইমাত্র';
         const date = new Date(timestamp.seconds * 1000);
         const diff = Math.floor((new Date() - date) / 1000);
         if (diff < 60) return 'এইমাত্র';
-        if (diff < 3600) return Math.floor(diff/60) + ' মি. আগে';
-        if (diff < 86400) return Math.floor(diff/3600) + ' ঘণ্টা আগে';
-        return date.toLocaleDateString('bn-BD');
+        if (diff < 3600) return Math.floor(diff/60) + ' মি.';
+        if (diff < 86400) return Math.floor(diff/3600) + ' ঘ.';
+        return date.toLocaleDateString('bn-BD', { day: 'numeric', month: 'short' });
     }
 
-    // HTML এসকেপ করা (নিরাপত্তার জন্য)
     function esc(t) {
         const d = document.createElement('div');
         d.textContent = t;
