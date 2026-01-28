@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>আলোচনা - ফিজারিফ</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Markdown Parser and Sanitizer -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.2/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -26,6 +29,31 @@
             font-family: 'Inter', 'Hind Siliguri', sans-serif; 
             transition: background-color 0.2s, color 0.2s;
         }
+
+        /* Markdown Styles */
+        .comment-content p { margin-bottom: 0.5rem; }
+        .comment-content p:last-child { margin-bottom: 0; }
+        .comment-content strong { font-weight: 700; }
+        .comment-content em { font-style: italic; }
+        .comment-content code { 
+            background: rgba(0,0,0,0.05); 
+            padding: 2px 4px; 
+            border-radius: 4px; 
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+        .dark .comment-content code { background: rgba(255,255,255,0.1); }
+        .comment-content pre {
+            background: #f3f4f6;
+            padding: 12px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 8px 0;
+        }
+        .dark .comment-content pre { background: #1e2126; }
+        .comment-content ul { list-style-type: disc; margin-left: 20px; }
+        .comment-content ol { list-style-type: decimal; margin-left: 20px; }
+        .comment-content a { color: #1d9bf0; text-decoration: underline; }
 
         .hyvor-input-wrapper {
             position: relative;
@@ -186,7 +214,14 @@
     const pageId = window.location.pathname.replace(/\//g, '_') || 'homepage';
     const commentsCol = collection(db, 'blog_comments', 'pages', pageId);
 
-    // Track user's own comments via LocalStorage
+    // Markdown Parser Settings
+    marked.setOptions({
+        breaks: true,
+        gfm: true,
+        headerIds: false,
+        mangle: false
+    });
+
     const MY_COMMENTS_KEY = `my_comments_${pageId}`;
     const getMyComments = () => JSON.parse(localStorage.getItem(MY_COMMENTS_KEY) || "[]");
     const saveMyComment = (id) => {
@@ -200,7 +235,6 @@
     };
     const isOwner = (id) => getMyComments().includes(id);
 
-    // Number conversion helper
     const toBengaliNumber = (num) => {
         const eng = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
         const bng = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
@@ -210,7 +244,6 @@
         }).join('');
     };
 
-    // Dark Mode Logic
     const themeToggle = document.getElementById('theme-toggle');
     const sunIcon = document.getElementById('sun-icon');
     const moonIcon = document.getElementById('moon-icon');
@@ -289,6 +322,10 @@
         const displayVotes = toBengaliNumber(c.votes || 0);
         const userIsOwner = isOwner(c.id);
         
+        // Parse Markdown and Sanitize
+        const rawHtml = marked.parse(c.msg);
+        const cleanHtml = DOMPurify.sanitize(rawHtml);
+        
         return `
         <div id="comment-wrapper-${c.id}" class="${depth > 0 ? 'reply-thread' : 'mb-6'}">
             <div class="flex flex-col">
@@ -299,8 +336,8 @@
                         <span class="text-[13px] text-gray-500 whitespace-nowrap">· ${date}</span>
                     </div>
                     
-                    <div id="body-text-${c.id}" class="comment-body text-[15px] text-gray-800 dark:text-gray-300 leading-normal mb-1 break-words">
-                        ${esc(c.msg)}
+                    <div id="body-text-${c.id}" class="comment-body comment-content text-[15px] text-gray-800 dark:text-gray-300 leading-normal mb-1 break-words">
+                        ${cleanHtml}
                     </div>
 
                     <!-- Edit Field (Hidden) -->
@@ -419,7 +456,7 @@
 
         try {
             const newDoc = await addDoc(commentsCol, { name, msg, parentId, votes: 0, at: serverTimestamp() });
-            saveMyComment(newDoc.id); // Save ownership locally
+            saveMyComment(newDoc.id); 
             msgInput.value = '';
             if(parentId) document.getElementById(`form-${parentId}`).classList.add('hidden');
         } catch (e) { 
