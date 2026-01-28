@@ -14,7 +14,6 @@
             color: #111827;
         }
 
-        /* Hyvor style input field */
         .hyvor-input-wrapper {
             position: relative;
             background: #f9fafb;
@@ -67,6 +66,7 @@
             height: 40px;
             border-radius: 12px;
             background: #f3f4f6;
+            object-fit: cover;
         }
     </style>
 </head>
@@ -82,10 +82,10 @@
                 <span class="text-[10px] font-bold text-green-700 uppercase">1 Online</span>
             </div>
         </div>
-        <button class="text-sm font-semibold text-gray-500 hover:text-gray-900 transition-colors">LOGIN</button>
+        <!-- Login Removed -->
     </div>
 
-    <!-- Main Comment Input (Hyvor Style) -->
+    <!-- Main Comment Input -->
     <div class="mb-10">
         <div class="hyvor-input-wrapper">
             <div id="user-info-bar" class="flex gap-2 p-3 pb-0 hidden">
@@ -94,7 +94,7 @@
             <textarea id="user-comment" placeholder="Write your comment..." class="hyvor-textarea" oninput="toggleInput()"></textarea>
             
             <div class="action-bar" id="action-bar">
-                <span class="text-xs text-gray-400">Be respectful and kind.</span>
+                <span class="text-xs text-gray-400">Join the discussion</span>
                 <button onclick="postData(null)" id="submit-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-xl transition-all shadow-sm text-sm">
                     Post Comment
                 </button>
@@ -102,21 +102,15 @@
         </div>
     </div>
 
-    <!-- Sort Bar -->
+    <!-- Sort Bar (Default to Top) -->
     <div class="flex items-center gap-4 mb-8 px-2 text-sm font-semibold text-gray-500 border-b border-gray-100 pb-4">
-        <button class="text-indigo-600 flex items-center gap-1">Top <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></button>
-        <button class="hover:text-gray-900">Newest</button>
+        <button class="text-indigo-600 flex items-center gap-1">Top Voted <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></button>
     </div>
 
     <!-- Comments List -->
     <div id="comments-container" class="space-y-8">
-        <!-- Skeleton -->
-        <div class="animate-pulse flex gap-4">
-            <div class="w-10 h-10 bg-gray-100 rounded-xl"></div>
-            <div class="flex-1 space-y-3 py-1">
-                <div class="h-3 bg-gray-100 rounded w-1/4"></div>
-                <div class="h-3 bg-gray-100 rounded w-full"></div>
-            </div>
+        <div class="flex justify-center p-10">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
         </div>
     </div>
 </div>
@@ -166,11 +160,12 @@
             snap.forEach(doc => allDocs.push({ id: doc.id, ...doc.data() }));
             countDisplay.innerText = allDocs.length;
 
-            const parents = allDocs.filter(d => !d.parentId).sort((a,b) => (b.at?.seconds || 0) - (a.at?.seconds || 0));
+            // Sorting by Votes (Descending)
+            const parents = allDocs.filter(d => !d.parentId).sort((a,b) => (b.votes || 0) - (a.votes || 0));
             const replies = allDocs.filter(d => d.parentId);
 
             if (parents.length === 0) {
-                container.innerHTML = `<p class="text-center text-gray-400 py-10">No comments yet.</p>`;
+                container.innerHTML = `<p class="text-center text-gray-400 py-10 italic">No comments yet. Start the conversation!</p>`;
                 return;
             }
 
@@ -192,10 +187,14 @@
                             </div>
                             <div class="flex items-center gap-5">
                                 <button onclick="toggleReplyForm('${p.id}')" class="text-xs font-bold text-gray-500 hover:text-indigo-600 transition-colors uppercase tracking-wider">Reply</button>
-                                <div class="flex items-center gap-2 text-gray-400">
-                                     <button onclick="vote('${p.id}', 1)" class="hover:text-indigo-500"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg></button>
-                                     <span class="text-xs font-bold">${p.votes || 0}</span>
-                                     <button onclick="vote('${p.id}', -1)" class="hover:text-rose-500"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></button>
+                                <div class="flex items-center gap-2 text-gray-400 bg-gray-50 px-2 py-0.5 rounded-lg border border-gray-100">
+                                     <button onclick="vote('${p.id}', 1)" class="hover:text-indigo-500 active:scale-125 transition-transform">
+                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd" /></svg>
+                                     </button>
+                                     <span class="text-xs font-bold text-gray-700">${p.votes || 0}</span>
+                                     <button onclick="vote('${p.id}', -1)" class="hover:text-rose-500 active:scale-125 transition-transform">
+                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                                     </button>
                                 </div>
                             </div>
                         </div>
@@ -241,22 +240,24 @@
 
     window.vote = async (id, val) => {
         const commentRef = doc(db, 'blog_comments', 'pages', pageId, id);
-        await updateDoc(commentRef, { votes: increment(val) });
+        try {
+            await updateDoc(commentRef, { votes: increment(val) });
+        } catch (e) { console.error("Vote failed"); }
     }
 
     window.postData = async (parentId) => {
-        const name = parentId ? document.getElementById(`name-${parentId}`).value : document.getElementById('user-name').value;
-        const msg = parentId ? document.getElementById(`msg-${parentId}`).value : document.getElementById('user-comment').value;
+        const nameInput = parentId ? document.getElementById(`name-${parentId}`) : document.getElementById('user-name');
+        const msgInput = parentId ? document.getElementById(`msg-${parentId}`) : document.getElementById('user-comment');
+        
+        const name = nameInput.value.trim();
+        const msg = msgInput.value.trim();
 
         if(!name || !msg) return alert('Name and message are required!');
 
         try {
             await addDoc(commentsCol, { name, msg, parentId, votes: 0, at: serverTimestamp() });
-            if(!parentId) {
-                document.getElementById('user-comment').value = '';
-            } else {
-                document.getElementById(`form-${parentId}`).classList.add('hidden');
-            }
+            msgInput.value = '';
+            if(parentId) document.getElementById(`form-${parentId}`).classList.add('hidden');
         } catch (e) { alert('Error posting.'); }
     }
 
@@ -266,7 +267,7 @@
         const diff = Math.floor((new Date() - date) / 1000);
         if (diff < 60) return 'Just now';
         if (diff < 3600) return Math.floor(diff/60) + 'm ago';
-        if (diff < 86400) return Math.floor(diff/3600) + 'h ago';
+        if (diff < 8400) return Math.floor(diff/3600) + 'h ago';
         return date.toLocaleDateString();
     }
 
