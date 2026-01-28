@@ -32,13 +32,23 @@
         .hyvor-input-wrapper:focus-within { background: #fff; border-color: #1d9bf0; box-shadow: 0 0 0 1px #1d9bf0; }
         .dark .hyvor-input-wrapper:focus-within { background: #000000; }
         .hyvor-textarea { width: 100%; background: transparent; border: none; padding: 16px 20px; font-size: 16px; outline: none; resize: none; min-height: 80px; }
-        .reply-thread { position: relative; margin-left: 12px; border-left: 2px solid #f3f4f6; padding-left: 16px; margin-top: 12px; }
-        .dark .reply-thread { border-left-color: #2f3336; }
+        
+        .reply-thread-root { position: relative; margin-left: 12px; border-left: 2px solid #f3f4f6; padding-left: 16px; margin-top: 12px; }
+        .dark .reply-thread-root { border-left-color: #2f3336; }
+        
+        .reply-thread-deep { position: relative; margin-left: 0; border-left: none; padding-left: 0; margin-top: 12px; }
+
         .voted-up { color: #1d9bf0 !important; }
         .voted-down { color: #f91880 !important; }
         .featured-badge { color: #f59e0b; }
         .tab-border-container { border-bottom: 2px solid #f3f4f6; }
         .dark .tab-border-container { border-bottom: 2px solid #2f3336; }
+        .collapsed .comment-body, .collapsed .comment-replies, .collapsed .comment-footer { display: none; }
+        .collapse-btn { transition: transform 0.2s; }
+        .collapsed .collapse-btn { transform: rotate(-90deg); }
+        
+        /* মেনশন হাইলাইট */
+        .mention { color: #1d9bf0; font-weight: 600; }
     </style>
 </head>
 <body class="p-4 md:p-8 bg-white text-gray-900 dark:bg-darkBg dark:text-gray-100">
@@ -240,21 +250,39 @@
         return roots;
     }
 
+    window.toggleCollapse = (id) => {
+        const el = document.getElementById(`comment-${id}`);
+        el.classList.toggle('collapsed');
+    };
+
     function renderComment(c, depth = 0) {
         const date = formatTime(c.at);
         const userVote = localStorage.getItem(`voted_${pageId}_${c.id}`) || 0;
         const userIsOwner = isOwner(c.id);
-        const cleanHtml = DOMPurify.sanitize(marked.parse(c.msg));
+        
+        // মেনশন হাইলাইট করার জন্য রেজেক্স (RegEx) ব্যবহার
+        let messageHtml = marked.parse(c.msg);
+        messageHtml = messageHtml.replace(/(@[^\s\n]+)/g, '<span class="mention">$1</span>');
+        const cleanHtml = DOMPurify.sanitize(messageHtml);
+        
         const isFeatured = c.featured === true;
         const isReported = c.reported === true;
         const isCommentAdmin = c.isAdmin === true;
         const alreadyReported = localStorage.getItem(`reported_${pageId}_${c.id}`);
+        const replyCount = c.replies.length;
         
+        let threadClass = 'mb-6';
+        if (depth === 1) threadClass = 'reply-thread-root';
+        else if (depth > 1) threadClass = 'reply-thread-deep';
+
         return `
-        <div class="${depth > 0 ? 'reply-thread' : 'mb-6'}">
+        <div id="comment-${c.id}" class="${threadClass}">
             <div class="flex flex-col">
                 <div class="comment-header flex items-center gap-1.5 mb-0.5">
-                    <span class="font-bold text-[15px] cursor-pointer hover:underline">${esc(c.name)}</span>
+                    <button onclick="toggleCollapse('${c.id}')" class="collapse-btn text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-0.5">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <span class="font-bold text-[15px] cursor-pointer hover:underline" onclick="toggleCollapse('${c.id}')">${esc(c.name)}</span>
                     ${isCommentAdmin ? `
                         <span class="text-[#1d9bf0] inline-flex items-center" title="ভেরিফাইড এডমিন">
                             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M22.5 12.5c0-1.58-.88-2.95-2.18-3.66.26-1.11.17-2.3-.26-3.36s-1.24-1.9-2.25-2.43c-1.01-.54-2.2-.69-3.32-.42-1.12-.27-2.3-.12-3.32.42-1.01.53-1.82 1.37-2.25 2.43s-.52 2.25-.26 3.36C7.38 9.55 6.5 10.92 6.5 12.5c0 1.58.88 2.95 2.18 3.66-.26 1.11-.17 2.3.26 3.36s1.24 1.9 2.25 2.43c1.01.54 2.2.69 3.32.42 1.12.27 2.3.12 3.32-.42 1.01-.53 1.82-1.37 2.25-2.43s.52-2.25.26-3.36c1.3-0.71 2.18-2.08 2.18-3.66zm-10.46 4.5l-3.3-3.3 1.41-1.41 1.89 1.89 4.89-4.89 1.41 1.41-6.3 6.3z"/></svg>
@@ -267,19 +295,23 @@
                         </span>` : ''}
                     ${isAdmin && isReported ? `<span class="text-[9px] bg-red-100 dark:bg-red-900/30 px-1.5 rounded-md font-bold text-red-500 border border-red-200 dark:border-red-800">অভিযোগ: ${toBengaliNumber(c.reportCount || 1)}</span>` : ''}
                     <span class="text-[13px] text-gray-500">· ${date}</span>
+                    <span class="hidden collapsed-indicator text-[11px] font-bold text-[#1d9bf0] ml-1 bg-blue-50 dark:bg-blue-900/20 px-1.5 py-0.5 rounded-full">+${toBengaliNumber(replyCount)} রিপ্লাই</span>
                 </div>
-                <div id="body-${c.id}" class="comment-content text-[15px] text-gray-800 dark:text-gray-300 leading-normal mb-1 break-words">${cleanHtml}</div>
-                
-                <div id="edit-box-${c.id}" class="hidden my-2">
-                    <textarea id="edit-in-${c.id}" class="w-full p-2 text-sm bg-gray-50 dark:bg-darkBg border border-[#1d9bf0] rounded-lg h-20 outline-none dark:text-white resize-none">${c.msg}</textarea>
-                    <div class="flex gap-2 mt-1">
-                        <button onclick="updateData('${c.id}')" class="bg-[#1d9bf0] text-white text-[11px] px-3 py-1 rounded-full font-bold">সেভ</button>
-                        <button onclick="toggleEdit('${c.id}')" class="text-gray-500 text-[11px] font-bold">বাতিল</button>
+
+                <div class="comment-body">
+                    <div id="body-${c.id}" class="comment-content text-[15px] text-gray-800 dark:text-gray-300 leading-normal mb-1 break-words">${cleanHtml}</div>
+                    
+                    <div id="edit-box-${c.id}" class="hidden my-2">
+                        <textarea id="edit-in-${c.id}" class="w-full p-2 text-sm bg-gray-50 dark:bg-darkBg border border-[#1d9bf0] rounded-lg h-20 outline-none dark:text-white resize-none">${c.msg}</textarea>
+                        <div class="flex gap-2 mt-1">
+                            <button onclick="updateData('${c.id}')" class="bg-[#1d9bf0] text-white text-[11px] px-3 py-1 rounded-full font-bold">সেভ</button>
+                            <button onclick="toggleEdit('${c.id}')" class="text-gray-500 text-[11px] font-bold">বাতিল</button>
+                        </div>
                     </div>
                 </div>
 
-                <div class="flex items-center gap-6">
-                    <button onclick="toggleReplyForm('${c.id}')" class="text-[12px] font-medium text-gray-500 hover:text-[#1d9bf0]">রিপ্লাই</button>
+                <div class="comment-footer flex items-center gap-6">
+                    <button onclick="toggleReplyForm('${c.id}', '${esc(c.name)}')" class="text-[12px] font-medium text-gray-500 hover:text-[#1d9bf0]">রিপ্লাই</button>
                     ${userIsOwner ? `
                         <button onclick="toggleEdit('${c.id}')" class="text-[12px] font-medium text-gray-500 hover:text-green-500">এডিট</button>
                         <button onclick="openDeleteModal('${c.id}')" class="text-[12px] font-medium text-gray-500 hover:text-red-500">ডিলিট</button>
@@ -303,7 +335,7 @@
                     </div>
                 </div>
 
-                <div id="form-${c.id}" class="hidden mt-3">
+                <div id="form-${c.id}" class="hidden mt-3 comment-body">
                     <div class="bg-white dark:bg-darkCard p-3 rounded-2xl border border-gray-100 dark:border-darkBorder shadow-sm">
                         <textarea id="msg-${c.id}" placeholder="আপনার রিপ্লাইটি এখানে লিখুন..." class="w-full p-2 text-sm bg-gray-50 dark:bg-darkBg border rounded-lg h-20 outline-none focus:border-[#1d9bf0] dark:text-white resize-none"></textarea>
                         <div class="flex justify-between items-center mt-2">
@@ -315,7 +347,7 @@
                     <div id="posting-status-${c.id}" class="hidden text-[11px] text-green-600 dark:text-green-400 font-medium mt-1 ml-2">আপনার মন্তব্য পোস্ট করা হচ্ছে...</div>
                 </div>
             </div>
-            <div>${c.replies.map(r => renderComment(r, depth + 1)).join('')}</div>
+            <div class="comment-replies">${c.replies.map(r => renderComment(r, depth + 1)).join('')}</div>
         </div>`;
     }
 
@@ -325,7 +357,6 @@
             let list = []; snap.forEach(doc => list.push({ id: doc.id, ...doc.data() }));
             document.getElementById('comment-count').innerText = toBengaliNumber(list.length);
             
-            // Non-admins can't see reported comments list
             if (currentSort === 'reports' && !isAdmin) {
                 container.innerHTML = `<div class="flex flex-col items-center justify-center py-20 px-4 text-center">
                     <div class="w-12 h-12 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-full flex items-center justify-center mb-4">
@@ -354,10 +385,31 @@
         });
     }
 
-    window.toggleReplyForm = (id) => document.getElementById(`form-${id}`).classList.toggle('hidden');
+    // অটো-মেনশন যুক্ত করার জন্য ফাংশন আপডেট করা হয়েছে
+    window.toggleReplyForm = (id, authorName) => {
+        const form = document.getElementById(`form-${id}`);
+        const textarea = document.getElementById(`msg-${id}`);
+        const isOpening = form.classList.contains('hidden');
+        
+        form.classList.toggle('hidden');
+        
+        if (isOpening) {
+            // যদি আগে থেকে কোনো মেনশন না থাকে, তবে যুক্ত করো
+            const mention = `@${authorName.replace(/\s+/g, '')} `;
+            if (!textarea.value.includes(mention)) {
+                textarea.value = mention + textarea.value;
+            }
+            textarea.focus();
+            // কার্সর লেখার শেষে নিয়ে যাওয়া
+            textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+        }
+    };
+
     window.toggleEdit = (id) => {
-        document.getElementById(`body-${id}`).classList.toggle('hidden');
-        document.getElementById(`edit-box-${id}`).classList.toggle('hidden');
+        const body = document.getElementById(`body-${id}`);
+        const box = document.getElementById(`edit-box-${id}`);
+        body.classList.toggle('hidden');
+        box.classList.toggle('hidden');
     };
 
     window.togglePin = async (id, isFeatured) => {
@@ -376,7 +428,6 @@
                 reportCount: increment(1) 
             });
             localStorage.setItem(`reported_${pageId}_${id}`, 'true');
-            load();
         } catch (e) { console.error(e); }
     };
 
@@ -426,7 +477,7 @@
                 featured: false,
                 reported: false,
                 reportCount: 0,
-                isAdmin: isAdmin, // যতি বর্তমানে এডমিন লগইন থাকে তবে এটি ট্রু হবে
+                isAdmin: isAdmin,
                 at: serverTimestamp() 
             });
             saveMyComment(res.id);
@@ -466,6 +517,9 @@
 
     signInAnonymously(auth).then(() => updateSortUI());
 </script>
+<style>
+    .collapsed .collapsed-indicator { display: inline-flex !important; }
+</style>
 </body>
 </html>
 
