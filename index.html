@@ -45,12 +45,9 @@
         .dark .tab-border-container { border-bottom: 2px solid #2f3336; }
         
         /* কলাপস লজিক */
-        .collapsed .comment-body, 
-        .collapsed .comment-replies, 
-        .collapsed .comment-footer { display: none; }
-        .collapse-btn { transition: transform 0.2s; }
-        .collapsed .collapse-btn { transform: rotate(-90deg); }
-        .collapsed .collapsed-indicator { display: inline-flex !important; }
+        .collapsed > .comment-replies { display: none; }
+        .collapsed .collapse-arrow { transform: rotate(-90deg); }
+        .collapse-arrow { transition: transform 0.2s; }
         
         /* মেনশন হাইলাইট */
         .mention { color: #1d9bf0; font-weight: 600; }
@@ -275,8 +272,8 @@
         const alreadyReported = localStorage.getItem(`reported_${pageId}_${c.id}`);
         const replyCount = c.replies.length;
         
-        // ডিফল্টভাবে রিপ্লাইগুলো (depth > 0) কলাপসড রাখা
-        let threadClass = depth > 0 ? 'collapsed' : '';
+        // ডিফল্টভাবে মূল কমেন্টের নিচের সব লেভেলের রিপ্লাই কলাপসড থাকবে
+        let threadClass = depth === 0 ? 'collapsed' : '';
         if (depth === 1) threadClass += ' reply-thread-root';
         else if (depth > 1) threadClass += ' reply-thread-deep';
 
@@ -284,10 +281,7 @@
         <div id="comment-${c.id}" class="${threadClass} mb-6">
             <div class="flex flex-col">
                 <div class="comment-header flex items-center gap-1.5 mb-0.5">
-                    <button onclick="toggleCollapse('${c.id}')" class="collapse-btn text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-0.5">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>
-                    </button>
-                    <span class="font-bold text-[15px] cursor-pointer hover:underline" onclick="toggleCollapse('${c.id}')">${esc(c.name)}</span>
+                    <span class="font-bold text-[15px]">${esc(c.name)}</span>
                     ${isCommentAdmin ? `
                         <span class="text-[#1d9bf0] inline-flex items-center" title="ভেরিফাইড এডমিন">
                             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M22.5 12.5c0-1.58-.88-2.95-2.18-3.66.26-1.11.17-2.3-.26-3.36s-1.24-1.9-2.25-2.43c-1.01-.54-2.2-.69-3.32-.42-1.12-.27-2.3-.12-3.32.42-1.01.53-1.82 1.37-2.25 2.43s-.52 2.25-.26 3.36C7.38 9.55 6.5 10.92 6.5 12.5c0 1.58.88 2.95 2.18 3.66-.26 1.11-.17 2.3.26 3.36s1.24 1.9 2.25 2.43c1.01.54 2.2.69 3.32.42 1.12.27 2.3.12 3.32-.42 1.01-.53 1.82-1.37 2.25-2.43s.52-2.25.26-3.36c1.3-0.71 2.18-2.08 2.18-3.66zm-10.46 4.5l-3.3-3.3 1.41-1.41 1.89 1.89 4.89-4.89 1.41 1.41-6.3 6.3z"/></svg>
@@ -301,9 +295,9 @@
                     ${isAdmin && isReported ? `<span class="text-[9px] bg-red-100 dark:bg-red-900/30 px-1.5 rounded-md font-bold text-red-500 border border-red-200 dark:border-red-800">অভিযোগ: ${toBengaliNumber(c.reportCount || 1)}</span>` : ''}
                     <span class="text-[13px] text-gray-500">· ${date}</span>
                     
-                    ${replyCount > 0 ? `
-                        <button onclick="toggleCollapse('${c.id}')" class="hidden collapsed-indicator items-center gap-1 text-[11px] font-bold text-[#1d9bf0] ml-1 bg-blue-50 dark:bg-blue-900/20 px-2 py-0.5 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors">
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>
+                    ${(depth === 0 && replyCount > 0) ? `
+                        <button onclick="toggleCollapse('${c.id}')" class="flex items-center gap-1 text-[11px] font-bold text-[#1d9bf0] ml-1 bg-blue-50 dark:bg-blue-900/20 px-2 py-0.5 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors">
+                            <svg class="w-2.5 h-2.5 collapse-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7"></path></svg>
                             ${toBengaliNumber(replyCount)}টি রিপ্লাই
                         </button>
                     ` : ''}
@@ -493,7 +487,11 @@
             });
             saveMyComment(res.id);
             if(!pid) { document.getElementById('user-comment').value = ''; toggleInput(); }
-            else document.getElementById(`form-${pid}`).classList.add('hidden');
+            else {
+                document.getElementById(`form-${pid}`).classList.add('hidden');
+                // নতুন রিপ্লাই যোগ হলে অটোমেটিক আন-কলাপস করা যাতে ইউজার দেখতে পায়
+                document.getElementById(`comment-${pid}`).classList.remove('collapsed');
+            }
         } catch (e) {
             console.error(e);
         } finally { 
