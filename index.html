@@ -33,6 +33,7 @@
             border: 1px solid #e5e7eb;
             border-radius: 16px;
             transition: all 0.2s ease;
+            overflow: hidden;
         }
         .dark .hyvor-input-wrapper {
             background: #16181c;
@@ -56,8 +57,8 @@
             font-size: 16px;
             outline: none;
             resize: none;
-            min-height: 56px;
-            max-height: 200px;
+            min-height: 80px;
+            max-height: 300px;
         }
 
         .reply-thread {
@@ -98,6 +99,11 @@
 
         .voted-up { color: #1d9bf0 !important; }
         .voted-down { color: #f91880 !important; }
+        
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body class="p-4 md:p-8 bg-white text-gray-900 dark:bg-darkBg dark:text-gray-100">
@@ -122,19 +128,20 @@
     </div>
 
     <!-- Input Area -->
-    <div class="mb-8">
+    <div class="mb-8 relative">
         <div class="hyvor-input-wrapper">
-            <div id="user-info-bar" class="flex gap-2 p-3 pb-0 hidden">
-                 <input type="text" id="user-name" placeholder="আপনার নাম..." class="text-sm px-3 py-1.5 bg-white dark:bg-darkBg border border-gray-100 dark:border-darkBorder rounded-lg outline-none focus:border-indigo-300 dark:text-white w-48">
-            </div>
             <textarea id="user-comment" placeholder="আপনার মন্তব্যটি লিখুন..." class="hyvor-textarea dark:text-gray-100" oninput="toggleInput()"></textarea>
             
-            <div class="action-bar flex p-3 border-t border-gray-100 dark:border-darkBorder justify-between items-center" id="action-bar" style="display: none;">
-                <span class="text-xs text-gray-400">নিচে পোস্ট করুন</span>
-                <button onclick="postData(null)" id="submit-btn" class="bg-[#1d9bf0] hover:bg-[#1a8cd8] text-white font-bold py-1.5 px-5 rounded-full transition-all shadow-sm text-sm">
-                    পোস্ট করুন
+            <div class="action-bar flex p-3 border-t border-gray-100 dark:border-darkBorder justify-between items-center bg-gray-50/50 dark:bg-darkCard/50" id="action-bar" style="display: none;">
+                <input type="text" id="user-name" placeholder="আপনার নাম..." class="flex-1 max-w-[200px] text-sm px-3 py-1.5 bg-white dark:bg-darkBg border border-gray-200 dark:border-darkBorder rounded-full outline-none focus:border-[#1d9bf0] dark:text-white">
+                <button onclick="postData(null)" id="submit-btn" class="bg-[#1d9bf0] hover:bg-[#1a8cd8] text-white font-bold py-1.5 px-6 rounded-full transition-all shadow-sm text-sm ml-2 min-w-[80px]">
+                    পোস্ট
                 </button>
             </div>
+        </div>
+        <!-- Warning Message -->
+        <div id="warning-null" class="hidden absolute -bottom-6 left-2 text-[11px] text-red-500 font-medium">
+            আপনার নাম লিখুন
         </div>
     </div>
 
@@ -220,11 +227,9 @@
     let currentSort = 'top';
 
     window.toggleInput = () => {
-        const infoBar = document.getElementById('user-info-bar');
         const actionBar = document.getElementById('action-bar');
         const comment = document.getElementById('user-comment').value;
         if(comment.length > 0) {
-            infoBar.classList.remove('hidden');
             actionBar.style.display = 'flex';
         } else {
             actionBar.style.display = 'none';
@@ -290,13 +295,18 @@
                         </div>
                     </div>
                     
-                    <div id="form-${c.id}" class="hidden mt-3 bg-white dark:bg-darkCard p-3 rounded-2xl border border-gray-100 dark:border-darkBorder shadow-sm">
-                        <input type="text" id="name-${c.id}" placeholder="আপনার নাম" class="w-full mb-2 p-2 text-sm bg-gray-50 dark:bg-darkBg border border-gray-100 dark:border-darkBorder rounded-lg outline-none focus:border-[#1d9bf0] dark:text-white">
-                        <textarea id="msg-${c.id}" placeholder="রিপ্লাইটি এখানে লিখুন..." class="w-full p-2 text-sm bg-gray-50 dark:bg-darkBg border border-gray-100 dark:border-darkBorder rounded-lg h-20 outline-none focus:border-[#1d9bf0] dark:text-white resize-none"></textarea>
-                        <div class="flex gap-2 mt-2">
-                            <button onclick="postData('${c.id}')" class="bg-[#1d9bf0] text-white text-[12px] px-4 py-1.5 rounded-full font-bold">রিপ্লাই</button>
-                            <button onclick="toggleReplyForm('${c.id}')" class="text-gray-400 text-[12px] font-bold px-2">বাতিল</button>
+                    <div id="form-${c.id}" class="hidden mt-3 bg-white dark:bg-darkCard p-3 rounded-2xl border border-gray-100 dark:border-darkBorder shadow-sm relative">
+                        <div class="flex flex-col sm:flex-row gap-2">
+                             <textarea id="msg-${c.id}" placeholder="রিপ্লাইটি এখানে লিখুন..." class="flex-1 p-2 text-sm bg-gray-50 dark:bg-darkBg border border-gray-100 dark:border-darkBorder rounded-lg h-20 outline-none focus:border-[#1d9bf0] dark:text-white resize-none"></textarea>
+                             <div class="flex flex-row sm:flex-col gap-2 justify-end">
+                                <input type="text" id="name-${c.id}" placeholder="নাম" class="w-24 sm:w-32 p-2 text-xs bg-gray-50 dark:bg-darkBg border border-gray-100 dark:border-darkBorder rounded-lg outline-none focus:border-[#1d9bf0] dark:text-white">
+                                <div class="flex gap-1">
+                                    <button onclick="postData('${c.id}')" id="btn-${c.id}" class="bg-[#1d9bf0] text-white text-[11px] px-3 py-1.5 rounded-full font-bold flex-1 min-w-[60px]">পোস্ট</button>
+                                    <button onclick="toggleReplyForm('${c.id}')" class="text-gray-400 text-[11px] font-bold px-2 hover:text-red-400">×</button>
+                                </div>
+                             </div>
                         </div>
+                        <div id="warning-${c.id}" class="hidden absolute -bottom-4 left-2 text-[10px] text-red-500">আপনার নাম লিখুন</div>
                     </div>
                 </div>
             </div>
@@ -342,17 +352,43 @@
         return val ? parseInt(val) : 0;
     }
 
+    window.showWarning = (id) => {
+        const warning = document.getElementById(id ? `warning-${id}` : 'warning-null');
+        warning.classList.remove('hidden');
+        setTimeout(() => warning.classList.add('hidden'), 4000);
+    }
+
     window.postData = async (parentId) => {
         const nameInput = parentId ? document.getElementById(`name-${parentId}`) : document.getElementById('user-name');
         const msgInput = parentId ? document.getElementById(`msg-${parentId}`) : document.getElementById('user-comment');
+        const submitBtn = parentId ? document.getElementById(`btn-${parentId}`) : document.getElementById('submit-btn');
+        
         const name = nameInput.value.trim();
         const msg = msgInput.value.trim();
-        if(!name || !msg) return;
+        
+        if(!name || !msg) {
+            showWarning(parentId);
+            return;
+        }
+
+        // Disable button and show loading text
+        const originalText = submitBtn.innerText;
+        submitBtn.innerText = 'পোস্ট হচ্ছে...';
+        submitBtn.disabled = true;
+
         try {
             await addDoc(commentsCol, { name, msg, parentId, votes: 0, at: serverTimestamp() });
             msgInput.value = '';
-            if(parentId) document.getElementById(`form-${parentId}`).classList.add('hidden');
-        } catch (e) { console.error("Post failed"); }
+            if(parentId) {
+                document.getElementById(`form-${parentId}`).classList.add('hidden');
+            }
+        } catch (e) { 
+            console.error("Post failed"); 
+        } finally {
+            // Restore button
+            submitBtn.innerText = originalText;
+            submitBtn.disabled = false;
+        }
     }
 
     function formatTime(timestamp) {
