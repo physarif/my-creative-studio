@@ -53,18 +53,24 @@
             display: flex;
         }
 
-        .reply-box {
+        .reply-thread {
             position: relative;
-            margin-left: 48px;
+            margin-left: 20px;
             border-left: 2px solid #f3f4f6;
-            padding-left: 16px;
-            margin-top: 12px;
+            padding-left: 20px;
+            margin-top: 16px;
+        }
+
+        @media (min-width: 640px) {
+            .reply-thread {
+                margin-left: 48px;
+            }
         }
 
         .comment-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 12px;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
             background: #f3f4f6;
             object-fit: cover;
         }
@@ -76,6 +82,7 @@
 <body class="p-4 md:p-8">
 
 <div class="max-w-3xl mx-auto">
+    <!-- Stats Header -->
     <div class="flex justify-between items-center mb-6 px-2">
         <div class="flex items-center gap-3">
             <h2 class="text-2xl font-bold text-gray-900"><span id="comment-count">0</span> Comments</h2>
@@ -86,15 +93,16 @@
         </div>
     </div>
 
+    <!-- Main Comment Input -->
     <div class="mb-10">
         <div class="hyvor-input-wrapper">
             <div id="user-info-bar" class="flex gap-2 p-3 pb-0 hidden">
-                 <input type="text" id="user-name" placeholder="Your Name" class="text-sm px-3 py-1.5 bg-white border border-gray-100 rounded-lg outline-none focus:border-indigo-300 w-48">
+                 <input type="text" id="user-name" placeholder="আপনার নাম" class="text-sm px-3 py-1.5 bg-white border border-gray-100 rounded-lg outline-none focus:border-indigo-300 w-48">
             </div>
-            <textarea id="user-comment" placeholder="Write your comment..." class="hyvor-textarea" oninput="toggleInput()"></textarea>
+            <textarea id="user-comment" placeholder="আপনার মন্তব্য লিখুন..." class="hyvor-textarea" oninput="toggleInput()"></textarea>
             
             <div class="action-bar" id="action-bar">
-                <span class="text-xs text-gray-400">Join the discussion</span>
+                <span class="text-xs text-gray-400">আলোচনায় অংশ নিন</span>
                 <button onclick="postData(null)" id="submit-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-xl transition-all shadow-sm text-sm">
                     Post Comment
                 </button>
@@ -102,12 +110,14 @@
         </div>
     </div>
 
+    <!-- Sort Bar -->
     <div class="flex items-center gap-6 mb-8 px-2 text-sm font-semibold text-gray-400 border-b border-gray-100 pb-4">
         <button id="sort-top" onclick="setSort('top')" class="text-indigo-600 transition-colors flex items-center gap-1">Top</button>
         <button id="sort-recent" onclick="setSort('recent')" class="hover:text-gray-900 transition-colors">Recent</button>
     </div>
 
-    <div id="comments-container" class="space-y-8">
+    <!-- Comments List -->
+    <div id="comments-container" class="space-y-8 pb-20">
         <div class="flex justify-center p-10">
             <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
         </div>
@@ -166,93 +176,87 @@
 
     const getAvatar = (name) => `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=f3f4f6&color=6366f1&bold=true&rounded=false&size=128`;
 
+    function buildTree(comments) {
+        const map = {};
+        const roots = [];
+        comments.forEach(c => {
+            map[c.id] = { ...c, replies: [] };
+        });
+        comments.forEach(c => {
+            if (c.parentId && map[c.parentId]) {
+                map[c.parentId].replies.push(map[c.id]);
+            } else {
+                roots.push(map[c.id]);
+            }
+        });
+        return roots;
+    }
+
+    function renderComment(c, depth = 0) {
+        const date = formatTime(c.at);
+        const avatar = getAvatar(c.name);
+        const userVote = getLocalVote(c.id);
+        
+        let html = `
+        <div class="${depth > 0 ? 'reply-thread' : 'mb-8'}">
+            <div class="flex gap-3 md:gap-4">
+                <img src="${avatar}" class="comment-avatar" alt="avatar">
+                <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-0.5">
+                        <span class="font-bold text-[14px] md:text-[15px] text-gray-900">${esc(c.name)}</span>
+                        <span class="text-[11px] text-gray-400">${date}</span>
+                    </div>
+                    <div class="text-[15px] md:text-[16px] text-gray-700 leading-relaxed mb-2">
+                        ${esc(c.msg)}
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <button onclick="toggleReplyForm('${c.id}')" class="text-[11px] font-bold text-gray-500 hover:text-indigo-600 transition-colors uppercase tracking-wider">Reply</button>
+                        <div class="flex items-center gap-2 text-gray-400 bg-gray-50 px-2 py-0.5 rounded-lg border border-gray-100">
+                             <button onclick="vote('${c.id}', 1)" class="hover:text-indigo-500 active:scale-125 transition-transform ${userVote === 1 ? 'voted-up' : ''}">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd" /></svg>
+                             </button>
+                             <span class="text-[11px] font-bold text-gray-700">${c.votes || 0}</span>
+                             <button onclick="vote('${c.id}', -1)" class="hover:text-rose-500 active:scale-125 transition-transform ${userVote === -1 ? 'voted-down' : ''}">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                             </button>
+                        </div>
+                    </div>
+                    
+                    <div id="form-${c.id}" class="hidden mt-3 bg-gray-50 p-3 rounded-2xl border border-gray-100">
+                        <input type="text" id="name-${c.id}" placeholder="আপনার নাম" class="w-full mb-2 p-2 text-sm bg-white border border-gray-200 rounded-lg outline-none focus:border-indigo-400">
+                        <textarea id="msg-${c.id}" placeholder="রিপ্লাই লিখুন..." class="w-full p-2 text-sm bg-white border border-gray-200 rounded-lg h-20 outline-none focus:border-indigo-400 resize-none"></textarea>
+                        <div class="flex gap-2 mt-2">
+                            <button onclick="postData('${c.id}')" class="bg-indigo-600 text-white text-[11px] px-4 py-1.5 rounded-lg font-bold">Reply</button>
+                            <button onclick="toggleReplyForm('${c.id}')" class="text-gray-400 text-[11px] font-bold px-2">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="replies-${c.id}">
+                ${c.replies.map(r => renderComment(r, depth + 1)).join('')}
+            </div>
+        </div>`;
+        return html;
+    }
+
     function load() {
         onSnapshot(query(commentsCol), (snap) => {
             const container = document.getElementById('comments-container');
             const countDisplay = document.getElementById('comment-count');
-            container.innerHTML = '';
             
             let allDocs = [];
             snap.forEach(doc => allDocs.push({ id: doc.id, ...doc.data() }));
             countDisplay.innerText = allDocs.length;
 
-            let parents = allDocs.filter(d => !d.parentId);
+            const tree = buildTree(allDocs);
+            
             if(currentSort === 'top') {
-                parents.sort((a,b) => (b.votes || 0) - (a.votes || 0));
+                tree.sort((a,b) => (b.votes || 0) - (a.votes || 0));
             } else {
-                parents.sort((a,b) => (b.at?.seconds || 0) - (a.at?.seconds || 0));
+                tree.sort((a,b) => (b.at?.seconds || 0) - (a.at?.seconds || 0));
             }
 
-            const replies = allDocs.filter(d => d.parentId);
-
-            if (parents.length === 0) {
-                container.innerHTML = `<p class="text-center text-gray-400 py-10 italic">No comments yet.</p>`;
-                return;
-            }
-
-            parents.forEach(p => {
-                const date = formatTime(p.at);
-                const avatar = getAvatar(p.name);
-                const userVote = getLocalVote(p.id);
-                
-                let html = `
-                <div class="group">
-                    <div class="flex gap-4">
-                        <img src="${avatar}" class="comment-avatar" alt="avatar">
-                        <div class="flex-1">
-                            <div class="flex items-center gap-2 mb-0.5">
-                                <span class="font-bold text-[15px] text-gray-900">${esc(p.name)}</span>
-                                <span class="text-xs text-gray-400">${date}</span>
-                            </div>
-                            <div class="text-[16px] text-gray-700 leading-relaxed mb-3">
-                                ${esc(p.msg)}
-                            </div>
-                            <div class="flex items-center gap-5">
-                                <button onclick="toggleReplyForm('${p.id}')" class="text-xs font-bold text-gray-500 hover:text-indigo-600 transition-colors uppercase tracking-wider">Reply</button>
-                                <div class="flex items-center gap-2 text-gray-400 bg-gray-50 px-2 py-0.5 rounded-lg border border-gray-100">
-                                     <button onclick="vote('${p.id}', 1)" class="hover:text-indigo-500 active:scale-125 transition-transform ${userVote === 1 ? 'voted-up' : ''}">
-                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd" /></svg>
-                                     </button>
-                                     <span class="text-xs font-bold text-gray-700">${p.votes || 0}</span>
-                                     <button onclick="vote('${p.id}', -1)" class="hover:text-rose-500 active:scale-125 transition-transform ${userVote === -1 ? 'voted-down' : ''}">
-                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
-                                     </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div id="replies-${p.id}" class="space-y-6"></div>
-                    
-                    <div id="form-${p.id}" class="hidden mt-4 ml-14 bg-gray-50 p-4 rounded-2xl border border-gray-100">
-                        <input type="text" id="name-${p.id}" placeholder="Your Name" class="w-full mb-2 p-2 text-sm bg-white border border-gray-200 rounded-lg outline-none focus:border-indigo-400">
-                        <textarea id="msg-${p.id}" placeholder="Write a reply..." class="w-full p-2 text-sm bg-white border border-gray-200 rounded-lg h-20 outline-none focus:border-indigo-400 resize-none"></textarea>
-                        <div class="flex gap-2 mt-2">
-                            <button onclick="postData('${p.id}')" class="bg-indigo-600 text-white text-xs px-4 py-2 rounded-lg font-bold">Post Reply</button>
-                            <button onclick="toggleReplyForm('${p.id}')" class="text-gray-400 text-xs font-bold px-2">Cancel</button>
-                        </div>
-                    </div>
-                </div>`;
-                container.innerHTML += html;
-
-                const childs = replies.filter(r => r.parentId === p.id).sort((a,b) => (a.at?.seconds || 0) - (b.at?.seconds || 0));
-                const replyContainer = document.getElementById(`replies-${p.id}`);
-                childs.forEach(c => {
-                    replyContainer.innerHTML += `
-                    <div class="reply-box">
-                        <div class="flex gap-3">
-                            <img src="${getAvatar(c.name)}" class="w-8 h-8 rounded-lg" alt="avatar">
-                            <div class="flex-1">
-                                <div class="flex items-center gap-2 mb-0.5">
-                                    <span class="font-bold text-sm text-gray-800">${esc(c.name)}</span>
-                                    <span class="text-[10px] text-gray-400 font-bold">${formatTime(c.at)}</span>
-                                </div>
-                                <p class="text-sm text-gray-600">${esc(c.msg)}</p>
-                            </div>
-                        </div>
-                    </div>`;
-                });
-            });
+            container.innerHTML = tree.length > 0 ? tree.map(c => renderComment(c)).join('') : `<p class="text-center text-gray-400 py-10 italic">এখনও কোনো মন্তব্য নেই। আলোচনা শুরু করুন!</p>`;
         });
     }
 
@@ -284,7 +288,7 @@
         const msgInput = parentId ? document.getElementById(`msg-${parentId}`) : document.getElementById('user-comment');
         const name = nameInput.value.trim();
         const msg = msgInput.value.trim();
-        if(!name || !msg) return alert('Name and message are required!');
+        if(!name || !msg) return;
         try {
             await addDoc(commentsCol, { name, msg, parentId, votes: 0, at: serverTimestamp() });
             msgInput.value = '';
@@ -293,13 +297,13 @@
     }
 
     function formatTime(timestamp) {
-        if(!timestamp) return 'Just now';
+        if(!timestamp) return 'এইমাত্র';
         const date = new Date(timestamp.seconds * 1000);
         const diff = Math.floor((new Date() - date) / 1000);
-        if (diff < 60) return 'Just now';
-        if (diff < 3600) return Math.floor(diff/60) + 'm ago';
-        if (diff < 86400) return Math.floor(diff/3600) + 'h ago';
-        return date.toLocaleDateString();
+        if (diff < 60) return 'এইমাত্র';
+        if (diff < 3600) return Math.floor(diff/60) + 'মি. আগে';
+        if (diff < 86400) return Math.floor(diff/3600) + 'ঘণ্টা আগে';
+        return date.toLocaleDateString('bn-BD');
     }
 
     function esc(t) {
@@ -312,3 +316,4 @@
 </script>
 </body>
 </html>
+
