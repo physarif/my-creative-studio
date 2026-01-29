@@ -217,6 +217,8 @@
     let currentSort = 'top';
     let visibleCount = 10;
     let allRootThreads = [];
+    // User manual collapse state tracker
+    const manualCollapseStates = {};
 
     // Theme Management
     const themeToggle = document.getElementById('theme-toggle');
@@ -346,8 +348,12 @@
     window.toggleCollapse = (id) => {
         const el = document.getElementById(`comment-${id}`);
         const depth = parseInt(el.dataset.depth);
-        if (depth === 0) el.classList.toggle('collapsed-parent');
-        else el.classList.toggle('collapsed');
+        if (depth === 0) {
+            const isCollapsing = el.classList.toggle('collapsed-parent');
+            manualCollapseStates[id] = isCollapsing; // Store manual state
+        } else {
+            el.classList.toggle('collapsed');
+        }
     };
 
     function renderComment(c, depth = 0) {
@@ -361,11 +367,21 @@
         const cleanHtml = DOMPurify.sanitize(messageHtml);
         
         const isFeatured = c.featured === true;
-        const isReported = c.reported === true;
-        const alreadyReported = localStorage.getItem(`reported_${pageId}_${c.id}`);
         const replyCount = c.replies.length;
         
-        let threadClass = (depth === 0 && replyCount > 0) ? 'collapsed-parent' : '';
+        // Logical check for collapse state
+        // If it's a root comment with replies, it defaults to collapsed 
+        // UNLESS the user has interacted with it (manualCollapseStates)
+        let isCollapsed = false;
+        if (depth === 0 && replyCount > 0) {
+            if (manualCollapseStates[c.id] === undefined) {
+                isCollapsed = true; // Default behavior
+            } else {
+                isCollapsed = manualCollapseStates[c.id]; // User preference
+            }
+        }
+
+        let threadClass = isCollapsed ? 'collapsed-parent' : '';
         if (depth === 1) threadClass += ' reply-thread-root';
         else if (depth > 1) threadClass += ' reply-thread-deep';
 
@@ -380,7 +396,7 @@
                     </div>
                     <div class="flex items-center gap-1.5 text-gray-400">
                         <span class="text-[13px] text-gray-500">· ${date}</span>
-                        ${!userIsOwner && !alreadyReported ? `
+                        ${!userIsOwner ? `
                             <button onclick="reportComment('${c.id}')" class="hover:text-red-500 transition-colors" title="অভিযোগ জানান">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"></path></svg>
                             </button>` : ''}
@@ -467,7 +483,7 @@
             else if (currentSort === 'reports') tree = tree.filter(c => c.reported === true);
             tree.sort((a,b) => (currentSort === 'top' ? (b.votes - a.votes) : (b.at?.seconds - a.at?.seconds)));
             allRootThreads = tree; renderDisplay();
-        });
+        }, (error) => console.log(error));
     }
 
     window.toggleReplyForm = (id, authorName = null) => {
@@ -515,9 +531,17 @@
                 name: n, msg: m, parentId: pid, votes: 0, featured: false, reported: false, isAdmin: isAdmin,
                 photoURL: currentUser?.photoURL || null, userId: currentUser?.uid || null, at: serverTimestamp() 
             });
+            
+            // If replying, ensure parent is expanded so user sees their new post
+            if (pid) {
+                manualCollapseStates[pid] = false;
+                document.getElementById(`form-${pid}`).classList.add('hidden');
+            } else {
+                document.getElementById('user-comment').value = ''; 
+                togglePostModal();
+            }
+            
             if (!currentUser || currentUser.isAnonymous) saveMyComment(res.id);
-            if(!pid) { document.getElementById('user-comment').value = ''; togglePostModal(); }
-            else { document.getElementById(`form-${pid}`).classList.add('hidden'); }
         } catch (e) {}
     };
 
@@ -529,7 +553,7 @@
 
     window.toggleEdit = (id) => { document.getElementById(`body-${id}`).classList.toggle('hidden'); document.getElementById(`edit-box-${id}`).classList.toggle('hidden'); };
     window.togglePin = async (id, isFeatured) => { try { await updateDoc(doc(db, 'blog_comments', 'pages', pageId, id), { featured: isFeatured }); } catch (e) {} };
-    window.reportComment = async (id) => { if (localStorage.getItem(`reported_${pageId}_${id}`)) return; try { await updateDoc(doc(db, 'blog_comments', 'pages', pageId, id), { reported: true, reportCount: increment(1) }); localStorage.setItem(`reported_${pageId}_${id}`, 'true'); } catch (e) {} };
+    window.reportComment = async (id) => { if (localStorage.getItem(`reported_${pageId}_${id}`)) return; try { await updateDoc(doc(db, 'blog_comments', 'pages', pageId, id), { reported: true }); localStorage.setItem(`reported_${pageId}_${id}`, 'true'); } catch (e) {} };
     window.openDeleteModal = (id) => { window.delId = id; document.getElementById('delete-modal').classList.replace('hidden', 'flex'); };
     window.closeDeleteModal = () => document.getElementById('delete-modal').classList.replace('flex', 'hidden');
     document.getElementById('confirm-delete-btn').onclick = async () => { try { await deleteDoc(doc(db, 'blog_comments', 'pages', pageId, window.delId)); closeDeleteModal(); } catch (e) {} };
