@@ -197,8 +197,6 @@
             </div>
         </div>
 
-        <!-- login-footer removed as per instruction to replace Cancel with Cross icon -->
-        
         <div id="posting-status-null" class="hidden text-[12px] text-green-600 p-4 text-center">আপনার পোস্টটি শেয়ার করা হচ্ছে...</div>
     </div>
 </div>
@@ -374,6 +372,7 @@
 
     window.toggleCollapse = (id) => {
         const el = document.getElementById(`comment-${id}`);
+        if (!el) return;
         const depth = parseInt(el.dataset.depth);
         if (depth === 0) el.classList.toggle('collapsed-parent');
         else el.classList.toggle('collapsed');
@@ -387,8 +386,10 @@
         messageHtml = messageHtml.replace(/(@[^\s\n]+)/g, '<span class="mention">$1</span>');
         
         let threadClass = (depth === 0 && c.replies.length > 0) ? 'collapsed-parent' : '';
-        if (depth === 1) threadClass += ' reply-thread-root';
-        else if (depth > 1) threadClass += ' ml-4 pl-4 border-l dark:border-darkBorder';
+        
+        // Restriction: Max 2 levels of indentation (0, 1, 2)
+        const currentDepthClass = depth === 1 ? 'reply-thread-root' : (depth >= 2 ? 'ml-4 pl-4 border-l dark:border-darkBorder' : '');
+        threadClass += ` ${currentDepthClass}`;
 
         const isLoggedIn = currentUser && !currentUser.isAnonymous;
 
@@ -408,10 +409,12 @@
                 </div>
                 <div class="comment-footer flex items-center justify-between mt-1">
                     <div class="flex items-center gap-4">
+                        ${depth === 0 ? `
                         <div class="flex items-center gap-2 text-gray-500">
                              <button onclick="vote('${c.id}', 1)" class="${userVote == 1 ? 'voted-up' : ''} flex items-center gap-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M5 15l7-7 7 7" /></svg><span class="text-[12px] font-bold">${toBengaliNumber(c.votes || 0)}</span></button>
                              <button onclick="vote('${c.id}', -1)" class="${userVote == -1 ? 'voted-down' : ''}"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M19 9l-7 7-7-7" /></svg></button>
                         </div>
+                        ` : ''}
                         <button onclick="toggleReplyForm('${c.id}', '${esc(c.name)}')" class="text-[12px] text-gray-500">রিপ্লাই</button>
                         ${depth === 0 ? `<button onclick="toggleCollapse('${c.id}')" class="text-[11px] font-bold text-[#1d9bf0] bg-blue-50 dark:bg-blue-900/20 px-2 rounded-full flex items-center gap-1"><svg class="w-2 h-2 collapse-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="3" d="M19 15l-7-7-7 7"></path></svg>${toBengaliNumber(c.replies.length)} রিপ্লাই</button>` : ''}
                     </div>
