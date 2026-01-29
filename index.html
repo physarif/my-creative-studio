@@ -125,8 +125,12 @@
         .voted-up { color: #1d9bf0 !important; }
         .voted-down { color: #f4245e !important; }
 
-        .collapsed .comment-replies, .collapsed .comment-content, .collapsed .comment-actions { display: none; }
-        .collapse-trigger { cursor: pointer; }
+        /* Collapse styling */
+        .collapsed .comment-replies, 
+        .collapsed .comment-content, 
+        .collapsed .comment-actions,
+        .collapsed .reply-form-container { display: none; }
+        .reply-counter { cursor: pointer; user-select: none; }
     </style>
 </head>
 <body class="p-4 md:p-8 bg-white text-gray-900 dark:bg-darkBg dark:text-gray-100 pb-32">
@@ -314,11 +318,17 @@
         return roots;
     }
 
+    function countTotalReplies(replies) {
+        let count = replies.length;
+        replies.forEach(r => count += countTotalReplies(r.replies));
+        return count;
+    }
+
     function renderDisplay() {
         const container = document.getElementById('comments-container');
         const loadMoreBtn = document.getElementById('load-more-container');
         const subset = allRootThreads.slice(0, visibleCount);
-        container.innerHTML = subset.length > 0 ? subset.map(c => renderComment(c)).join('') : `<p class="text-center text-gray-400 py-10 italic text-sm">কোনো পোস্ট পাওয়া যায়নি।</p>`;
+        container.innerHTML = subset.length > 0 ? subset.map(c => renderComment(c, 0, countTotalReplies(c.replies))).join('') : `<p class="text-center text-gray-400 py-10 italic text-sm">কোনো পোস্ট পাওয়া যায়নি।</p>`;
         if (allRootThreads.length > visibleCount) loadMoreBtn.classList.remove('hidden');
         else loadMoreBtn.classList.add('hidden');
     }
@@ -327,24 +337,22 @@
 
     window.toggleCollapse = (id) => {
         const el = document.getElementById(`comment-${id}`);
-        el.classList.toggle('collapsed');
+        if (el) el.classList.toggle('collapsed');
     };
 
-    function renderComment(c, depth = 0) {
+    function renderComment(c, depth = 0, totalReplyCount = 0) {
         const date = formatTime(c.at);
         let messageHtml = DOMPurify.sanitize(marked.parse(c.msg));
         let threadClass = depth === 0 ? 'border-b dark:border-darkBorder pb-6' : 'ml-4 pl-4 border-l dark:border-darkBorder';
         const voteStatus = localStorage.getItem(`voted_${pageId}_${c.id}`);
-        const replyCount = c.replies.length;
 
         return `
         <div id="comment-${c.id}" class="${threadClass} mb-4">
             <div class="flex flex-col">
-                <div class="flex items-center gap-2 mb-1.5 collapse-trigger" onclick="toggleCollapse('${c.id}')">
+                <div class="flex items-center gap-2 mb-1.5">
                     <img src="${c.photoURL || 'https://www.gravatar.com/avatar/000?d=mp'}" class="w-5 h-5 rounded-full">
                     <span class="font-bold text-sm ${c.isAdmin ? 'text-blue-500' : ''}">${esc(c.name)}</span>
                     <span class="text-[11px] text-gray-400">· ${date}</span>
-                    ${replyCount > 0 ? `<span class="bg-gray-100 dark:bg-darkBorder/50 text-gray-500 text-[10px] px-2 py-0.5 rounded-full font-bold ml-1">${toBengaliNumber(replyCount)} উত্তর</span>` : ''}
                 </div>
                 <div class="comment-content text-[15px] dark:text-gray-300 break-words">${messageHtml}</div>
                 <div class="comment-actions flex items-center gap-4 mt-2 text-gray-500 text-[11px]">
@@ -358,8 +366,14 @@
                         </button>
                     </div>
                     <button onclick="toggleReplyForm('${c.id}', '${esc(c.name)}')" class="hover:text-[#1d9bf0] font-bold">রিপ্লাই</button>
+                    
+                    ${depth === 0 && totalReplyCount > 0 ? `
+                        <button onclick="toggleCollapse('${c.id}')" class="reply-counter bg-gray-100 dark:bg-darkBorder/50 text-gray-500 hover:text-[#1d9bf0] text-[10px] px-2 py-0.5 rounded-full font-bold transition-all">
+                            ${toBengaliNumber(totalReplyCount)} উত্তর
+                        </button>
+                    ` : ''}
                 </div>
-                <div id="reply-form-${c.id}" class="hidden mt-3">
+                <div id="reply-form-${c.id}" class="reply-form-container hidden mt-3">
                     <textarea id="msg-${c.id}" placeholder="আপনার উত্তর..." class="w-full p-2 bg-gray-50 dark:bg-darkBorder/20 rounded-lg text-sm outline-none border dark:border-darkBorder dark:text-white h-20 resize-none"></textarea>
                     <button onclick="postData('${c.id}')" class="bg-[#1d9bf0] text-white text-[10px] px-4 py-1.5 rounded-full font-bold mt-1">পোস্ট</button>
                 </div>
