@@ -341,7 +341,7 @@
         const date = formatTime(c.at);
         let messageHtml = DOMPurify.sanitize(marked.parse(c.msg));
         
-        // Use a base class and toggle 'collapsed-thread' only for roots by default
+        // Base structure
         let threadClass = depth === 0 ? 'border-b dark:border-darkBorder pb-6' : 'ml-4 pl-4 border-l dark:border-darkBorder';
         if (depth === 0 && totalReplyCount > 0) {
             threadClass += ' collapsed-thread';
@@ -350,35 +350,35 @@
         const voteStatus = localStorage.getItem(`voted_${pageId}_${c.id}`);
 
         return `
-        <div id="comment-${c.id}" class="${threadClass} mb-4">
+        <div id="comment-${c.id}" class="${threadClass} mb-4 relative">
             <div class="flex flex-col">
                 <div class="flex items-center gap-2 mb-1.5">
                     <img src="${c.photoURL || 'https://www.gravatar.com/avatar/000?d=mp'}" class="w-5 h-5 rounded-full">
                     <span class="font-bold text-sm ${c.isAdmin ? 'text-blue-500' : ''}">${esc(c.name)}</span>
                     <span class="text-[11px] text-gray-400">· ${date}</span>
                 </div>
-                <div class="comment-content text-[15px] dark:text-gray-300 break-words">${messageHtml}</div>
+                <div class="comment-content text-[15px] dark:text-gray-300 break-words" onclick="event.stopPropagation()">${messageHtml}</div>
                 <div class="comment-actions flex items-center gap-4 mt-2 text-gray-500 text-[11px]">
-                    <div class="flex items-center gap-1.5 bg-gray-50 dark:bg-darkBorder/30 rounded-full px-2 py-0.5">
-                        <button onclick="vote('${c.id}', 1)" class="hover:text-[#1d9bf0] transition-colors ${voteStatus === 'up' ? 'voted-up' : ''}">
+                    <div class="flex items-center gap-1.5 bg-gray-50 dark:bg-darkBorder/30 rounded-full px-2 py-0.5" onclick="event.stopPropagation()">
+                        <button onclick="vote('${c.id}', 1); event.stopPropagation();" class="hover:text-[#1d9bf0] transition-colors ${voteStatus === 'up' ? 'voted-up' : ''}">
                             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12.781 2.375c-.381-.475-1.181-.475-1.562 0l-8 10A1.001 1.001 0 004 14h4v7a1 1 0 001 1h6a1 1 0 001-1v-7h4a1.001 1.001 0 00-.781-1.625l-8-10z"/></svg>
                         </button>
                         <span class="font-bold min-w-[12px] text-center">${toBengaliNumber(c.votes || 0)}</span>
-                        <button onclick="vote('${c.id}', -1)" class="hover:text-[#f4245e] transition-colors ${voteStatus === 'down' ? 'voted-down' : ''}">
+                        <button onclick="vote('${c.id}', -1); event.stopPropagation();" class="hover:text-[#f4245e] transition-colors ${voteStatus === 'down' ? 'voted-down' : ''}">
                             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M11.219 21.625c.381.475 1.181.475 1.562 0l8-10A1.001 1.001 0 0020 10h-4V3a1 1 0 00-1-1H9a1 1 0 00-1 1v7H4a1.001 1.001 0 00-.781 1.625l8 10z"/></svg>
                         </button>
                     </div>
-                    <button onclick="toggleReplyForm('${c.id}', '${esc(c.name)}')" class="hover:text-[#1d9bf0] font-bold">রিপ্লাই</button>
+                    <button onclick="toggleReplyForm('${c.id}', '${esc(c.name)}'); event.stopPropagation();" class="hover:text-[#1d9bf0] font-bold">রিপ্লাই</button>
                     
                     ${depth === 0 && totalReplyCount > 0 ? `
-                        <button onclick="toggleCollapse('${c.id}')" class="reply-counter bg-gray-100 dark:bg-darkBorder/50 text-gray-500 hover:text-[#1d9bf0] text-[10px] px-2 py-0.5 rounded-full font-bold transition-all">
+                        <button onclick="toggleCollapse('${c.id}'); event.stopPropagation();" class="reply-counter bg-gray-100 dark:bg-darkBorder/50 text-gray-500 hover:text-[#1d9bf0] text-[10px] px-2 py-0.5 rounded-full font-bold transition-all">
                             ${toBengaliNumber(totalReplyCount)} রিপ্লাই
                         </button>
                     ` : ''}
                 </div>
-                <div id="reply-form-${c.id}" class="reply-form-container hidden mt-3">
+                <div id="reply-form-${c.id}" class="reply-form-container hidden mt-3" onclick="event.stopPropagation()">
                     <textarea id="msg-${c.id}" placeholder="আপনার রিপ্লাই..." class="w-full p-2 bg-gray-50 dark:bg-darkBorder/20 rounded-lg text-sm outline-none border dark:border-darkBorder dark:text-white h-20 resize-none"></textarea>
-                    <button onclick="postData('${c.id}')" class="bg-[#1d9bf0] text-white text-[10px] px-4 py-1.5 rounded-full font-bold mt-1">পোস্ট</button>
+                    <button onclick="postData('${c.id}'); event.stopPropagation();" class="bg-[#1d9bf0] text-white text-[10px] px-4 py-1.5 rounded-full font-bold mt-1">পোস্ট</button>
                 </div>
             </div>
             <div class="comment-replies mt-2" onclick="event.stopPropagation()">${c.replies.map(r => renderComment(r, depth + 1)).join('')}</div>
