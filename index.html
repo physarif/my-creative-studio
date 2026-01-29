@@ -110,7 +110,7 @@
                     </div>
                 </div>
 
-                <!-- Google Login Widget as Button -->
+                <!-- Google Login Widget -->
                 <button onclick="googleLogin()" id="login-trigger-btn" class="flex items-center gap-2 bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder px-3 py-1.5 rounded-full shadow-sm hover:shadow-md transition-all">
                     <svg class="w-4 h-4" viewBox="0 0 48 48">
                         <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path>
@@ -155,19 +155,16 @@
 <!-- Post Modal Overlay -->
 <div id="post-modal-overlay" onclick="closeModalOnOutsideClick(event)">
     <div class="post-modal-content">
-        <!-- Header for logged in users -->
         <div id="post-header-auth" class="flex items-center justify-between p-4 border-b border-gray-100 dark:border-darkBorder hidden">
             <button onclick="togglePostModal()" class="text-gray-500 dark:text-gray-400 font-medium text-sm">বাতিল</button>
             <button onclick="postData(null)" id="submit-btn" class="bg-[#1d9bf0] hover:bg-[#1a8cd8] text-white font-bold py-1.5 px-6 rounded-full text-sm">পোস্ট</button>
         </div>
 
         <div class="p-4">
-            <!-- Textarea only for logged in users -->
             <div id="textarea-container" class="hidden">
                 <textarea id="user-comment" placeholder="আপনার পোস্টটি লিখুন..." class="w-full bg-transparent text-lg outline-none min-h-[150px] dark:text-white resize-none" autofocus></textarea>
             </div>
 
-            <!-- Login Prompt for logged out users -->
             <div id="login-required-prompt" class="py-10 text-center space-y-4">
                 <div class="flex justify-center">
                     <div class="w-16 h-16 bg-blue-50 dark:bg-blue-900/20 rounded-full flex items-center justify-center text-[#1d9bf0]">
@@ -198,7 +195,7 @@
     </div>
 </div>
 
-<!-- Admin Key Trigger (Hidden) -->
+<!-- Hidden Admin Trigger -->
 <div onclick="toggleLoginModal()" class="fixed top-0 left-0 w-8 h-8 opacity-0 cursor-default z-[50]"></div>
 
 <!-- Admin Login Modal -->
@@ -293,20 +290,16 @@
             isAdmin = false;
             userInfoUi.classList.add('hidden');
             loginTrigger.classList.remove('hidden');
-            
             postHeaderAuth.classList.add('hidden');
             textareaContainer.classList.add('hidden');
             loginPrompt.classList.remove('hidden');
-            
             adminBadge.classList.add('hidden');
         }
         load();
     });
 
     window.googleLogin = async () => {
-        try {
-            await signInWithPopup(auth, provider);
-        } catch (e) {}
+        try { await signInWithPopup(auth, provider); } catch (e) {}
     };
 
     window.adminLogin = async () => {
@@ -412,14 +405,19 @@
                         ${isAdmin ? `<button onclick="togglePin('${c.id}', ${!c.featured})" class="text-[12px] ${c.featured ? 'text-amber-500' : 'text-gray-400'}">পিন</button>` : ''}
                     </div>
                 </div>
-                <div id="form-${c.id}" class="hidden mt-3 bg-gray-50 dark:bg-darkCard/50 p-2 rounded-xl border border-gray-100 dark:border-darkBorder relative">
+                
+                <!-- Reply Form Section -->
+                <div id="form-${c.id}" class="hidden mt-3 bg-gray-50 dark:bg-darkCard/50 p-2 rounded-xl border border-gray-100 dark:border-darkBorder">
                     ${isLoggedIn ? `
-                        <!-- Close Button -->
-                        <button onclick="toggleReplyForm('${c.id}')" class="absolute top-2 right-2 text-gray-400 hover:text-red-500 p-1">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
-                        </button>
-                        <textarea id="msg-${c.id}" placeholder="আপনার উত্তরটি লিখুন..." class="w-full p-2 pr-8 text-sm bg-transparent outline-none dark:text-white resize-none h-20" autofocus></textarea>
-                        <div class="flex justify-end mt-1">
+                        <textarea id="msg-${c.id}" placeholder="আপনার উত্তরটি লিখুন..." class="w-full p-2 text-sm bg-transparent outline-none dark:text-white resize-none h-20" autofocus></textarea>
+                        
+                        <!-- Actions Row: Cancel on Left, Post on Right -->
+                        <div class="flex justify-between items-center mt-1">
+                            <button onclick="toggleReplyForm('${c.id}')" class="text-gray-400 hover:text-red-500 p-1 transition-colors" title="বাতিল">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
                             <button onclick="postData('${c.id}')" id="btn-${c.id}" class="bg-[#1d9bf0] text-white text-[11px] px-4 py-1.5 rounded-full font-bold">পোস্ট</button>
                         </div>
                     ` : `
@@ -470,7 +468,6 @@
         const isOpening = form.classList.toggle('hidden') === false;
         
         if (isOpening && authorName && textarea) {
-            // Only add mention if textarea is empty or doesn't have it
             if(!textarea.value.trim()) {
                 textarea.value = `@${authorName.replace(/\s+/g, '')} `;
             }
@@ -501,13 +498,8 @@
 
     window.postData = async (pid) => {
         if (!currentUser || currentUser.isAnonymous) return;
-        
         const m = pid ? document.getElementById(`msg-${pid}`).value : document.getElementById('user-comment').value;
         if(!m?.trim()) return;
-
-        const statusDiv = document.getElementById(pid ? `posting-status-${pid}` : 'posting-status-null');
-        if(statusDiv) statusDiv.classList.remove('hidden');
-
         try {
             await addDoc(commentsCol, { 
                 name: currentUser.displayName, msg: m, parentId: pid, votes: 0, featured: false, reported: false, reportCount: 0, 
@@ -515,7 +507,7 @@
             });
             if(!pid) { document.getElementById('user-comment').value = ''; togglePostModal(); }
             else { document.getElementById(`msg-${pid}`).value = ''; toggleReplyForm(pid); }
-        } catch (e) {} finally { if(statusDiv) statusDiv.classList.add('hidden'); }
+        } catch (e) {}
     };
 
     window.updateData = async (id) => {
