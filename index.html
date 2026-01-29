@@ -94,43 +94,48 @@
 <body class="p-4 md:p-8 bg-white text-gray-900 dark:bg-darkBg dark:text-gray-100 pb-24">
 
 <div class="max-w-2xl mx-auto">
-    <!-- Header: Auth Section (Top) -->
-    <div class="flex items-center justify-between mb-4 px-2">
-        <div id="auth-section">
-            <div id="user-info-ui" class="hidden flex items-center gap-2">
-                <img id="user-avatar" src="" class="w-8 h-8 rounded-full border border-gray-200 dark:border-darkBorder cursor-pointer" onclick="goToMyProfile()">
-                <div class="flex flex-col">
-                    <span id="display-name-nav" class="text-[11px] font-bold truncate max-w-[80px]"></span>
-                    <button onclick="handleLogout()" class="text-[9px] font-bold text-gray-500 uppercase hover:text-red-500 transition-colors text-left">লগআউট</button>
+    <!-- Main Header Bar -->
+    <div class="flex items-center justify-between mb-8 px-2">
+        
+        <!-- Left Side: Theme Toggle & Sorting -->
+        <div class="flex items-center gap-3">
+            <!-- Theme Toggle -->
+            <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-darkCard transition-all">
+                <svg id="sun-icon" class="w-5 h-5 hidden text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" /></svg>
+                <svg id="moon-icon" class="w-5 h-5 hidden text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" /></svg>
+            </button>
+
+            <!-- Sorting Dropdown -->
+            <div class="relative inline-block">
+                <button onclick="toggleSortDropdown()" id="sort-btn" class="flex items-center gap-1.5 border border-gray-300 dark:border-darkBorder rounded px-2.5 py-1 text-sm font-semibold bg-white dark:bg-darkCard">
+                    <span id="current-sort-label">সেরা</span>
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                <div id="sort-dropdown" class="dropdown-content left-0 mt-1 rounded-xl overflow-hidden shadow-xl border border-gray-100 dark:border-darkBorder">
+                    <button onclick="setSort('top', 'সেরা')" class="hover:bg-gray-50 dark:hover:bg-darkBorder">সেরা</button>
+                    <button onclick="setSort('recent', 'সাম্প্রতিক')" class="hover:bg-gray-50 dark:hover:bg-darkBorder">সাম্প্রতিক</button>
+                    <button onclick="setSort('featured', 'নির্বাচিত')" class="hover:bg-gray-50 dark:hover:bg-darkBorder">নির্বাচিত</button>
+                    <button onclick="setSort('reports', 'অভিযোগ')" class="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10">অভিযোগ</button>
                 </div>
             </div>
-            <div id="admin-badge-ui" class="hidden flex items-center gap-1.5 bg-blue-50 dark:bg-blue-500/10 px-2 py-0.5 rounded-full border border-blue-100 dark:border-blue-500/20">
-                <span class="text-[10px] font-bold text-blue-700 dark:text-blue-500 uppercase">এডমিন</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- Controls: Sort on Left, Theme on Right -->
-    <div class="flex items-center justify-between mb-8 px-2">
-        <!-- Sorting Dropdown (Left) -->
-        <div class="relative inline-block">
-            <button onclick="toggleSortDropdown()" id="sort-btn" class="flex items-center gap-1.5 border border-gray-300 dark:border-darkBorder rounded px-2.5 py-1 text-sm font-semibold bg-white dark:bg-darkCard">
-                <span id="current-sort-label">সেরা</span>
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>
-            </button>
-            <div id="sort-dropdown" class="dropdown-content left-0 mt-1 rounded-xl overflow-hidden shadow-xl border border-gray-100 dark:border-darkBorder">
-                <button onclick="setSort('top', 'সেরা')" class="hover:bg-gray-50 dark:hover:bg-darkBorder">সেরা</button>
-                <button onclick="setSort('recent', 'সাম্প্রতিক')" class="hover:bg-gray-50 dark:hover:bg-darkBorder">সাম্প্রতিক</button>
-                <button onclick="setSort('featured', 'নির্বাচিত')" class="hover:bg-gray-50 dark:hover:bg-darkBorder">নির্বাচিত</button>
-                <button onclick="setSort('reports', 'অভিযোগ')" class="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10">অভিযোগ</button>
-            </div>
         </div>
 
-        <!-- Theme Toggle (Right) -->
-        <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-darkCard transition-all">
-            <svg id="sun-icon" class="w-5 h-5 hidden text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" /></svg>
-            <svg id="moon-icon" class="w-5 h-5 hidden text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" /></svg>
-        </button>
+        <!-- Right Side: Login/Profile -->
+        <div id="auth-section">
+            <div id="user-info-ui" class="hidden flex items-center gap-2">
+                <div class="flex flex-col items-end">
+                    <span id="display-name-nav" class="text-[11px] font-bold truncate max-w-[80px]"></span>
+                    <button onclick="handleLogout()" class="text-[9px] font-bold text-gray-500 uppercase hover:text-red-500 transition-colors text-right">লগআউট</button>
+                </div>
+                <img id="user-avatar" src="" class="w-8 h-8 rounded-full border border-gray-200 dark:border-darkBorder">
+                <div id="admin-badge-ui" class="hidden absolute -top-1 -right-1">
+                    <div class="w-3 h-3 bg-blue-500 rounded-full border-2 border-white dark:border-darkBg"></div>
+                </div>
+            </div>
+            <div id="login-ui" class="flex items-center">
+                <button onclick="togglePostModal()" class="text-sm font-bold bg-[#1d9bf0] text-white px-4 py-1.5 rounded-full hover:bg-[#1a8cd8] transition-colors shadow-sm">লগইন</button>
+            </div>
+        </div>
     </div>
 
     <div id="comments-container" class="space-y-6"></div>
@@ -164,7 +169,7 @@
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
                 <p class="text-gray-500 dark:text-gray-400 font-medium text-sm">পোস্ট করতে দয়া করে লগইন করুন</p>
-                <button onclick="googleLogin()" class="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder py-2.5 px-8 rounded-full font-bold shadow-sm text-sm">লগইন করুন</button>
+                <button onclick="googleLogin()" class="bg-[#1d9bf0] text-white py-2.5 px-8 rounded-full font-bold shadow-md text-sm hover:bg-[#1a8cd8] transition-colors">গুগল দিয়ে লগইন</button>
             </div>
         </div>
     </div>
@@ -198,13 +203,11 @@
     let allRootThreads = [];
 
     window.toggleSortDropdown = () => document.getElementById("sort-dropdown").classList.toggle("show");
-    window.goToMyProfile = () => { if(currentUser && !currentUser.isAnonymous) window.location.href = `profile.html?uid=${currentUser.uid}`; };
-    window.goToProfile = (uid) => { window.location.href = `profile.html?uid=${uid}`; };
 
     window.onclick = (e) => {
         if (!e.target.closest('#sort-btn')) {
             const dropdown = document.getElementById("sort-dropdown");
-            if (dropdown.classList.contains('show')) dropdown.classList.remove('show');
+            if (dropdown && dropdown.classList.contains('show')) dropdown.classList.remove('show');
         }
     };
 
@@ -218,6 +221,7 @@
     onAuthStateChanged(auth, (user) => {
         currentUser = user;
         const userInfoUi = document.getElementById('user-info-ui');
+        const loginUi = document.getElementById('login-ui');
         const postHeaderAuth = document.getElementById('post-header-auth');
         const textareaContainer = document.getElementById('textarea-container');
         const loginPrompt = document.getElementById('login-required-prompt');
@@ -225,6 +229,7 @@
         if (user && !user.isAnonymous) {
             isAdmin = (user.email === 'admin@fisarif.com' || user.email === 'fisarif@gmail.com'); 
             userInfoUi.classList.remove('hidden');
+            loginUi.classList.add('hidden');
             document.getElementById('user-avatar').src = user.photoURL || 'https://www.gravatar.com/avatar/000?d=mp';
             document.getElementById('display-name-nav').textContent = user.displayName || 'ব্যবহারকারী';
             postHeaderAuth.classList.remove('hidden');
@@ -234,6 +239,7 @@
         } else {
             isAdmin = false;
             userInfoUi.classList.add('hidden');
+            loginUi.classList.remove('hidden');
             postHeaderAuth.classList.add('hidden');
             textareaContainer.classList.add('hidden');
             loginPrompt.classList.remove('hidden');
@@ -311,8 +317,8 @@
         <div id="comment-${c.id}" class="${threadClass} mb-4">
             <div class="flex flex-col">
                 <div class="flex items-center gap-2 mb-1.5">
-                    <img src="${c.photoURL || 'https://www.gravatar.com/avatar/000?d=mp'}" class="w-5 h-5 rounded-full cursor-pointer" onclick="goToProfile('${c.userId}')">
-                    <span class="font-bold text-sm cursor-pointer hover:underline ${c.isAdmin ? 'text-blue-500' : ''}" onclick="goToProfile('${c.userId}')">${esc(c.name)}</span>
+                    <img src="${c.photoURL || 'https://www.gravatar.com/avatar/000?d=mp'}" class="w-5 h-5 rounded-full">
+                    <span class="font-bold text-sm ${c.isAdmin ? 'text-blue-500' : ''}">${esc(c.name)}</span>
                     <span class="text-[11px] text-gray-400">· ${date}</span>
                 </div>
                 <div class="comment-content text-[15px] dark:text-gray-300 break-words">${messageHtml}</div>
