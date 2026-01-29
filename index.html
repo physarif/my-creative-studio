@@ -340,7 +340,7 @@
     window.closeModalOnOutsideClick = (e) => { if (e.target.id === 'post-modal-overlay') togglePostModal(); };
 
     // Data handling
-    const toBengaliNumber = (n) => n.toString().replace(/\d/g, d => "০১২৩৪৫৬৭८৯"[d]);
+    const toBengaliNumber = (n) => n.toString().replace(/\d/g, d => "০১২৩৪৫৬৭৮৯"[d]);
 
     window.setSort = (type) => { currentSort = type; visibleCount = 10; updateSortUI(); load(); };
 
@@ -412,15 +412,19 @@
                         ${isAdmin ? `<button onclick="togglePin('${c.id}', ${!c.featured})" class="text-[12px] ${c.featured ? 'text-amber-500' : 'text-gray-400'}">পিন</button>` : ''}
                     </div>
                 </div>
-                <div id="form-${c.id}" class="hidden mt-3">
+                <div id="form-${c.id}" class="hidden mt-3 bg-gray-50 dark:bg-darkCard/50 p-2 rounded-xl border border-gray-100 dark:border-darkBorder relative">
                     ${isLoggedIn ? `
-                        <textarea id="msg-${c.id}" placeholder="আপনার উত্তরটি লিখুন..." class="w-full p-2 text-sm bg-gray-50 dark:bg-darkBg border rounded-lg h-20 outline-none dark:text-white resize-none border-gray-100 dark:border-darkBorder focus:border-[#1d9bf0]"></textarea>
-                        <div class="flex justify-end mt-2">
+                        <!-- Close Button -->
+                        <button onclick="toggleReplyForm('${c.id}')" class="absolute top-2 right-2 text-gray-400 hover:text-red-500 p-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </button>
+                        <textarea id="msg-${c.id}" placeholder="আপনার উত্তরটি লিখুন..." class="w-full p-2 pr-8 text-sm bg-transparent outline-none dark:text-white resize-none h-20" autofocus></textarea>
+                        <div class="flex justify-end mt-1">
                             <button onclick="postData('${c.id}')" id="btn-${c.id}" class="bg-[#1d9bf0] text-white text-[11px] px-4 py-1.5 rounded-full font-bold">পোস্ট</button>
                         </div>
                     ` : `
-                        <div class="p-4 bg-gray-50 dark:bg-darkCard rounded-xl border border-dashed border-gray-200 dark:border-darkBorder text-center">
-                            <button onclick="googleLogin()" class="bg-white dark:bg-darkBg border border-gray-200 dark:border-darkBorder px-3 py-1 rounded-lg text-[10px] font-bold flex items-center gap-2 mx-auto">
+                        <div class="p-4 text-center">
+                            <button onclick="googleLogin()" class="bg-white dark:bg-darkBg border border-gray-200 dark:border-darkBorder px-3 py-1 rounded-lg text-[10px] font-bold flex items-center gap-2 mx-auto shadow-sm">
                                 <svg class="w-3 h-3" viewBox="0 0 48 48">
                                     <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path>
                                     <path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path>
@@ -429,6 +433,7 @@
                                 </svg>
                                 গুগল দিয়ে প্রবেশ করুন
                             </button>
+                            <button onclick="toggleReplyForm('${c.id}')" class="text-[10px] text-gray-400 mt-2 hover:underline">বাতিল</button>
                         </div>
                     `}
                 </div>
@@ -462,9 +467,14 @@
     window.toggleReplyForm = (id, authorName = null) => {
         const form = document.getElementById(`form-${id}`);
         const textarea = document.getElementById(`msg-${id}`);
-        if (form.classList.toggle('hidden') === false && authorName && textarea) {
-            textarea.value = `@${authorName.replace(/\s+/g, '')} ` + textarea.value;
-            textarea.focus();
+        const isOpening = form.classList.toggle('hidden') === false;
+        
+        if (isOpening && authorName && textarea) {
+            // Only add mention if textarea is empty or doesn't have it
+            if(!textarea.value.trim()) {
+                textarea.value = `@${authorName.replace(/\s+/g, '')} `;
+            }
+            setTimeout(() => textarea.focus(), 50);
         }
     };
 
@@ -504,6 +514,7 @@
                 isAdmin: isAdmin, photoURL: currentUser.photoURL, userId: currentUser.uid, at: serverTimestamp() 
             });
             if(!pid) { document.getElementById('user-comment').value = ''; togglePostModal(); }
+            else { document.getElementById(`msg-${pid}`).value = ''; toggleReplyForm(pid); }
         } catch (e) {} finally { if(statusDiv) statusDiv.classList.add('hidden'); }
     };
 
