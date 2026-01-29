@@ -69,7 +69,7 @@
             box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); 
             display: flex;
             flex-direction: column;
-            position: relative;
+            position: relative; /* Essential for absolute positioning of the close button */
         }
         .dark .post-modal-content { background: #000000; border: 1px solid #2f3336; }
         
@@ -97,9 +97,18 @@
             right: 12px;
             cursor: pointer;
             color: #9ca3af;
-            z-index: 10;
+            z-index: 50;
+            padding: 4px;
+            border-radius: 50%;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .modal-close-icon:hover { color: #ef4444; }
+        .modal-close-icon:hover { 
+            color: #ef4444; 
+            background: rgba(239, 68, 68, 0.1);
+        }
 
         @media (max-width: 640px) {
             #post-modal-overlay { align-items: center; }
@@ -168,16 +177,16 @@
 <!-- Post Modal Overlay -->
 <div id="post-modal-overlay" onclick="closeModalOnOutsideClick(event)">
     <div class="post-modal-content">
-        <!-- Close Button (X) -->
-        <div onclick="togglePostModal()" class="modal-close-icon">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        <!-- Close Button (X) - FIXED DESIGN AND POSITIONING -->
+        <div onclick="togglePostModal()" class="modal-close-icon" title="বন্ধ করুন">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
             </svg>
         </div>
 
         <!-- Auth Header for Logged-in Users -->
         <div id="post-header-auth" class="flex items-center justify-between p-4 border-b border-gray-100 dark:border-darkBorder hidden">
-            <button onclick="togglePostModal()" class="text-gray-500 dark:text-gray-400 font-bold text-sm">বাতিল</button>
+            <span class="text-gray-900 dark:text-white font-bold text-sm">নতুন পোস্ট</span>
             <button onclick="postData(null)" id="submit-btn" class="bg-[#1d9bf0] hover:bg-[#1a8cd8] text-white font-bold py-1.5 px-6 rounded-full text-sm">পোস্ট</button>
         </div>
 
@@ -547,3 +556,4 @@
 </script>
 </body>
 </html>
+
