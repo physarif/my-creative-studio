@@ -65,6 +65,10 @@
             #post-modal-overlay { padding-top: 0; align-items: flex-end; }
             .post-modal-content { border-radius: 16px 16px 0 0; }
         }
+
+        /* Loading Spinner */
+        .loader { border-top-color: #1d9bf0; animation: spinner 0.6s linear infinite; }
+        @keyframes spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="p-4 md:p-8 bg-white text-gray-900 dark:bg-darkBg dark:text-gray-100 pb-24">
@@ -74,6 +78,12 @@
     <div class="flex items-center justify-between gap-4 mb-6 px-2">
         <div class="flex items-center gap-3">
             <div id="auth-section">
+                <!-- Auth Loading State -->
+                <div id="auth-loading" class="flex items-center gap-2">
+                    <div class="loader w-4 h-4 border-2 border-gray-200 rounded-full"></div>
+                    <span class="text-[10px] text-gray-400 uppercase font-bold">অপেক্ষা করুন...</span>
+                </div>
+                
                 <!-- User Profile UI -->
                 <div id="user-info-ui" class="hidden flex items-center gap-2">
                     <img id="user-avatar" src="" class="w-8 h-8 rounded-full border border-gray-200 dark:border-darkBorder">
@@ -82,8 +92,9 @@
                     </div>
                     <button onclick="handleLogout()" class="text-[10px] font-bold text-gray-400 uppercase hover:text-red-500 ml-1">লগআউট</button>
                 </div>
+                
                 <!-- Login Button -->
-                <button onclick="googleLogin()" id="login-trigger-btn" class="flex items-center gap-2 text-[11px] font-bold bg-white dark:bg-darkBg border border-gray-200 dark:border-darkBorder text-gray-700 dark:text-gray-200 px-4 py-1.5 rounded-full hover:bg-gray-50 dark:hover:bg-gray-800 transition-all uppercase shadow-sm">
+                <button onclick="googleLogin()" id="login-trigger-btn" class="hidden flex items-center gap-2 text-[11px] font-bold bg-white dark:bg-darkBg border border-gray-200 dark:border-darkBorder text-gray-700 dark:text-gray-200 px-4 py-1.5 rounded-full hover:bg-gray-50 dark:hover:bg-gray-800 transition-all uppercase shadow-sm">
                     <svg class="w-3.5 h-3.5" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path></svg>
                     গুগল লগইন
                 </button>
@@ -130,8 +141,6 @@
                 <input type="text" id="user-name" placeholder="আপনার নাম..." class="w-full bg-transparent text-sm font-medium outline-none text-[#1d9bf0] placeholder:text-gray-400">
             </div>
         </div>
-        <div id="warning-null" class="hidden text-[12px] text-red-500 font-medium p-4 text-center">আপনার নাম ও পোস্টটি লিখুন</div>
-        <div id="posting-status-null" class="hidden text-[12px] text-green-600 dark:text-green-400 font-medium p-4 text-center">পোস্ট শেয়ার করা হচ্ছে...</div>
     </div>
 </div>
 
@@ -148,7 +157,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
     import { getFirestore, collection, addDoc, query, onSnapshot, serverTimestamp, updateDoc, doc, deleteDoc, increment } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
-    import { getAuth, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, signInWithRedirect, getRedirectResult, signOut } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+    import { getAuth, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, signInWithRedirect, getRedirectResult, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyB_xkcJ87-E4jkYIDT2dBxOFJHUQvZxbU8",
@@ -191,15 +200,28 @@
         updateIcons(isDark);
     };
 
+    // Set Persistence to Local
+    setPersistence(auth, browserLocalPersistence).catch(e => console.error(e));
+
+    // Handle Redirect Result
+    getRedirectResult(auth).then((result) => {
+        if (result?.user) {
+            console.log("Welcome,", result.user.displayName);
+        }
+    }).catch((error) => console.error("Auth Error:", error));
+
     // Auth Actions
     onAuthStateChanged(auth, (user) => {
-        currentUser = user;
+        const loadingUi = document.getElementById('auth-loading');
         const userInfoUi = document.getElementById('user-info-ui');
         const loginTrigger = document.getElementById('login-trigger-btn');
         const nameInputContainer = document.getElementById('name-input-container');
         const adminBadge = document.getElementById('admin-badge-ui');
 
+        loadingUi.classList.add('hidden'); // Hide loader once state is determined
+
         if (user && !user.isAnonymous) {
+            currentUser = user;
             isAdmin = user.email === ADMIN_EMAIL;
             userInfoUi.classList.remove('hidden');
             loginTrigger.classList.add('hidden');
@@ -207,31 +229,23 @@
             nameInputContainer.classList.add('hidden');
             adminBadge.classList.toggle('hidden', !isAdmin);
         } else {
+            currentUser = user;
             isAdmin = false;
             userInfoUi.classList.add('hidden');
             loginTrigger.classList.remove('hidden');
             nameInputContainer.classList.remove('hidden');
             adminBadge.classList.add('hidden');
             
-            // Re-auth anonymously if not logged in via Google
-            if(!user) signInAnonymously(auth).catch(e => console.error("Anonymouse auth fail:", e));
+            if(!user) {
+                signInAnonymously(auth).catch(e => console.error(e));
+            }
         }
         load();
     });
 
-    // Handle Redirect Result explicitly
-    getRedirectResult(auth)
-        .then((result) => {
-            if (result?.user) {
-                console.log("Logged in:", result.user.displayName);
-            }
-        })
-        .catch((error) => {
-            console.error("Auth redirect error:", error.code, error.message);
-        });
-
     window.googleLogin = () => {
-        console.log("Starting Google Login...");
+        document.getElementById('auth-loading').classList.remove('hidden');
+        document.getElementById('login-trigger-btn').classList.add('hidden');
         signInWithRedirect(auth, provider);
     };
     
@@ -405,3 +419,4 @@
 </script>
 </body>
 </html>
+
