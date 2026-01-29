@@ -29,6 +29,7 @@
         .comment-content pre { background: #f3f4f6; padding: 12px; border-radius: 8px; overflow-x: auto; margin: 8px 0; }
         .dark .comment-content pre { background: #1e2126; }
         
+        /* Floating Action Button (FAB) Fixes */
         .fab { 
             position: fixed; 
             bottom: 24px; 
@@ -41,11 +42,14 @@
             display: flex; 
             align-items: center; 
             justify-content: center; 
-            box-shadow: 0 4px 12px rgba(29, 155, 240, 0.4); 
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25); 
             cursor: pointer; 
-            z-index: 40; 
-            border: none;
+            z-index: 99; /* Increased z-index to stay above all content */
+            border: 2px solid white; /* Added border to prevent overlap visuals */
+            transition: transform 0.2s;
         }
+        .fab:active { transform: scale(0.95); }
+        .dark .fab { border-color: #000000; }
 
         #post-modal-overlay { 
             position: fixed; 
@@ -131,7 +135,7 @@
         }
     </style>
 </head>
-<body class="p-4 md:p-8 bg-white text-gray-900 dark:bg-darkBg dark:text-gray-100 pb-24">
+<body class="p-4 md:p-8 bg-white text-gray-900 dark:bg-darkBg dark:text-gray-100 pb-32">
 
 <div class="max-w-2xl mx-auto">
     <!-- Main Header Bar -->
@@ -190,7 +194,7 @@
 </div>
 
 <!-- Floating Action Button -->
-<button onclick="togglePostModal()" class="fab">
+<button onclick="togglePostModal()" class="fab" aria-label="New Post">
     <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
 </button>
 
