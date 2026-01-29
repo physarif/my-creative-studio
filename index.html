@@ -159,7 +159,7 @@
         appId: "1:1067155293144:web:8f10b016462b52d36628ad"
     };
 
-    const ADMIN_EMAIL = 'admin@fisarif.com'; 
+    const ADMIN_EMAIL = 'admin@fisarif.com'; // তোমার গুগল ইমেইলটি এখানে দাও
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth(app);
@@ -217,17 +217,7 @@
     });
 
     window.googleLogin = async () => {
-        try { 
-            // লগইন করার আগে পপ-আপ ব্লক হচ্ছে কি না বা অন্য কোনো এরর আছে কি না চেক করবে
-            await signInWithPopup(auth, provider); 
-        } catch (e) { 
-            console.error("লগইন এরর:", e.code, e.message);
-            if (e.code === 'auth/popup-blocked') {
-                alert("আপনার ব্রাউজার পপ-আপ ব্লক করেছে। অনুগ্রহ করে পপ-আপ এলাউ করুন।");
-            } else if (e.code === 'auth/unauthorized-domain') {
-                alert("এই ডোমেইনটি ফায়ারবেস অথরাইজড ডোমেইন লিস্টে নেই।");
-            }
-        }
+        try { await signInWithPopup(auth, provider); } catch (e) { console.error(e); }
     };
 
     window.handleLogout = () => signOut(auth);
@@ -252,7 +242,6 @@
     function updateSortUI() {
         ['top', 'recent', 'featured', 'reports'].forEach(t => {
             const el = document.getElementById(`sort-${t}`);
-            if(!el) return;
             const isActive = currentSort === t;
             el.className = `transition-colors pb-3 -mb-[2px] border-b-2 ${isActive ? (t === 'reports' ? 'text-red-500 border-red-500' : 'text-[#1d9bf0] border-[#1d9bf0]') : 'text-gray-400 border-transparent'}`;
         });
@@ -265,16 +254,13 @@
         return roots;
     }
 
-    window.toggleCollapse = (id) => {
-        const el = document.getElementById(`comment-${id}`);
-        if(el) el.classList.toggle('collapsed-parent');
-    };
+    window.toggleCollapse = (id) => document.getElementById(`comment-${id}`).classList.toggle('collapsed-parent');
 
     function renderComment(c, depth = 0) {
         const date = formatTime(c.at);
         const userVote = localStorage.getItem(`voted_${pageId}_${c.id}`) || 0;
         const alreadyReported = localStorage.getItem(`reported_${pageId}_${c.id}`);
-        const cleanHtml = DOMPurify.sanitize(marked.parse(c.msg || '').replace(/(@[^\s\n]+)/g, '<span class="mention">$1</span>'));
+        const cleanHtml = DOMPurify.sanitize(marked.parse(c.msg).replace(/(@[^\s\n]+)/g, '<span class="mention">$1</span>'));
         
         return `
         <div id="comment-${c.id}" class="${depth === 0 && c.replies.length > 0 ? 'collapsed-parent' : ''} ${depth > 0 ? 'ml-4 pl-4 border-l border-gray-100 dark:border-darkBorder' : ''} mb-6 transition-all">
@@ -296,7 +282,7 @@
                             <button onclick="vote('${c.id}', -1)" class="${userVote == -1 ? 'voted-down' : ''}"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M19 9l-7 7-7-7" /></svg></button>
                         </div>
                         <button onclick="toggleReplyForm('${c.id}', '${esc(c.name)}')" class="text-[12px] hover:text-[#1d9bf0]">রিপ্লাই</button>
-                        ${depth === 0 && c.replies.length > 0 ? `<button onclick="toggleCollapse('${c.id}')" class="text-[11px] font-bold text-[#1d9bf0] bg-blue-50 dark:bg-blue-900/20 px-2 rounded-full">${toBn(c.replies.length)} রিপ্লাই</button>` : ''}
+                        ${depth === 0 ? `<button onclick="toggleCollapse('${c.id}')" class="text-[11px] font-bold text-[#1d9bf0] bg-blue-50 dark:bg-blue-900/20 px-2 rounded-full">${toBn(c.replies.length)} রিপ্লাই</button>` : ''}
                     </div>
                     <div class="flex items-center gap-3">
                         ${isOwner(c) ? `<button onclick="openDeleteModal('${c.id}')" class="text-[12px] text-gray-400 hover:text-red-500">মুছুন</button>` : ''}
@@ -330,14 +316,13 @@
             let tree = buildTree(list);
             if (currentSort === 'featured') tree = tree.filter(c => c.featured);
             else if (currentSort === 'reports') tree = tree.filter(c => c.reported);
-            tree.sort((a,b) => (currentSort === 'top' ? ((b.votes || 0) - (a.votes || 0)) : ((b.at?.seconds || 0) - (a.at?.seconds || 0))));
+            tree.sort((a,b) => (currentSort === 'top' ? (b.votes - a.votes) : (b.at?.seconds - a.at?.seconds)));
             allRootThreads = tree; renderDisplay();
-        }, (err) => console.error("ডাটা লোড এরর:", err));
+        });
     }
 
     window.toggleReplyForm = (id, authorName = null) => {
         const form = document.getElementById(`form-${id}`);
-        if(!form) return;
         form.classList.toggle('hidden');
         if (!form.classList.contains('hidden') && authorName) {
             const ta = document.getElementById(`msg-${id}`);
@@ -359,13 +344,9 @@
     };
 
     window.postData = async (pid) => {
-        const nameInput = pid ? document.getElementById(`name-${pid}`) : document.getElementById('user-name');
-        const msgInput = pid ? document.getElementById(`msg-${pid}`) : document.getElementById('user-comment');
-        
-        const n = (currentUser && !currentUser.isAnonymous) ? currentUser.displayName : nameInput?.value;
-        const m = msgInput?.value;
+        const n = (currentUser && !currentUser.isAnonymous) ? currentUser.displayName : (pid ? document.getElementById(`name-${pid}`).value : document.getElementById('user-name').value);
+        const m = pid ? document.getElementById(`msg-${pid}`).value : document.getElementById('user-comment').value;
         const btn = pid ? document.getElementById(`btn-${pid}`) : document.getElementById('submit-btn');
-        
         if(!n?.trim() || !m?.trim()) return;
         btn.disabled = true;
         try {
@@ -374,17 +355,16 @@
                 isAdmin: isAdmin, photoURL: currentUser?.photoURL || null, userId: currentUser?.uid || null, at: serverTimestamp() 
             });
             if (!currentUser || currentUser.isAnonymous) saveMyComment(res.id);
-            if(!pid) { msgInput.value = ''; togglePostModal(); }
+            if(!pid) { document.getElementById('user-comment').value = ''; togglePostModal(); }
             else { document.getElementById(`form-${pid}`).classList.add('hidden'); }
-        } catch (e) { console.error("পোস্ট এরর:", e); } finally { if(btn) btn.disabled = false; }
+        } catch (e) {} finally { btn.disabled = false; }
     };
 
     let delId = null;
     window.openDeleteModal = (id) => { delId = id; document.getElementById('delete-modal').classList.replace('hidden', 'flex'); };
     window.closeDeleteModal = () => document.getElementById('delete-modal').classList.replace('flex', 'hidden');
     document.getElementById('confirm-delete-btn').onclick = async () => {
-        if(delId) await deleteDoc(doc(db, 'blog_comments', 'pages', pageId, delId)); 
-        closeDeleteModal();
+        await deleteDoc(doc(db, 'blog_comments', 'pages', pageId, delId)); closeDeleteModal();
     };
 
     function formatTime(ts) {
@@ -397,7 +377,7 @@
     }
     function esc(t) { let d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
 
-    signInAnonymously(auth).catch(e => console.error("অ্যানোনিমাস এরর:", e));
+    signInAnonymously(auth).catch(e => console.error(e));
 </script>
 </body>
 </html>
