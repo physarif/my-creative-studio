@@ -43,150 +43,184 @@
             justify-content: center; 
             box-shadow: 0 4px 12px rgba(29, 155, 240, 0.4); 
             cursor: pointer; 
-            transition: all 0.2s; 
             z-index: 40; 
             border: none;
-            padding: 0; 
-            line-height: 0; 
         }
-        .fab:hover { transform: scale(1.05); background-color: #1a8cd8; }
-        .fab:active { transform: scale(0.95); }
 
-        #post-modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.4); backdrop-blur: 4px; display: none; align-items: flex-start; justify-content: center; z-index: 100; padding-top: 50px; }
-        .post-modal-content { width: 100%; max-width: 600px; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
+        #post-modal-overlay { 
+            position: fixed; 
+            inset: 0; 
+            background: rgba(0, 0, 0, 0.4); 
+            backdrop-filter: blur(4px); 
+            display: none; 
+            align-items: center; 
+            justify-content: center; 
+            z-index: 100; 
+            padding: 16px; 
+        }
+        .post-modal-content { 
+            width: 100%; 
+            max-width: 600px; 
+            background: white; 
+            border-radius: 16px; 
+            position: relative;
+        }
         .dark .post-modal-content { background: #000000; border: 1px solid #2f3336; }
         
-        .reply-thread-root { position: relative; margin-left: 12px; border-left: 2px solid #f3f4f6; padding-left: 16px; margin-top: 12px; }
-        .dark .reply-thread-root { border-left-color: #2f3336; }
-        .reply-thread-deep { position: relative; margin-left: 0; border-left: none; padding-left: 0; margin-top: 12px; }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: white;
+            min-width: 120px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.1);
+            z-index: 50;
+            border-radius: 8px;
+            margin-top: 4px;
+            border: 1px solid #f3f4f6;
+        }
+        .dark .dropdown-content { background-color: #16181c; border-color: #2f3336; }
+        .dropdown-content button {
+            width: 100%;
+            text-align: left;
+            padding: 10px 16px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .dropdown-content button:hover { background-color: #f9f9f9; }
+        .dark .dropdown-content button:hover { background-color: #1c1f23; }
+        .show { display: block; }
 
-        .voted-up { color: #1d9bf0 !important; }
-        .voted-down { color: #f91880 !important; }
-        .liked { color: #f91880 !important; }
-        
-        .tab-border-container { border-bottom: 2px solid #f3f4f6; }
-        .dark .tab-border-container { border-bottom: 2px solid #2f3336; }
-        
-        .collapsed > .flex > .comment-body, 
-        .collapsed > .flex > .comment-footer { display: none; }
-        .collapsed { opacity: 0.6; }
-        .collapse-arrow { transition: transform 0.2s; }
-        .collapsed-parent > .comment-replies { display: none; }
-        .collapsed-parent .collapse-arrow { transform: rotate(-180deg); }
-        
-        .mention { color: #1d9bf0; font-weight: 600; }
-        .name-clickable { cursor: pointer; user-select: none; }
-        .name-clickable:hover { text-decoration: underline; }
-        
-        .admin-name { color: #1d9bf0; }
-        .dark .admin-name { color: #38bdf8; }
-
-        @media (max-width: 640px) {
-            #post-modal-overlay { padding-top: 0; align-items: flex-end; }
-            .post-modal-content { border-radius: 16px 16px 0 0; }
+        /* Google Login Button Style */
+        .google-btn {
+            display: flex;
+            align-items: center;
+            background-color: white;
+            border: 1px solid #dadce0;
+            border-radius: 4px;
+            padding: 0 8px 0 0;
+            height: 34px;
+            transition: background-color .218s, border-color .218s, box-shadow .218s;
+            cursor: pointer;
+            overflow: hidden;
+        }
+        .google-btn:hover {
+            box-shadow: 0 1px 2px 0 rgba(60,64,67,.30), 0 1px 3px 1px rgba(60,64,67,.15);
+            background-color: #f8f9fa;
+        }
+        .google-icon-wrapper {
+            padding: 8px;
+            height: 100%;
+        }
+        .google-btn-text {
+            color: #3c4043;
+            font-family: 'Roboto', arial, sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: .25px;
+            padding-left: 4px;
+        }
+        .dark .google-btn {
+            background-color: #16181c;
+            border-color: #2f3336;
+        }
+        .dark .google-btn:hover {
+            background-color: #1c1f23;
+        }
+        .dark .google-btn-text {
+            color: #e8eaed;
         }
     </style>
 </head>
 <body class="p-4 md:p-8 bg-white text-gray-900 dark:bg-darkBg dark:text-gray-100 pb-24">
 
 <div class="max-w-2xl mx-auto">
-    <!-- Header -->
-    <div class="flex items-center justify-between gap-4 mb-6 px-2">
+    <!-- Main Header Bar -->
+    <div class="flex items-center justify-between mb-8 px-2">
+        
+        <!-- Left Side: Theme Toggle & Sorting -->
         <div class="flex items-center gap-3">
-            <div id="auth-section">
-                <div id="user-info-ui" class="hidden flex items-center gap-2">
-                    <img id="user-avatar" src="" class="w-8 h-8 rounded-full border border-gray-200 dark:border-darkBorder">
-                    <button onclick="handleLogout()" class="text-[10px] font-bold text-gray-500 uppercase hover:text-red-500 transition-colors">লগআউট</button>
-                </div>
-                <button onclick="toggleLoginModal()" id="login-trigger-btn" class="text-[11px] font-bold bg-[#1d9bf0] text-white px-4 py-1 rounded-full hover:bg-[#1a8cd8] transition-all uppercase shadow-sm">লগইন</button>
-                
-                <div id="admin-badge-ui" class="hidden flex items-center gap-1.5 bg-blue-50 dark:bg-blue-500/10 px-2 py-0.5 rounded-full border border-blue-100 dark:border-blue-500/20 ml-2">
-                    <span class="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
-                    <span class="text-[10px] font-bold text-blue-700 dark:text-blue-500 uppercase">এডমিন</span>
+            <!-- Theme Toggle -->
+            <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-darkCard transition-all">
+                <svg id="sun-icon" class="w-5 h-5 hidden text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" /></svg>
+                <svg id="moon-icon" class="w-5 h-5 hidden text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" /></svg>
+            </button>
+
+            <!-- Sorting Dropdown -->
+            <div class="relative inline-block">
+                <button onclick="toggleSortDropdown()" id="sort-btn" class="flex items-center gap-1.5 border border-gray-300 dark:border-darkBorder rounded px-2.5 py-1 text-sm font-semibold bg-white dark:bg-darkCard">
+                    <span id="current-sort-label">সেরা</span>
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                <div id="sort-dropdown" class="dropdown-content left-0 mt-1 rounded-xl overflow-hidden shadow-xl border border-gray-100 dark:border-darkBorder">
+                    <button onclick="setSort('top', 'সেরা')" class="hover:bg-gray-50 dark:hover:bg-darkBorder">সেরা</button>
+                    <button onclick="setSort('recent', 'সাম্প্রতিক')" class="hover:bg-gray-50 dark:hover:bg-darkBorder">সাম্প্রতিক</button>
+                    <button onclick="setSort('featured', 'নির্বাচিত')" class="hover:bg-gray-50 dark:hover:bg-darkBorder">নির্বাচিত</button>
+                    <button onclick="setSort('reports', 'অভিযোগ')" class="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10">অভিযোগ</button>
                 </div>
             </div>
         </div>
 
-        <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-darkCard transition-all">
-            <svg id="sun-icon" class="w-5 h-5 hidden text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" /></svg>
-            <svg id="moon-icon" class="w-5 h-5 hidden text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" /></svg>
-        </button>
-    </div>
-
-    <!-- Sorting Tabs -->
-    <div class="flex items-center gap-6 mb-8 px-2 text-sm font-bold tab-border-container">
-        <button id="sort-top" onclick="setSort('top')" class="transition-colors pb-3 -mb-[2px] border-b-2">সেরা</button>
-        <button id="sort-recent" onclick="setSort('recent')" class="transition-colors pb-3 -mb-[2px] border-b-2">সাম্প্রতিক</button>
-        <button id="sort-featured" onclick="setSort('featured')" class="transition-colors pb-3 -mb-[2px] border-b-2">নির্বাচিত</button>
-        <button id="sort-reports" onclick="setSort('reports')" class="transition-colors pb-3 -mb-[2px] border-b-2 text-red-500 border-transparent">অভিযোগ</button>
+        <!-- Right Side: Login/Profile -->
+        <div id="auth-section">
+            <div id="user-info-ui" class="hidden flex items-center gap-2">
+                <div class="flex flex-col items-end">
+                    <span id="display-name-nav" class="text-[11px] font-bold truncate max-w-[80px]"></span>
+                    <button onclick="handleLogout()" class="text-[9px] font-bold text-gray-500 uppercase hover:text-red-500 transition-colors text-right">লগআউট</button>
+                </div>
+                <img id="user-avatar" src="" class="w-8 h-8 rounded-full border border-gray-200 dark:border-darkBorder">
+                <div id="admin-badge-ui" class="hidden absolute -top-1 -right-1">
+                    <div class="w-3 h-3 bg-blue-500 rounded-full border-2 border-white dark:border-darkBg"></div>
+                </div>
+            </div>
+            <div id="login-ui" class="flex items-center">
+                <button onclick="googleLogin()" class="google-btn">
+                    <div class="google-icon-wrapper">
+                        <svg viewBox="0 0 18 18" width="18px" height="18px"><path fill="#4285F4" d="M17.64 9.2c0-.63-.06-1.25-.16-1.84H9v3.49h4.84c-.21 1.12-.84 2.07-1.79 2.7l2.86 2.22c1.67-1.55 2.63-3.83 2.63-6.57z"></path><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.86-2.22c-.8.53-1.82.85-3.1.85-2.39 0-4.41-1.61-5.13-3.78H.95v2.33C2.43 15.93 5.49 18 9 18z"></path><path fill="#FBBC05" d="M3.87 10.67c-.18-.53-.28-1.1-.28-1.67s.1-1.14.28-1.67V5.01H.95C.35 6.22 0 7.57 0 9s.35 2.78.95 3.99l2.92-2.32z"></path><path fill="#EA4335" d="M9 3.58c1.32 0 2.51.45 3.44 1.35l2.58-2.58C13.47.89 11.43 0 9 0 5.49 0 2.43 2.07.95 5.01l2.92 2.32C4.59 5.19 6.61 3.58 9 3.58z"></path></svg>
+                    </div>
+                    <span class="google-btn-text">লগইন</span>
+                </button>
+            </div>
+        </div>
     </div>
 
     <div id="comments-container" class="space-y-6"></div>
-
-    <!-- Load More Button -->
     <div id="load-more-container" class="flex justify-center mt-10 hidden">
-        <button onclick="loadMore()" class="text-sm font-bold text-[#1d9bf0] bg-blue-50 dark:bg-blue-900/20 px-6 py-2 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-all border border-blue-100 dark:border-blue-900/40">
-            আরো লোড করুন
-        </button>
+        <button onclick="loadMore()" class="text-sm font-bold text-[#1d9bf0] bg-blue-50 dark:bg-blue-900/20 px-8 py-2.5 rounded-full transition-all hover:bg-blue-100">আরো লোড করুন</button>
     </div>
 </div>
 
 <!-- Floating Action Button -->
 <button onclick="togglePostModal()" class="fab">
-    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path>
-    </svg>
+    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
 </button>
 
 <!-- Post Modal Overlay -->
 <div id="post-modal-overlay" onclick="closeModalOnOutsideClick(event)">
-    <div class="post-modal-content">
-        <div class="flex items-center justify-between p-4 border-b border-gray-100 dark:border-darkBorder">
-            <button onclick="togglePostModal()" class="text-gray-500 dark:text-gray-400 font-medium text-sm">বাতিল</button>
-            <button onclick="postData(null)" id="submit-btn" class="bg-[#1d9bf0] hover:bg-[#1a8cd8] text-white font-bold py-1.5 px-6 rounded-full transition-all shadow-sm text-sm">পোস্ট</button>
-        </div>
-        <div class="p-4">
-            <textarea id="user-comment" placeholder="আপনার পোস্টটি লিখুন..." class="w-full bg-transparent text-lg outline-none min-h-[150px] dark:text-white resize-none" autofocus></textarea>
-            <div id="name-input-container" class="mt-4 pt-4 border-t border-gray-50 dark:border-darkBorder">
-                <input type="text" id="user-name" placeholder="আপনার নাম..." class="w-full bg-transparent text-sm font-medium outline-none text-[#1d9bf0] placeholder:text-gray-400">
-            </div>
-        </div>
-        <div id="warning-null" class="hidden text-[12px] text-red-500 font-medium p-4 text-center">আপনার নাম ও পোস্টটি লিখুন</div>
-        <div id="posting-status-null" class="hidden text-[12px] text-green-600 dark:text-green-400 font-medium p-4 text-center">আপনার পোস্টটি শেয়ার করা হচ্ছে...</div>
-    </div>
-</div>
-
-<!-- Login Modal -->
-<div id="login-modal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-[110] p-4 backdrop-blur-sm">
-    <div class="bg-white dark:bg-darkCard p-8 rounded-3xl max-w-sm w-full shadow-2xl">
-        <h3 class="text-xl font-bold mb-6 text-center">প্রবেশ করুন</h3>
-        
-        <div class="space-y-4">
-            <button onclick="googleLogin()" class="w-full flex items-center justify-center gap-3 bg-white border border-gray-300 dark:border-darkBorder py-3 rounded-xl font-bold text-gray-700 dark:text-white dark:bg-darkBg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                <svg class="w-5 h-5" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path></svg>
-                গুগল দিয়ে প্রবেশ করুন
+    <div class="post-modal-content overflow-hidden">
+        <div id="post-header-auth" class="flex items-center justify-between p-4 border-b border-gray-100 dark:border-darkBorder hidden">
+            <button onclick="togglePostModal()" class="p-1.5 hover:bg-gray-100 dark:hover:bg-darkBorder rounded-full text-gray-500">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
             </button>
-
-            <div class="relative flex py-2 items-center">
-                <div class="flex-grow border-t border-gray-200 dark:border-darkBorder"></div>
-                <span class="flex-shrink mx-4 text-gray-400 text-xs">অথবা এডমিন</span>
-                <div class="flex-grow border-t border-gray-200 dark:border-darkBorder"></div>
-            </div>
-
-            <input type="email" id="admin-email" placeholder="ইমেইল" class="w-full p-3 bg-gray-50 dark:bg-darkBg border border-gray-200 dark:border-darkBorder rounded-xl outline-none focus:border-[#1d9bf0] dark:text-white">
-            <input type="password" id="admin-password" placeholder="পাসওয়ার্ড" class="w-full p-3 bg-gray-50 dark:bg-darkBg border border-gray-200 dark:border-darkBorder rounded-xl outline-none focus:border-[#1d9bf0] dark:text-white">
-            <button onclick="adminLogin()" id="login-btn" class="w-full bg-[#1d9bf0] text-white py-3 rounded-xl font-bold hover:bg-[#1a8cd8] transition-colors">এডমিন লগইন</button>
-            <button onclick="toggleLoginModal()" class="w-full text-gray-500 text-sm font-medium">বাতিল</button>
+            <span class="dark:text-white font-bold text-sm">নতুন পোস্ট</span>
+            <button onclick="postData(null)" class="bg-[#1d9bf0] text-white font-bold py-1.5 px-6 rounded-full text-sm">পোস্ট</button>
         </div>
-    </div>
-</div>
 
-<div id="delete-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-[110] p-4">
-    <div class="bg-white dark:bg-darkCard p-6 rounded-2xl max-w-sm w-full">
-        <h3 class="text-lg font-bold mb-2">পোস্টটি মুছে ফেলতে চান?</h3>
-        <div class="flex gap-3 mt-6">
-            <button id="confirm-delete-btn" class="flex-1 bg-red-500 text-white py-2 rounded-xl font-bold">মুছে ফেলুন</button>
-            <button onclick="closeDeleteModal()" class="flex-1 bg-gray-100 dark:bg-darkBg py-2 rounded-xl font-bold">বাতিল</button>
+        <div class="p-4 relative">
+            <div id="textarea-container" class="hidden">
+                <textarea id="user-comment" placeholder="আপনার পোস্টটি লিখুন..." class="w-full bg-transparent text-lg outline-none min-h-[150px] dark:text-white resize-none" autofocus></textarea>
+            </div>
+            <div id="login-required-prompt" class="py-10 text-center space-y-4">
+                <button onclick="togglePostModal()" class="absolute top-2 right-2 p-1.5 text-gray-400 hover:text-red-500">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+                <p class="text-gray-500 dark:text-gray-400 font-medium text-sm">পোস্ট করতে দয়া করে লগইন করুন</p>
+                <button onclick="googleLogin()" class="google-btn mx-auto">
+                    <div class="google-icon-wrapper">
+                        <svg viewBox="0 0 18 18" width="18px" height="18px"><path fill="#4285F4" d="M17.64 9.2c0-.63-.06-1.25-.16-1.84H9v3.49h4.84c-.21 1.12-.84 2.07-1.79 2.7l2.86 2.22c1.67-1.55 2.63-3.83 2.63-6.57z"></path><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.86-2.22c-.8.53-1.82.85-3.1.85-2.39 0-4.41-1.61-5.13-3.78H.95v2.33C2.43 15.93 5.49 18 9 18z"></path><path fill="#FBBC05" d="M3.87 10.67c-.18-.53-.28-1.1-.28-1.67s.1-1.14.28-1.67V5.01H.95C.35 6.22 0 7.57 0 9s.35 2.78.95 3.99l2.92-2.32z"></path><path fill="#EA4335" d="M9 3.58c1.32 0 2.51.45 3.44 1.35l2.58-2.58C13.47.89 11.43 0 9 0 5.49 0 2.43 2.07.95 5.01l2.92 2.32C4.59 5.19 6.61 3.58 9 3.58z"></path></svg>
+                    </div>
+                    <span class="google-btn-text">লগইন</span>
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -194,7 +228,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
     import { getFirestore, collection, addDoc, query, onSnapshot, serverTimestamp, updateDoc, doc, deleteDoc, increment } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
-    import { getAuth, signInAnonymously, signInWithEmailAndPassword, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+    import { getAuth, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyB_xkcJ87-E4jkYIDT2dBxOFJHUQvZxbU8",
@@ -217,84 +251,55 @@
     let currentSort = 'top';
     let visibleCount = 10;
     let allRootThreads = [];
-    // User manual collapse state tracker
-    const manualCollapseStates = {};
 
-    // Theme Management
-    const themeToggle = document.getElementById('theme-toggle');
-    const sunIcon = document.getElementById('sun-icon');
-    const moonIcon = document.getElementById('moon-icon');
+    window.toggleSortDropdown = () => document.getElementById("sort-dropdown").classList.toggle("show");
 
-    function updateIcons(isDark) {
-        if (isDark) { sunIcon.classList.remove('hidden'); moonIcon.classList.add('hidden'); }
-        else { sunIcon.classList.add('hidden'); moonIcon.classList.remove('hidden'); }
-    }
-
-    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-        document.documentElement.classList.add('dark');
-        updateIcons(true);
-    } else {
-        document.documentElement.classList.remove('dark');
-        updateIcons(false);
-    }
-
-    themeToggle.addEventListener('click', () => {
-        if (document.documentElement.classList.contains('dark')) {
-            document.documentElement.classList.remove('dark');
-            localStorage.theme = 'light';
-            updateIcons(false);
-        } else {
-            document.documentElement.classList.add('dark');
-            localStorage.theme = 'dark';
-            updateIcons(true);
+    window.onclick = (e) => {
+        if (!e.target.closest('#sort-btn')) {
+            const dropdown = document.getElementById("sort-dropdown");
+            if (dropdown && dropdown.classList.contains('show')) dropdown.classList.remove('show');
         }
-    });
+    };
 
-    // Auth Actions
+    window.setSort = (type, label) => {
+        currentSort = type;
+        document.getElementById('current-sort-label').innerText = label;
+        visibleCount = 10;
+        load();
+    };
+
     onAuthStateChanged(auth, (user) => {
         currentUser = user;
         const userInfoUi = document.getElementById('user-info-ui');
-        const userAvatar = document.getElementById('user-avatar');
-        const loginTrigger = document.getElementById('login-trigger-btn');
-        const nameInputContainer = document.getElementById('name-input-container');
-        const adminBadge = document.getElementById('admin-badge-ui');
+        const loginUi = document.getElementById('login-ui');
+        const postHeaderAuth = document.getElementById('post-header-auth');
+        const textareaContainer = document.getElementById('textarea-container');
+        const loginPrompt = document.getElementById('login-required-prompt');
 
         if (user && !user.isAnonymous) {
-            isAdmin = user.email === 'admin@fisarif.com';
+            isAdmin = (user.email === 'admin@fisarif.com' || user.email === 'phys.arif@gmail.com'); 
             userInfoUi.classList.remove('hidden');
-            loginTrigger.classList.add('hidden');
-            userAvatar.src = user.photoURL || 'https://www.gravatar.com/avatar/000?d=mp';
-            nameInputContainer.classList.add('hidden');
-            if (isAdmin) adminBadge.classList.remove('hidden');
-            else adminBadge.classList.add('hidden');
+            loginUi.classList.add('hidden');
+            document.getElementById('user-avatar').src = user.photoURL || 'https://www.gravatar.com/avatar/000?d=mp';
+            document.getElementById('display-name-nav').textContent = user.displayName || 'ব্যবহারকারী';
+            postHeaderAuth.classList.remove('hidden');
+            textareaContainer.classList.remove('hidden');
+            loginPrompt.classList.add('hidden');
+            if (isAdmin) document.getElementById('admin-badge-ui').classList.remove('hidden');
         } else {
             isAdmin = false;
             userInfoUi.classList.add('hidden');
-            loginTrigger.classList.remove('hidden');
-            nameInputContainer.classList.remove('hidden');
-            adminBadge.classList.add('hidden');
+            loginUi.classList.remove('hidden');
+            postHeaderAuth.classList.add('hidden');
+            textareaContainer.classList.add('hidden');
+            loginPrompt.classList.remove('hidden');
+            document.getElementById('admin-badge-ui').classList.add('hidden');
         }
         load();
     });
 
-    window.googleLogin = async () => {
-        try { await signInWithPopup(auth, provider); toggleLoginModal(); } catch (e) {}
-    };
-
-    window.adminLogin = async () => {
-        const email = document.getElementById('admin-email').value;
-        const pass = document.getElementById('admin-password').value;
-        const btn = document.getElementById('login-btn');
-        btn.disabled = true; btn.innerText = 'চেক করা হচ্ছে...';
-        try { await signInWithEmailAndPassword(auth, email, pass); toggleLoginModal(); } catch (e) { alert("ভুল ইমেইল বা পাসওয়ার্ড"); } finally { btn.disabled = false; btn.innerText = 'এডমিন লগইন'; }
-    };
-
+    window.googleLogin = async () => { try { await signInWithPopup(auth, provider); } catch (e) {} };
     window.handleLogout = () => signOut(auth);
-
-    window.toggleLoginModal = () => {
-        document.getElementById('login-modal').classList.toggle('hidden');
-        document.getElementById('login-modal').classList.toggle('flex');
-    };
 
     window.togglePostModal = () => {
         const overlay = document.getElementById('post-modal-overlay');
@@ -302,36 +307,33 @@
         overlay.style.display = isHidden ? 'flex' : 'none';
         if (isHidden) {
             document.body.style.overflow = 'hidden';
-            setTimeout(() => document.getElementById('user-comment').focus(), 50);
-        } else { document.body.style.overflow = ''; }
+            if(currentUser && !currentUser.isAnonymous) setTimeout(() => document.getElementById('user-comment').focus(), 50);
+        } else document.body.style.overflow = '';
     };
-
     window.closeModalOnOutsideClick = (e) => { if (e.target.id === 'post-modal-overlay') togglePostModal(); };
 
-    const MY_COMMENTS_KEY = `my_comments_${pageId}`;
-    const getMyComments = () => JSON.parse(localStorage.getItem(MY_COMMENTS_KEY) || "[]");
-    const saveMyComment = (id) => {
-        const ids = getMyComments(); ids.push(id);
-        localStorage.setItem(MY_COMMENTS_KEY, JSON.stringify(ids));
+    const themeToggle = document.getElementById('theme-toggle');
+    const updateIcons = (isDark) => {
+        if(isDark) { document.getElementById('sun-icon').classList.remove('hidden'); document.getElementById('moon-icon').classList.add('hidden'); }
+        else { document.getElementById('sun-icon').classList.add('hidden'); document.getElementById('moon-icon').classList.remove('hidden'); }
     };
-    const isOwner = (comment) => {
-        if (currentUser && !currentUser.isAnonymous) return isAdmin || comment.userId === currentUser.uid;
-        return getMyComments().includes(comment.id);
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark'); updateIcons(true);
+    } else { updateIcons(false); }
+    themeToggle.onclick = () => {
+        const isDark = document.documentElement.classList.toggle('dark');
+        localStorage.theme = isDark ? 'dark' : 'light';
+        updateIcons(isDark);
     };
 
-    const toBengaliNumber = (n) => n.toString().replace(/\d/g, d => "০১২৩৪৫৬৭৮৯"[d]);
-
-    window.setSort = (type) => { currentSort = type; visibleCount = 10; updateSortUI(); load(); };
-
-    function updateSortUI() {
-        const tabs = ['top', 'recent', 'featured', 'reports'];
-        tabs.forEach(t => {
-            const el = document.getElementById(`sort-${t}`);
-            if(!el) return;
-            const isActive = currentSort === t;
-            const activeClass = t === 'reports' ? 'text-red-500 border-red-500' : 'text-[#1d9bf0] border-[#1d9bf0]';
-            const inactiveClass = t === 'reports' ? 'text-red-300 border-transparent' : 'text-gray-500 border-transparent';
-            el.className = `transition-colors pb-3 -mb-[2px] border-b-2 ${isActive ? activeClass : inactiveClass}`;
+    function load() {
+        onSnapshot(query(commentsCol), (snap) => {
+            let list = []; snap.forEach(doc => list.push({ id: doc.id, ...doc.data() }));
+            let tree = buildTree(list);
+            if (currentSort === 'featured') tree = tree.filter(c => c.featured);
+            else if (currentSort === 'reports') tree = tree.filter(c => c.reported);
+            tree.sort((a,b) => currentSort === 'top' ? (b.votes - a.votes) : (b.at?.seconds - a.at?.seconds));
+            allRootThreads = tree; renderDisplay();
         });
     }
 
@@ -345,225 +347,83 @@
         return roots;
     }
 
-    window.toggleCollapse = (id) => {
-        const el = document.getElementById(`comment-${id}`);
-        const depth = parseInt(el.dataset.depth);
-        if (depth === 0) {
-            const isCollapsing = el.classList.toggle('collapsed-parent');
-            manualCollapseStates[id] = isCollapsing; // Store manual state
-        } else {
-            el.classList.toggle('collapsed');
-        }
-    };
-
-    function renderComment(c, depth = 0) {
-        const date = formatTime(c.at);
-        const userVote = localStorage.getItem(`voted_${pageId}_${c.id}`) || 0;
-        const userIsOwner = isOwner(c);
-        const isCommentFromAdmin = c.isAdmin === true;
-        
-        let messageHtml = marked.parse(c.msg);
-        messageHtml = messageHtml.replace(/(@[^\s\n]+)/g, '<span class="mention">$1</span>');
-        const cleanHtml = DOMPurify.sanitize(messageHtml);
-        
-        const isFeatured = c.featured === true;
-        const replyCount = c.replies.length;
-        
-        // Logical check for collapse state
-        // If it's a root comment with replies, it defaults to collapsed 
-        // UNLESS the user has interacted with it (manualCollapseStates)
-        let isCollapsed = false;
-        if (depth === 0 && replyCount > 0) {
-            if (manualCollapseStates[c.id] === undefined) {
-                isCollapsed = true; // Default behavior
-            } else {
-                isCollapsed = manualCollapseStates[c.id]; // User preference
-            }
-        }
-
-        let threadClass = isCollapsed ? 'collapsed-parent' : '';
-        if (depth === 1) threadClass += ' reply-thread-root';
-        else if (depth > 1) threadClass += ' reply-thread-deep';
-
-        return `
-        <div id="comment-${c.id}" class="${threadClass} mb-6 transition-all" data-depth="${depth}">
-            <div class="flex flex-col">
-                <div class="comment-header flex items-center gap-2 mb-0.5 flex-wrap">
-                    <div class="flex items-center gap-1.5">
-                        ${c.photoURL ? `<img src="${c.photoURL}" class="w-5 h-5 rounded-full border border-gray-100 dark:border-darkBorder">` : ''}
-                        <span onclick="toggleCollapse('${c.id}')" class="font-bold text-[15px] name-clickable ${isCommentFromAdmin ? 'admin-name' : ''}">${esc(c.name)}</span>
-                        ${userIsOwner && !isAdmin ? '<span class="text-[9px] bg-gray-100 dark:bg-gray-800 px-1.5 rounded-md font-bold text-gray-500">তুমি</span>' : ''}
-                    </div>
-                    <div class="flex items-center gap-1.5 text-gray-400">
-                        <span class="text-[13px] text-gray-500">· ${date}</span>
-                        ${!userIsOwner ? `
-                            <button onclick="reportComment('${c.id}')" class="hover:text-red-500 transition-colors" title="অভিযোগ জানান">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"></path></svg>
-                            </button>` : ''}
-                    </div>
-                </div>
-                <div class="comment-body">
-                    <div id="body-${c.id}" class="comment-content text-[15px] text-gray-800 dark:text-gray-300 leading-normal mb-1 break-words">${cleanHtml}</div>
-                    <div id="edit-box-${c.id}" class="hidden my-2">
-                        <textarea id="edit-in-${c.id}" class="w-full p-2 text-sm bg-gray-50 dark:bg-darkBg border border-[#1d9bf0] rounded-lg h-20 outline-none dark:text-white resize-none">${c.msg}</textarea>
-                        <div class="flex gap-2 mt-1">
-                            <button onclick="updateData('${c.id}')" class="bg-[#1d9bf0] text-white text-[11px] px-3 py-1 rounded-full font-bold">সেভ</button>
-                            <button onclick="toggleEdit('${c.id}')" class="text-gray-500 text-[11px] font-bold">বাতিল</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="comment-footer flex items-center justify-between mt-1">
-                    <div class="flex items-center gap-4">
-                         <div class="flex items-center gap-3 text-gray-500">
-                             ${depth === 0 ? `
-                                <div class="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg px-0.5">
-                                    <button onclick="vote('${c.id}', 1)" class="p-1 hover:text-[#1d9bf0] transition-colors ${userVote == 1 ? 'voted-up' : ''}">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7" /></svg>
-                                    </button>
-                                    <span class="text-[12px] font-bold px-1 min-w-[15px] text-center ${userVote == 1 ? 'text-[#1d9bf0]' : (userVote == -1 ? 'text-[#f91880]' : '')}">
-                                        ${toBengaliNumber(c.votes || 0)}
-                                    </span>
-                                    <button onclick="vote('${c.id}', -1)" class="p-1 hover:text-[#f91880] transition-colors ${userVote == -1 ? 'voted-down' : ''}">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" /></svg>
-                                    </button>
-                                </div>
-                             ` : `
-                                <button onclick="toggleLike('${c.id}')" class="flex items-center gap-1.5 hover:text-[#f91880] transition-colors ${userVote == 1 ? 'liked' : ''}">
-                                    <svg class="w-4 h-4 ${userVote == 1 ? 'fill-current' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                                    </svg>
-                                    <span class="text-[12px] font-bold">${toBengaliNumber(c.votes || 0)}</span>
-                                </button>
-                             `}
-                         </div>
-                         <button onclick="toggleReplyForm('${c.id}', '${esc(c.name)}')" class="text-[12px] font-bold text-gray-500 hover:text-[#1d9bf0]">রিপ্লাই</button>
-                         ${depth === 0 ? `
-                            <button onclick="toggleCollapse('${c.id}')" class="flex items-center gap-1 text-[11px] font-bold text-[#1d9bf0] bg-blue-50 dark:bg-blue-900/20 px-2 py-0.5 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors">
-                                <svg class="w-2.5 h-2.5 collapse-arrow ${replyCount === 0 ? 'opacity-30' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 15l-7-7-7 7"></path></svg>
-                                ${toBengaliNumber(replyCount)}টি রিপ্লাই
-                            </button>
-                        ` : ''}
-                    </div>
-                    <div class="flex items-center gap-3">
-                        ${userIsOwner ? `<button onclick="toggleEdit('${c.id}')" class="text-[12px] font-medium text-gray-500 hover:text-green-500">এডিট</button><button onclick="openDeleteModal('${c.id}')" class="text-[12px] font-medium text-gray-500 hover:text-red-500">ডিলিট</button>` : ''}
-                        ${isAdmin ? `<button onclick="togglePin('${c.id}', ${!isFeatured})" class="text-[12px] font-medium ${isFeatured ? 'text-amber-500' : 'text-gray-500'} hover:text-amber-600">${isFeatured ? 'পিন সরান' : 'পিন করুন'}</button>` : ''}
-                    </div>
-                </div>
-                <div id="form-${c.id}" class="hidden mt-3 comment-body">
-                    <div class="bg-white dark:bg-darkCard p-3 rounded-2xl border border-gray-100 dark:border-darkBorder shadow-sm">
-                        <textarea id="msg-${c.id}" placeholder="আপনার রিপ্লাইটি এখানে লিখুন..." class="w-full p-2 text-sm bg-gray-50 dark:bg-darkBg border rounded-lg h-20 outline-none focus:border-[#1d9bf0] dark:text-white resize-none"></textarea>
-                        <div class="flex justify-between items-center mt-2 gap-2">
-                            ${!currentUser || currentUser.isAnonymous ? `<input type="text" id="name-${c.id}" placeholder="আপনার নাম..." class="flex-1 max-w-[150px] p-2 text-xs bg-gray-50 dark:bg-darkBg border rounded-full outline-none focus:border-[#1d9bf0] dark:text-white">` : '<div class="flex-1"></div>'}
-                            <div class="flex items-center gap-2">
-                                <button onclick="toggleReplyForm('${c.id}')" class="text-gray-500 text-[11px] font-bold px-2">বাতিল</button>
-                                <button onclick="postData('${c.id}')" id="btn-${c.id}" class="bg-[#1d9bf0] text-white text-[11px] px-4 py-1.5 rounded-full font-bold">পোস্ট</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="comment-replies">${c.replies.map(r => renderComment(r, depth + 1)).join('')}</div>
-        </div>`;
-    }
-
     function renderDisplay() {
         const container = document.getElementById('comments-container');
+        const loadMoreBtn = document.getElementById('load-more-container');
         const subset = allRootThreads.slice(0, visibleCount);
-        container.innerHTML = subset.length > 0 ? subset.map(c => renderComment(c)).join('') : `<p class="text-center text-gray-400 py-10 italic text-sm">কোনো পোস্ট নেই।</p>`;
-        document.getElementById('load-more-container').classList.toggle('hidden', allRootThreads.length <= visibleCount);
+        container.innerHTML = subset.length > 0 ? subset.map(c => renderComment(c)).join('') : `<p class="text-center text-gray-400 py-10 italic text-sm">কোনো পোস্ট পাওয়া যায়নি।</p>`;
+        if (allRootThreads.length > visibleCount) loadMoreBtn.classList.remove('hidden');
+        else loadMoreBtn.classList.add('hidden');
     }
 
     window.loadMore = () => { visibleCount += 10; renderDisplay(); };
 
-    function load() {
-        onSnapshot(query(commentsCol), (snap) => {
-            let list = []; snap.forEach(doc => list.push({ id: doc.id, ...doc.data() }));
-            let tree = buildTree(list);
-            if (currentSort === 'featured') tree = tree.filter(c => c.featured === true);
-            else if (currentSort === 'reports') tree = tree.filter(c => c.reported === true);
-            tree.sort((a,b) => (currentSort === 'top' ? (b.votes - a.votes) : (b.at?.seconds - a.at?.seconds)));
-            allRootThreads = tree; renderDisplay();
-        }, (error) => console.log(error));
+    function renderComment(c, depth = 0) {
+        const date = formatTime(c.at);
+        let messageHtml = DOMPurify.sanitize(marked.parse(c.msg));
+        let threadClass = depth === 0 ? 'border-b dark:border-darkBorder pb-6' : 'ml-4 pl-4 border-l dark:border-darkBorder';
+
+        return `
+        <div id="comment-${c.id}" class="${threadClass} mb-4">
+            <div class="flex flex-col">
+                <div class="flex items-center gap-2 mb-1.5">
+                    <img src="${c.photoURL || 'https://www.gravatar.com/avatar/000?d=mp'}" class="w-5 h-5 rounded-full">
+                    <span class="font-bold text-sm ${c.isAdmin ? 'text-blue-500' : ''}">${esc(c.name)}</span>
+                    <span class="text-[11px] text-gray-400">· ${date}</span>
+                </div>
+                <div class="comment-content text-[15px] dark:text-gray-300 break-words">${messageHtml}</div>
+                <div class="flex items-center gap-4 mt-2 text-gray-500 text-[11px]">
+                    <button onclick="vote('${c.id}', 1)" class="flex items-center gap-1 font-bold hover:text-[#1d9bf0] transition-colors">▲ ${toBengaliNumber(c.votes || 0)}</button>
+                    <button onclick="toggleReplyForm('${c.id}', '${esc(c.name)}')" class="hover:text-[#1d9bf0]">রিপ্লাই</button>
+                </div>
+                <div id="reply-form-${c.id}" class="hidden mt-3">
+                    <textarea id="msg-${c.id}" placeholder="আপনার উত্তর..." class="w-full p-2 bg-gray-50 dark:bg-darkBorder/20 rounded-lg text-sm outline-none border dark:border-darkBorder dark:text-white h-20 resize-none"></textarea>
+                    <button onclick="postData('${c.id}')" class="bg-[#1d9bf0] text-white text-[10px] px-4 py-1.5 rounded-full font-bold mt-1">পোস্ট</button>
+                </div>
+            </div>
+            <div class="comment-replies mt-2">${c.replies.map(r => renderComment(r, depth + 1)).join('')}</div>
+        </div>`;
     }
 
-    window.toggleReplyForm = (id, authorName = null) => {
-        const form = document.getElementById(`form-${id}`);
-        const textarea = document.getElementById(`msg-${id}`);
-        if (form.classList.toggle('hidden') === false && authorName) {
-            textarea.value = `@${authorName.replace(/\s+/g, '')} ` + textarea.value;
-            textarea.focus();
+    window.toggleReplyForm = (id, name) => {
+        if(!currentUser || currentUser.isAnonymous) { togglePostModal(); return; }
+        const form = document.getElementById(`reply-form-${id}`);
+        const area = document.getElementById(`msg-${id}`);
+        form.classList.toggle('hidden');
+        if(!form.classList.contains('hidden')) {
+            area.value = `@${name.replace(/\s+/g, '')} `;
+            area.focus();
         }
+    };
+
+    window.postData = async (pid) => {
+        if (!currentUser || currentUser.isAnonymous) return;
+        const m = pid ? document.getElementById(`msg-${pid}`).value : document.getElementById('user-comment').value;
+        if(!m?.trim()) return;
+        try {
+            await addDoc(commentsCol, { 
+                name: currentUser.displayName, msg: m, parentId: pid, votes: 0, featured: false, reported: false, reportCount: 0, 
+                isAdmin: isAdmin, photoURL: currentUser.photoURL, userId: currentUser.uid, at: serverTimestamp() 
+            });
+            if(!pid) { document.getElementById('user-comment').value = ''; togglePostModal(); }
+            else { document.getElementById(`msg-${pid}`).value = ''; document.getElementById(`reply-form-${pid}`).classList.add('hidden'); }
+        } catch(e) {}
     };
 
     window.vote = async (id, val) => {
         const key = `voted_${pageId}_${id}`;
-        if (localStorage.getItem(key) == val) return;
-        try {
-            const ref = doc(db, 'blog_comments', 'pages', pageId, id);
-            let inc = parseInt(val);
-            if (localStorage.getItem(key)) inc = val * 2;
-            await updateDoc(ref, { votes: increment(inc) });
-            localStorage.setItem(key, val);
-        } catch (e) {}
+        if (localStorage.getItem(key)) return;
+        await updateDoc(doc(db, 'blog_comments', 'pages', pageId, id), { votes: increment(val) });
+        localStorage.setItem(key, 'true');
     };
 
-    window.toggleLike = async (id) => {
-        const key = `voted_${pageId}_${id}`;
-        const hasLiked = localStorage.getItem(key) == 1;
-        try {
-            const ref = doc(db, 'blog_comments', 'pages', pageId, id);
-            if (hasLiked) {
-                await updateDoc(ref, { votes: increment(-1) });
-                localStorage.removeItem(key);
-            } else {
-                await updateDoc(ref, { votes: increment(1) });
-                localStorage.setItem(key, 1);
-            }
-        } catch (e) {}
-    };
-
-    window.postData = async (pid) => {
-        let n = (currentUser && !currentUser.isAnonymous) ? currentUser.displayName : (pid ? document.getElementById(`name-${pid}`).value : document.getElementById('user-name').value);
-        let m = pid ? document.getElementById(`msg-${pid}`).value : document.getElementById('user-comment').value;
-        if(!n?.trim() || !m?.trim()) return;
-        try {
-            const res = await addDoc(commentsCol, { 
-                name: n, msg: m, parentId: pid, votes: 0, featured: false, reported: false, isAdmin: isAdmin,
-                photoURL: currentUser?.photoURL || null, userId: currentUser?.uid || null, at: serverTimestamp() 
-            });
-            
-            // If replying, ensure parent is expanded so user sees their new post
-            if (pid) {
-                manualCollapseStates[pid] = false;
-                document.getElementById(`form-${pid}`).classList.add('hidden');
-            } else {
-                document.getElementById('user-comment').value = ''; 
-                togglePostModal();
-            }
-            
-            if (!currentUser || currentUser.isAnonymous) saveMyComment(res.id);
-        } catch (e) {}
-    };
-
-    window.updateData = async (id) => {
-        const msg = document.getElementById(`edit-in-${id}`).value;
-        if(!msg.trim()) return;
-        try { await updateDoc(doc(db, 'blog_comments', 'pages', pageId, id), { msg }); toggleEdit(id); } catch (e) {}
-    };
-
-    window.toggleEdit = (id) => { document.getElementById(`body-${id}`).classList.toggle('hidden'); document.getElementById(`edit-box-${id}`).classList.toggle('hidden'); };
-    window.togglePin = async (id, isFeatured) => { try { await updateDoc(doc(db, 'blog_comments', 'pages', pageId, id), { featured: isFeatured }); } catch (e) {} };
-    window.reportComment = async (id) => { if (localStorage.getItem(`reported_${pageId}_${id}`)) return; try { await updateDoc(doc(db, 'blog_comments', 'pages', pageId, id), { reported: true }); localStorage.setItem(`reported_${pageId}_${id}`, 'true'); } catch (e) {} };
-    window.openDeleteModal = (id) => { window.delId = id; document.getElementById('delete-modal').classList.replace('hidden', 'flex'); };
-    window.closeDeleteModal = () => document.getElementById('delete-modal').classList.replace('flex', 'hidden');
-    document.getElementById('confirm-delete-btn').onclick = async () => { try { await deleteDoc(doc(db, 'blog_comments', 'pages', pageId, window.delId)); closeDeleteModal(); } catch (e) {} };
-
+    function toBengaliNumber(n) { return n.toString().replace(/\d/g, d => "০১২৩৪৫৬৭৮৯"[d]); }
     function formatTime(ts) {
         if(!ts) return 'এখন';
         const s = Math.floor((new Date() - new Date(ts.seconds * 1000))/1000);
         if(s < 60) return 'এখন';
-        if(s < 3600) return toBengaliNumber(Math.floor(s/60)) + ' মি';
-        if(s < 84000) return toBengaliNumber(Math.floor(s/3600)) + ' ঘ';
+        if(s < 3600) return toBengaliNumber(Math.floor(s/60)) + 'মি';
+        if(s < 86400) return toBengaliNumber(Math.floor(s/3600)) + 'ঘ';
         return toBengaliNumber(new Date(ts.seconds*1000).getDate()) + ' ' + new Date(ts.seconds*1000).toLocaleDateString('bn-BD', {month:'short'});
     }
     function esc(t) { let d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
