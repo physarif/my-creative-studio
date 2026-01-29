@@ -125,7 +125,7 @@
         .voted-up { color: #1d9bf0 !important; }
         .voted-down { color: #f4245e !important; }
 
-        /* Updated Collapse styling: only hide replies, not the parent */
+        /* Default hidden replies for threads that should be collapsed */
         .collapsed-thread .comment-replies { display: none; }
         .reply-counter { cursor: pointer; user-select: none; }
     </style>
@@ -332,7 +332,6 @@
 
     window.loadMore = () => { visibleCount += 10; renderDisplay(); };
 
-    // Function updated to only toggle 'collapsed-thread' class
     window.toggleCollapse = (id) => {
         const el = document.getElementById(`comment-${id}`);
         if (el) el.classList.toggle('collapsed-thread');
@@ -341,7 +340,13 @@
     function renderComment(c, depth = 0, totalReplyCount = 0) {
         const date = formatTime(c.at);
         let messageHtml = DOMPurify.sanitize(marked.parse(c.msg));
+        
+        // Root threads are default collapsed if they have replies
         let threadClass = depth === 0 ? 'border-b dark:border-darkBorder pb-6' : 'ml-4 pl-4 border-l dark:border-darkBorder';
+        if (depth === 0 && totalReplyCount > 0) {
+            threadClass += ' collapsed-thread';
+        }
+
         const voteStatus = localStorage.getItem(`voted_${pageId}_${c.id}`);
 
         return `
@@ -356,7 +361,7 @@
                 <div class="comment-actions flex items-center gap-4 mt-2 text-gray-500 text-[11px]">
                     <div class="flex items-center gap-1.5 bg-gray-50 dark:bg-darkBorder/30 rounded-full px-2 py-0.5">
                         <button onclick="vote('${c.id}', 1)" class="hover:text-[#1d9bf0] transition-colors ${voteStatus === 'up' ? 'voted-up' : ''}">
-                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12.781 2.375c-.381-.475-1.181-.475-1.562 0l-8 10A1.001 1.001 0 004 14h4v7a1 1 0 001 1h6a1 1 0 001-1v-7h4a1.001 1.001 0 00.781-1.625l-8-10z"/></svg>
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12.781 2.375c-.381-.475-1.181-.475-1.562 0l-8 10A1.001 1.001 0 004 14h4v7a1 1 0 001 1h6a1 1 0 001-1v-7h4a1.001 1.001 0 00-.781-1.625l-8-10z"/></svg>
                         </button>
                         <span class="font-bold min-w-[12px] text-center">${toBengaliNumber(c.votes || 0)}</span>
                         <button onclick="vote('${c.id}', -1)" class="hover:text-[#f4245e] transition-colors ${voteStatus === 'down' ? 'voted-down' : ''}">
@@ -367,12 +372,12 @@
                     
                     ${depth === 0 && totalReplyCount > 0 ? `
                         <button onclick="toggleCollapse('${c.id}')" class="reply-counter bg-gray-100 dark:bg-darkBorder/50 text-gray-500 hover:text-[#1d9bf0] text-[10px] px-2 py-0.5 rounded-full font-bold transition-all">
-                            ${toBengaliNumber(totalReplyCount)} উত্তর
+                            ${toBengaliNumber(totalReplyCount)} রিপ্লাই
                         </button>
                     ` : ''}
                 </div>
                 <div id="reply-form-${c.id}" class="reply-form-container hidden mt-3">
-                    <textarea id="msg-${c.id}" placeholder="আপনার উত্তর..." class="w-full p-2 bg-gray-50 dark:bg-darkBorder/20 rounded-lg text-sm outline-none border dark:border-darkBorder dark:text-white h-20 resize-none"></textarea>
+                    <textarea id="msg-${c.id}" placeholder="আপনার রিপ্লাই..." class="w-full p-2 bg-gray-50 dark:bg-darkBorder/20 rounded-lg text-sm outline-none border dark:border-darkBorder dark:text-white h-20 resize-none"></textarea>
                     <button onclick="postData('${c.id}')" class="bg-[#1d9bf0] text-white text-[10px] px-4 py-1.5 rounded-full font-bold mt-1">পোস্ট</button>
                 </div>
             </div>
