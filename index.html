@@ -67,7 +67,6 @@
         }
         .dark .post-modal-content { background: #000000; border: 1px solid #2f3336; }
         
-        /* Dropdown Styles */
         .dropdown-content {
             display: none;
             position: absolute;
@@ -90,55 +89,47 @@
         .dropdown-content button:hover { background-color: #f9f9f9; }
         .dark .dropdown-content button:hover { background-color: #1c1f23; }
         .show { display: block; }
-
-        .root-divider { height: 1px; background-color: #f3f4f6; margin: 24px 0; }
-        .dark .root-divider { background-color: #2f3336; }
     </style>
 </head>
 <body class="p-4 md:p-8 bg-white text-gray-900 dark:bg-darkBg dark:text-gray-100 pb-24">
 
 <div class="max-w-2xl mx-auto">
-    <!-- Header -->
-    <div class="flex items-center justify-between gap-4 mb-6 px-2">
-        <div class="flex items-center gap-3">
-            <div id="auth-section">
-                <div id="user-info-ui" class="hidden flex items-center gap-2">
-                    <img id="user-avatar" src="" class="w-8 h-8 rounded-full border border-gray-200 dark:border-darkBorder cursor-pointer" onclick="goToMyProfile()">
-                    <div class="flex flex-col">
-                        <span id="display-name-nav" class="text-[11px] font-bold truncate max-w-[80px]"></span>
-                        <button onclick="handleLogout()" class="text-[9px] font-bold text-gray-500 uppercase hover:text-red-500 transition-colors text-left">লগআউট</button>
-                    </div>
-                </div>
-                <button onclick="googleLogin()" id="login-trigger-btn" class="flex items-center gap-2 bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder px-3 py-1.5 rounded-full shadow-sm">
-                    <span class="text-[11px] font-bold">লগইন করুন</span>
-                </button>
-                <div id="admin-badge-ui" class="hidden flex items-center gap-1.5 bg-blue-50 dark:bg-blue-500/10 px-2 py-0.5 rounded-full border border-blue-100 dark:border-blue-500/20 ml-2">
-                    <span class="text-[10px] font-bold text-blue-700 dark:text-blue-500 uppercase">এডমিন</span>
+    <!-- Header: Auth Section (Top) -->
+    <div class="flex items-center justify-between mb-4 px-2">
+        <div id="auth-section">
+            <div id="user-info-ui" class="hidden flex items-center gap-2">
+                <img id="user-avatar" src="" class="w-8 h-8 rounded-full border border-gray-200 dark:border-darkBorder cursor-pointer" onclick="goToMyProfile()">
+                <div class="flex flex-col">
+                    <span id="display-name-nav" class="text-[11px] font-bold truncate max-w-[80px]"></span>
+                    <button onclick="handleLogout()" class="text-[9px] font-bold text-gray-500 uppercase hover:text-red-500 transition-colors text-left">লগআউট</button>
                 </div>
             </div>
+            <div id="admin-badge-ui" class="hidden flex items-center gap-1.5 bg-blue-50 dark:bg-blue-500/10 px-2 py-0.5 rounded-full border border-blue-100 dark:border-blue-500/20">
+                <span class="text-[10px] font-bold text-blue-700 dark:text-blue-500 uppercase">এডমিন</span>
+            </div>
         </div>
-        <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-darkCard transition-all">
-            <svg id="sun-icon" class="w-5 h-5 hidden text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" /></svg>
-            <svg id="moon-icon" class="w-5 h-5 hidden text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" /></svg>
-        </button>
     </div>
 
-    <!-- Dropdown Sorting UI -->
-    <div class="flex items-center justify-between mb-8 px-2 relative">
+    <!-- Controls: Sort on Left, Theme on Right -->
+    <div class="flex items-center justify-between mb-8 px-2">
+        <!-- Sorting Dropdown (Left) -->
         <div class="relative inline-block">
             <button onclick="toggleSortDropdown()" id="sort-btn" class="flex items-center gap-1.5 border border-gray-300 dark:border-darkBorder rounded px-2.5 py-1 text-sm font-semibold bg-white dark:bg-darkCard">
                 <span id="current-sort-label">সেরা</span>
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>
             </button>
-            <div id="sort-dropdown" class="dropdown-content mt-1 rounded-xl overflow-hidden shadow-xl border border-gray-100 dark:border-darkBorder">
+            <div id="sort-dropdown" class="dropdown-content left-0 mt-1 rounded-xl overflow-hidden shadow-xl border border-gray-100 dark:border-darkBorder">
                 <button onclick="setSort('top', 'সেরা')" class="hover:bg-gray-50 dark:hover:bg-darkBorder">সেরা</button>
                 <button onclick="setSort('recent', 'সাম্প্রতিক')" class="hover:bg-gray-50 dark:hover:bg-darkBorder">সাম্প্রতিক</button>
                 <button onclick="setSort('featured', 'নির্বাচিত')" class="hover:bg-gray-50 dark:hover:bg-darkBorder">নির্বাচিত</button>
                 <button onclick="setSort('reports', 'অভিযোগ')" class="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10">অভিযোগ</button>
             </div>
         </div>
-        <button class="text-gray-400 hover:text-[#1d9bf0] p-1">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+
+        <!-- Theme Toggle (Right) -->
+        <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-darkCard transition-all">
+            <svg id="sun-icon" class="w-5 h-5 hidden text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" /></svg>
+            <svg id="moon-icon" class="w-5 h-5 hidden text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" /></svg>
         </button>
     </div>
 
@@ -206,7 +197,6 @@
     let visibleCount = 10;
     let allRootThreads = [];
 
-    // Navigation & Dropdown
     window.toggleSortDropdown = () => document.getElementById("sort-dropdown").classList.toggle("show");
     window.goToMyProfile = () => { if(currentUser && !currentUser.isAnonymous) window.location.href = `profile.html?uid=${currentUser.uid}`; };
     window.goToProfile = (uid) => { window.location.href = `profile.html?uid=${uid}`; };
@@ -225,11 +215,9 @@
         load();
     };
 
-    // Auth Listener
     onAuthStateChanged(auth, (user) => {
         currentUser = user;
         const userInfoUi = document.getElementById('user-info-ui');
-        const loginTrigger = document.getElementById('login-trigger-btn');
         const postHeaderAuth = document.getElementById('post-header-auth');
         const textareaContainer = document.getElementById('textarea-container');
         const loginPrompt = document.getElementById('login-required-prompt');
@@ -237,7 +225,6 @@
         if (user && !user.isAnonymous) {
             isAdmin = (user.email === 'admin@fisarif.com' || user.email === 'fisarif@gmail.com'); 
             userInfoUi.classList.remove('hidden');
-            loginTrigger.classList.add('hidden');
             document.getElementById('user-avatar').src = user.photoURL || 'https://www.gravatar.com/avatar/000?d=mp';
             document.getElementById('display-name-nav').textContent = user.displayName || 'ব্যবহারকারী';
             postHeaderAuth.classList.remove('hidden');
@@ -247,7 +234,6 @@
         } else {
             isAdmin = false;
             userInfoUi.classList.add('hidden');
-            loginTrigger.classList.remove('hidden');
             postHeaderAuth.classList.add('hidden');
             textareaContainer.classList.add('hidden');
             loginPrompt.classList.remove('hidden');
@@ -259,7 +245,6 @@
     window.googleLogin = async () => { try { await signInWithPopup(auth, provider); } catch (e) {} };
     window.handleLogout = () => signOut(auth);
 
-    // Modal Control
     window.togglePostModal = () => {
         const overlay = document.getElementById('post-modal-overlay');
         const isHidden = overlay.style.display === 'none' || overlay.style.display === '';
@@ -271,7 +256,6 @@
     };
     window.closeModalOnOutsideClick = (e) => { if (e.target.id === 'post-modal-overlay') togglePostModal(); };
 
-    // Theme Toggle
     const themeToggle = document.getElementById('theme-toggle');
     const updateIcons = (isDark) => {
         if(isDark) { document.getElementById('sun-icon').classList.remove('hidden'); document.getElementById('moon-icon').classList.add('hidden'); }
@@ -286,7 +270,6 @@
         updateIcons(isDark);
     };
 
-    // Load Data
     function load() {
         onSnapshot(query(commentsCol), (snap) => {
             let list = []; snap.forEach(doc => list.push({ id: doc.id, ...doc.data() }));
