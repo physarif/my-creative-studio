@@ -62,7 +62,8 @@
 
         .voted-up { color: #1d9bf0 !important; }
         .voted-down { color: #f91880 !important; }
-        .featured-badge { color: #f59e0b; }
+        .liked { color: #f91880 !important; }
+        
         .tab-border-container { border-bottom: 2px solid #f3f4f6; }
         .dark .tab-border-container { border-bottom: 2px solid #2f3336; }
         
@@ -93,12 +94,10 @@
     <div class="flex items-center justify-between gap-4 mb-6 px-2">
         <div class="flex items-center gap-3">
             <div id="auth-section">
-                <!-- User Profile UI -->
                 <div id="user-info-ui" class="hidden flex items-center gap-2">
                     <img id="user-avatar" src="" class="w-8 h-8 rounded-full border border-gray-200 dark:border-darkBorder">
                     <button onclick="handleLogout()" class="text-[10px] font-bold text-gray-500 uppercase hover:text-red-500 transition-colors">লগআউট</button>
                 </div>
-                <!-- Login Trigger -->
                 <button onclick="toggleLoginModal()" id="login-trigger-btn" class="text-[11px] font-bold bg-[#1d9bf0] text-white px-4 py-1 rounded-full hover:bg-[#1a8cd8] transition-all uppercase shadow-sm">লগইন</button>
                 
                 <div id="admin-badge-ui" class="hidden flex items-center gap-1.5 bg-blue-50 dark:bg-blue-500/10 px-2 py-0.5 rounded-full border border-blue-100 dark:border-blue-500/20 ml-2">
@@ -163,7 +162,6 @@
         <h3 class="text-xl font-bold mb-6 text-center">প্রবেশ করুন</h3>
         
         <div class="space-y-4">
-            <!-- Google Login Button -->
             <button onclick="googleLogin()" class="w-full flex items-center justify-center gap-3 bg-white border border-gray-300 dark:border-darkBorder py-3 rounded-xl font-bold text-gray-700 dark:text-white dark:bg-darkBg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                 <svg class="w-5 h-5" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path></svg>
                 গুগল দিয়ে প্রবেশ করুন
@@ -260,16 +258,14 @@
         const adminBadge = document.getElementById('admin-badge-ui');
 
         if (user && !user.isAnonymous) {
-            // Logged in
-            isAdmin = user.email === 'admin@fisarif.com'; // Adjust admin logic if needed
+            isAdmin = user.email === 'admin@fisarif.com';
             userInfoUi.classList.remove('hidden');
             loginTrigger.classList.add('hidden');
             userAvatar.src = user.photoURL || 'https://www.gravatar.com/avatar/000?d=mp';
-            nameInputContainer.classList.add('hidden'); // No need for name input
+            nameInputContainer.classList.add('hidden');
             if (isAdmin) adminBadge.classList.remove('hidden');
             else adminBadge.classList.add('hidden');
         } else {
-            // Not logged in or Anonymous
             isAdmin = false;
             userInfoUi.classList.add('hidden');
             loginTrigger.classList.remove('hidden');
@@ -280,12 +276,7 @@
     });
 
     window.googleLogin = async () => {
-        try {
-            await signInWithPopup(auth, provider);
-            toggleLoginModal();
-        } catch (e) {
-            console.error("Login failed", e);
-        }
+        try { await signInWithPopup(auth, provider); toggleLoginModal(); } catch (e) {}
     };
 
     window.adminLogin = async () => {
@@ -293,14 +284,7 @@
         const pass = document.getElementById('admin-password').value;
         const btn = document.getElementById('login-btn');
         btn.disabled = true; btn.innerText = 'চেক করা হচ্ছে...';
-        try {
-            await signInWithEmailAndPassword(auth, email, pass);
-            toggleLoginModal();
-        } catch (e) {
-            alert("ভুল ইমেইল বা পাসওয়ার্ড");
-        } finally {
-            btn.disabled = false; btn.innerText = 'এডমিন লগইন';
-        }
+        try { await signInWithEmailAndPassword(auth, email, pass); toggleLoginModal(); } catch (e) { alert("ভুল ইমেইল বা পাসওয়ার্ড"); } finally { btn.disabled = false; btn.innerText = 'এডমিন লগইন'; }
     };
 
     window.handleLogout = () => signOut(auth);
@@ -310,7 +294,6 @@
         document.getElementById('login-modal').classList.toggle('flex');
     };
 
-    // Modal Control
     window.togglePostModal = () => {
         const overlay = document.getElementById('post-modal-overlay');
         const isHidden = overlay.style.display === 'none' || overlay.style.display === '';
@@ -318,16 +301,11 @@
         if (isHidden) {
             document.body.style.overflow = 'hidden';
             setTimeout(() => document.getElementById('user-comment').focus(), 50);
-        } else {
-            document.body.style.overflow = '';
-        }
+        } else { document.body.style.overflow = ''; }
     };
 
-    window.closeModalOnOutsideClick = (e) => {
-        if (e.target.id === 'post-modal-overlay') togglePostModal();
-    };
+    window.closeModalOnOutsideClick = (e) => { if (e.target.id === 'post-modal-overlay') togglePostModal(); };
 
-    // Data Helpers
     const MY_COMMENTS_KEY = `my_comments_${pageId}`;
     const getMyComments = () => JSON.parse(localStorage.getItem(MY_COMMENTS_KEY) || "[]");
     const saveMyComment = (id) => {
@@ -335,20 +313,13 @@
         localStorage.setItem(MY_COMMENTS_KEY, JSON.stringify(ids));
     };
     const isOwner = (comment) => {
-        if (currentUser && !currentUser.isAnonymous) {
-            return isAdmin || comment.userId === currentUser.uid;
-        }
+        if (currentUser && !currentUser.isAnonymous) return isAdmin || comment.userId === currentUser.uid;
         return getMyComments().includes(comment.id);
     };
 
     const toBengaliNumber = (n) => n.toString().replace(/\d/g, d => "০১২৩৪৫৬৭৮৯"[d]);
 
-    window.setSort = (type) => {
-        currentSort = type;
-        visibleCount = 10;
-        updateSortUI();
-        load();
-    };
+    window.setSort = (type) => { currentSort = type; visibleCount = 10; updateSortUI(); load(); };
 
     function updateSortUI() {
         const tabs = ['top', 'recent', 'featured', 'reports'];
@@ -414,10 +385,6 @@
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"></path></svg>
                             </button>` : ''}
                     </div>
-                    <div class="flex items-center gap-1.5">
-                        ${isFeatured ? `<span class="flex items-center gap-0.5 featured-badge"><svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg><span class="text-[10px] font-bold uppercase">নির্বাচিত</span></span>` : ''}
-                        ${isAdmin && isReported ? `<span class="text-[9px] bg-red-100 dark:bg-red-900/30 px-1.5 rounded-md font-bold text-red-500 border border-red-200 dark:border-red-800">অভিযোগ: ${toBengaliNumber(c.reportCount || 1)}</span>` : ''}
-                    </div>
                 </div>
                 <div class="comment-body">
                     <div id="body-${c.id}" class="comment-content text-[15px] text-gray-800 dark:text-gray-300 leading-normal mb-1 break-words">${cleanHtml}</div>
@@ -432,13 +399,28 @@
                 <div class="comment-footer flex items-center justify-between mt-1">
                     <div class="flex items-center gap-4">
                          <div class="flex items-center gap-3 text-gray-500">
-                             <button onclick="vote('${c.id}', 1)" class="flex items-center gap-1 ${userVote == 1 ? 'voted-up' : ''}">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M5 15l7-7 7 7" /></svg>
-                                <span class="text-[12px] font-bold">${toBengaliNumber(c.votes || 0)}</span>
-                             </button>
-                             <button onclick="vote('${c.id}', -1)" class="${userVote == -1 ? 'voted-down' : ''}"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M19 9l-7 7-7-7" /></svg></button>
+                             ${depth === 0 ? `
+                                <div class="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg px-0.5">
+                                    <button onclick="vote('${c.id}', 1)" class="p-1 hover:text-[#1d9bf0] transition-colors ${userVote == 1 ? 'voted-up' : ''}">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7" /></svg>
+                                    </button>
+                                    <span class="text-[12px] font-bold px-1 min-w-[15px] text-center ${userVote == 1 ? 'text-[#1d9bf0]' : (userVote == -1 ? 'text-[#f91880]' : '')}">
+                                        ${toBengaliNumber(c.votes || 0)}
+                                    </span>
+                                    <button onclick="vote('${c.id}', -1)" class="p-1 hover:text-[#f91880] transition-colors ${userVote == -1 ? 'voted-down' : ''}">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" /></svg>
+                                    </button>
+                                </div>
+                             ` : `
+                                <button onclick="toggleLike('${c.id}')" class="flex items-center gap-1.5 hover:text-[#f91880] transition-colors ${userVote == 1 ? 'liked' : ''}">
+                                    <svg class="w-4 h-4 ${userVote == 1 ? 'fill-current' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                    </svg>
+                                    <span class="text-[12px] font-bold">${toBengaliNumber(c.votes || 0)}</span>
+                                </button>
+                             `}
                          </div>
-                         <button onclick="toggleReplyForm('${c.id}', '${esc(c.name)}')" class="text-[12px] font-medium text-gray-500 hover:text-[#1d9bf0]">রিপ্লাই</button>
+                         <button onclick="toggleReplyForm('${c.id}', '${esc(c.name)}')" class="text-[12px] font-bold text-gray-500 hover:text-[#1d9bf0]">রিপ্লাই</button>
                          ${depth === 0 ? `
                             <button onclick="toggleCollapse('${c.id}')" class="flex items-center gap-1 text-[11px] font-bold text-[#1d9bf0] bg-blue-50 dark:bg-blue-900/20 px-2 py-0.5 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors">
                                 <svg class="w-2.5 h-2.5 collapse-arrow ${replyCount === 0 ? 'opacity-30' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 15l-7-7-7 7"></path></svg>
@@ -462,8 +444,6 @@
                             </div>
                         </div>
                     </div>
-                    <div id="warning-${c.id}" class="hidden text-[11px] text-red-500 mt-1 ml-2">আপনার নাম ও রিপ্লাই লিখুন</div>
-                    <div id="posting-status-${c.id}" class="hidden text-[11px] text-green-600 dark:text-green-400 font-medium mt-1 ml-2">আপনার মন্তব্য পোস্ট করা হচ্ছে...</div>
                 </div>
             </div>
             <div class="comment-replies">${c.replies.map(r => renderComment(r, depth + 1)).join('')}</div>
@@ -472,68 +452,31 @@
 
     function renderDisplay() {
         const container = document.getElementById('comments-container');
-        const loadMoreBtn = document.getElementById('load-more-container');
         const subset = allRootThreads.slice(0, visibleCount);
-        container.innerHTML = subset.length > 0 ? subset.map(c => renderComment(c)).join('') : `<p class="text-center text-gray-400 py-10 italic text-sm">${currentSort === 'featured' ? 'কোনো নির্বাচিত পোস্ট নেই।' : (currentSort === 'reports' ? 'কোনো অভিযোগ সম্বলিত পোস্ট নেই।' : 'কোনো পোস্ট নেই।')}</p>`;
-        if (allRootThreads.length > visibleCount) loadMoreBtn.classList.remove('hidden');
-        else loadMoreBtn.classList.add('hidden');
+        container.innerHTML = subset.length > 0 ? subset.map(c => renderComment(c)).join('') : `<p class="text-center text-gray-400 py-10 italic text-sm">কোনো পোস্ট নেই।</p>`;
+        document.getElementById('load-more-container').classList.toggle('hidden', allRootThreads.length <= visibleCount);
     }
 
     window.loadMore = () => { visibleCount += 10; renderDisplay(); };
 
     function load() {
         onSnapshot(query(commentsCol), (snap) => {
-            const container = document.getElementById('comments-container');
             let list = []; snap.forEach(doc => list.push({ id: doc.id, ...doc.data() }));
-            if (currentSort === 'reports' && !isAdmin) {
-                container.innerHTML = `<div class="flex flex-col items-center justify-center py-20 px-4 text-center"><div class="w-12 h-12 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-full flex items-center justify-center mb-4"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m0 0v2m0-2h2m-2 0H10m11-3V5a2 2 0 00-2-2h-4l-1-1H5a2 2 0 00-2 2v12a2 2 0 002 2h10l4 4V13z"></path></svg></div><p class="text-sm font-bold text-gray-500 dark:text-gray-400">শুধুমাত্র এডমিন অভিযোগ দেখতে পাবেন।</p></div>`;
-                document.getElementById('load-more-container').classList.add('hidden');
-                return;
-            }
             let tree = buildTree(list);
             if (currentSort === 'featured') tree = tree.filter(c => c.featured === true);
             else if (currentSort === 'reports') tree = tree.filter(c => c.reported === true);
-            tree.sort((a,b) => {
-                if (currentSort === 'top') return (b.votes - a.votes);
-                if (currentSort === 'reports') return (b.reportCount || 0) - (a.reportCount || 0);
-                return (b.at?.seconds - a.at?.seconds);
-            });
-            allRootThreads = tree;
-            renderDisplay();
+            tree.sort((a,b) => (currentSort === 'top' ? (b.votes - a.votes) : (b.at?.seconds - a.at?.seconds)));
+            allRootThreads = tree; renderDisplay();
         });
     }
 
     window.toggleReplyForm = (id, authorName = null) => {
         const form = document.getElementById(`form-${id}`);
         const textarea = document.getElementById(`msg-${id}`);
-        const isOpening = form.classList.contains('hidden');
-        form.classList.toggle('hidden');
-        if (isOpening && authorName) {
-            const mention = `@${authorName.replace(/\s+/g, '')} `;
-            if (!textarea.value.includes(mention)) textarea.value = mention + textarea.value;
+        if (form.classList.toggle('hidden') === false && authorName) {
+            textarea.value = `@${authorName.replace(/\s+/g, '')} ` + textarea.value;
             textarea.focus();
-            textarea.setSelectionRange(textarea.value.length, textarea.value.length);
         }
-    };
-
-    window.toggleEdit = (id) => {
-        const body = document.getElementById(`body-${id}`);
-        const box = document.getElementById(`edit-box-${id}`);
-        body.classList.toggle('hidden'); box.classList.toggle('hidden');
-    };
-
-    window.togglePin = async (id, isFeatured) => {
-        if (!isAdmin) return;
-        try { await updateDoc(doc(db, 'blog_comments', 'pages', pageId, id), { featured: isFeatured }); } catch (e) {}
-    };
-
-    window.reportComment = async (id) => {
-        if (localStorage.getItem(`reported_${pageId}_${id}`)) return;
-        try {
-            const ref = doc(db, 'blog_comments', 'pages', pageId, id);
-            await updateDoc(ref, { reported: true, reportCount: increment(1) });
-            localStorage.setItem(`reported_${pageId}_${id}`, 'true');
-        } catch (e) {}
     };
 
     window.vote = async (id, val) => {
@@ -548,51 +491,34 @@
         } catch (e) {}
     };
 
-    window.postData = async (pid) => {
-        let n, photo;
-        if (currentUser && !currentUser.isAnonymous) {
-            n = currentUser.displayName;
-            photo = currentUser.photoURL;
-        } else {
-            n = pid ? document.getElementById(`name-${pid}`).value : document.getElementById('user-name').value;
-            photo = null;
-        }
+    window.toggleLike = async (id) => {
+        const key = `voted_${pageId}_${id}`;
+        const hasLiked = localStorage.getItem(key) == 1;
+        try {
+            const ref = doc(db, 'blog_comments', 'pages', pageId, id);
+            if (hasLiked) {
+                await updateDoc(ref, { votes: increment(-1) });
+                localStorage.removeItem(key);
+            } else {
+                await updateDoc(ref, { votes: increment(1) });
+                localStorage.setItem(key, 1);
+            }
+        } catch (e) {}
+    };
 
-        const m = pid ? document.getElementById(`msg-${pid}`).value : document.getElementById('user-comment').value;
-        const btn = pid ? document.getElementById(`btn-${pid}`) : document.getElementById('submit-btn');
-        const statusDiv = document.getElementById(pid ? `posting-status-${pid}` : 'posting-status-null');
-        
-        if(!n || !n.trim() || !m.trim()) {
-            const w = document.getElementById(pid ? `warning-${pid}` : 'warning-null');
-            w.classList.remove('hidden'); setTimeout(() => w.classList.add('hidden'), 3000);
-            return;
-        }
-        
-        btn.disabled = true; statusDiv.classList.remove('hidden');
+    window.postData = async (pid) => {
+        let n = (currentUser && !currentUser.isAnonymous) ? currentUser.displayName : (pid ? document.getElementById(`name-${pid}`).value : document.getElementById('user-name').value);
+        let m = pid ? document.getElementById(`msg-${pid}`).value : document.getElementById('user-comment').value;
+        if(!n?.trim() || !m?.trim()) return;
         try {
             const res = await addDoc(commentsCol, { 
-                name: n, 
-                msg: m, 
-                parentId: pid, 
-                votes: 0, 
-                featured: false, 
-                reported: false, 
-                reportCount: 0, 
-                isAdmin: isAdmin,
-                photoURL: photo,
-                userId: currentUser?.uid || null,
-                at: serverTimestamp() 
+                name: n, msg: m, parentId: pid, votes: 0, featured: false, reported: false, isAdmin: isAdmin,
+                photoURL: currentUser?.photoURL || null, userId: currentUser?.uid || null, at: serverTimestamp() 
             });
             if (!currentUser || currentUser.isAnonymous) saveMyComment(res.id);
-            
-            if(!pid) { 
-                document.getElementById('user-comment').value = ''; 
-                togglePostModal(); 
-            } else { 
-                document.getElementById(`form-${pid}`).classList.add('hidden'); 
-                document.getElementById(`comment-${pid}`).classList.remove('collapsed-parent'); 
-            }
-        } catch (e) {} finally { btn.disabled = false; statusDiv.classList.add('hidden'); }
+            if(!pid) { document.getElementById('user-comment').value = ''; togglePostModal(); }
+            else { document.getElementById(`form-${pid}`).classList.add('hidden'); }
+        } catch (e) {}
     };
 
     window.updateData = async (id) => {
@@ -601,26 +527,24 @@
         try { await updateDoc(doc(db, 'blog_comments', 'pages', pageId, id), { msg }); toggleEdit(id); } catch (e) {}
     };
 
-    let delId = null;
-    window.openDeleteModal = (id) => { delId = id; document.getElementById('delete-modal').classList.replace('hidden', 'flex'); };
+    window.toggleEdit = (id) => { document.getElementById(`body-${id}`).classList.toggle('hidden'); document.getElementById(`edit-box-${id}`).classList.toggle('hidden'); };
+    window.togglePin = async (id, isFeatured) => { try { await updateDoc(doc(db, 'blog_comments', 'pages', pageId, id), { featured: isFeatured }); } catch (e) {} };
+    window.reportComment = async (id) => { if (localStorage.getItem(`reported_${pageId}_${id}`)) return; try { await updateDoc(doc(db, 'blog_comments', 'pages', pageId, id), { reported: true, reportCount: increment(1) }); localStorage.setItem(`reported_${pageId}_${id}`, 'true'); } catch (e) {} };
+    window.openDeleteModal = (id) => { window.delId = id; document.getElementById('delete-modal').classList.replace('hidden', 'flex'); };
     window.closeDeleteModal = () => document.getElementById('delete-modal').classList.replace('flex', 'hidden');
-    document.getElementById('confirm-delete-btn').onclick = async () => {
-        try { await deleteDoc(doc(db, 'blog_comments', 'pages', pageId, delId)); closeDeleteModal(); } catch (e) {}
-    };
+    document.getElementById('confirm-delete-btn').onclick = async () => { try { await deleteDoc(doc(db, 'blog_comments', 'pages', pageId, window.delId)); closeDeleteModal(); } catch (e) {} };
 
     function formatTime(ts) {
         if(!ts) return 'এখন';
         const s = Math.floor((new Date() - new Date(ts.seconds * 1000))/1000);
         if(s < 60) return 'এখন';
         if(s < 3600) return toBengaliNumber(Math.floor(s/60)) + ' মি';
-        if(s < 86400) return toBengaliNumber(Math.floor(s/3600)) + ' ঘ';
+        if(s < 84000) return toBengaliNumber(Math.floor(s/3600)) + ' ঘ';
         return toBengaliNumber(new Date(ts.seconds*1000).getDate()) + ' ' + new Date(ts.seconds*1000).toLocaleDateString('bn-BD', {month:'short'});
     }
-
     function esc(t) { let d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
-
-    // Always start with anonymous if not logged in to enable listening
-    signInAnonymously(auth).catch(e => console.error("Anonymous auth failed", e));
+    signInAnonymously(auth);
 </script>
 </body>
 </html>
+
