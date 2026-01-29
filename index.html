@@ -125,8 +125,8 @@
         .voted-up { color: #1d9bf0 !important; }
         .voted-down { color: #f4245e !important; }
 
-        /* Default hidden replies for threads that should be collapsed */
-        .collapsed-thread .comment-replies { display: none; }
+        /* Replies are hidden by default when collapsed */
+        .collapsed-thread > .comment-replies { display: none; }
         .reply-counter { cursor: pointer; user-select: none; }
     </style>
 </head>
@@ -341,7 +341,7 @@
         const date = formatTime(c.at);
         let messageHtml = DOMPurify.sanitize(marked.parse(c.msg));
         
-        // Root threads are default collapsed if they have replies
+        // Use a base class and toggle 'collapsed-thread' only for roots by default
         let threadClass = depth === 0 ? 'border-b dark:border-darkBorder pb-6' : 'ml-4 pl-4 border-l dark:border-darkBorder';
         if (depth === 0 && totalReplyCount > 0) {
             threadClass += ' collapsed-thread';
@@ -381,7 +381,7 @@
                     <button onclick="postData('${c.id}')" class="bg-[#1d9bf0] text-white text-[10px] px-4 py-1.5 rounded-full font-bold mt-1">পোস্ট</button>
                 </div>
             </div>
-            <div class="comment-replies mt-2">${c.replies.map(r => renderComment(r, depth + 1)).join('')}</div>
+            <div class="comment-replies mt-2" onclick="event.stopPropagation()">${c.replies.map(r => renderComment(r, depth + 1)).join('')}</div>
         </div>`;
     }
 
