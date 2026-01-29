@@ -97,9 +97,11 @@
 <body class="p-4 md:p-8 bg-white text-gray-900 dark:bg-darkBg dark:text-gray-100 pb-24">
 
 <div class="max-w-2xl mx-auto">
+    <!-- Header -->
     <div class="flex items-center justify-between gap-4 mb-6 px-2">
         <div class="flex items-center gap-3">
             <div id="auth-section">
+                <!-- User UI -->
                 <div id="user-info-ui" class="hidden flex items-center gap-2">
                     <img id="user-avatar" src="" class="w-8 h-8 rounded-full border border-gray-200 dark:border-darkBorder">
                     <div class="flex flex-col">
@@ -108,6 +110,7 @@
                     </div>
                 </div>
 
+                <!-- Google Login Widget -->
                 <button onclick="googleLogin()" id="login-trigger-btn" class="flex items-center gap-2 bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder px-3 py-1.5 rounded-full shadow-sm hover:shadow-md transition-all">
                     <svg class="w-4 h-4" viewBox="0 0 48 48">
                         <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path>
@@ -130,6 +133,7 @@
         </button>
     </div>
 
+    <!-- Tabs -->
     <div class="flex items-center gap-6 mb-8 px-2 text-sm font-bold tab-border-container overflow-x-auto">
         <button id="sort-top" onclick="setSort('top')" class="transition-colors pb-3 -mb-[2px] border-b-2">সেরা</button>
         <button id="sort-recent" onclick="setSort('recent')" class="transition-colors pb-3 -mb-[2px] border-b-2">সাম্প্রতিক</button>
@@ -143,14 +147,16 @@
     </div>
 </div>
 
+<!-- Floating Action Button -->
 <button onclick="togglePostModal()" class="fab">
     <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
 </button>
 
+<!-- Post Modal Overlay -->
 <div id="post-modal-overlay" onclick="closeModalOnOutsideClick(event)">
     <div class="post-modal-content">
         <div id="post-header-auth" class="flex items-center justify-between p-4 border-b border-gray-100 dark:border-darkBorder hidden">
-            <button onclick="togglePostModal()" class="text-gray-500 dark:text-gray-400 font-medium text-sm">বাতিল</button>
+            <button onclick="togglePostModal()" class="text-gray-500 dark:text-gray-400 font-bold text-sm">বাতিল</button>
             <button onclick="postData(null)" id="submit-btn" class="bg-[#1d9bf0] hover:bg-[#1a8cd8] text-white font-bold py-1.5 px-6 rounded-full text-sm">পোস্ট</button>
         </div>
 
@@ -165,12 +171,13 @@
                          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
                     </div>
                 </div>
+                <!-- Google Login Button -->
                 <button onclick="googleLogin()" class="mx-auto flex items-center justify-center gap-3 bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder py-3 px-8 rounded-xl font-bold shadow-sm hover:shadow-md transition-all mt-4">
                     <svg class="w-5 h-5" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path></svg>
                     প্রবেশ করুন
                 </button>
                 <div class="block">
-                    <button onclick="togglePostModal()" class="text-xs text-gray-400 underline font-medium">না, থাক</button>
+                    <button onclick="togglePostModal()" class="text-xs text-gray-500 font-bold">বাতিল</button>
                 </div>
             </div>
         </div>
@@ -178,6 +185,7 @@
     </div>
 </div>
 
+<!-- Delete Modal -->
 <div id="delete-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-[110] p-4">
     <div class="bg-white dark:bg-darkCard p-6 rounded-2xl max-w-sm w-full">
         <h3 class="text-lg font-bold mb-2">পোস্টটি মুছে ফেলতে চান?</h3>
@@ -188,8 +196,10 @@
     </div>
 </div>
 
+<!-- Hidden Admin Trigger -->
 <div onclick="toggleLoginModal()" class="fixed top-0 left-0 w-8 h-8 opacity-0 cursor-default z-[50]"></div>
 
+<!-- Admin Login Modal -->
 <div id="login-modal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-[110] p-4 backdrop-blur-sm">
     <div class="bg-white dark:bg-darkCard p-8 rounded-3xl max-w-sm w-full shadow-2xl">
         <h3 class="text-xl font-bold mb-6 text-center">এডমিন প্রবেশ</h3>
@@ -197,7 +207,7 @@
             <input type="email" id="admin-email" placeholder="ইমেইল" class="w-full p-3 bg-gray-50 dark:bg-darkBg border dark:border-darkBorder rounded-xl outline-none">
             <input type="password" id="admin-password" placeholder="পাসওয়ার্ড" class="w-full p-3 bg-gray-50 dark:bg-darkBg border dark:border-darkBorder rounded-xl outline-none">
             <button onclick="adminLogin()" id="login-btn" class="w-full bg-[#1d9bf0] text-white py-3 rounded-xl font-bold">লগইন</button>
-            <button onclick="toggleLoginModal()" class="w-full text-gray-500 text-sm font-medium">বাতিল</button>
+            <button onclick="toggleLoginModal()" class="w-full text-gray-500 text-sm font-bold text-center">বাতিল</button>
         </div>
     </div>
 </div>
@@ -397,11 +407,7 @@
                     ${isLoggedIn ? `
                         <textarea id="msg-${c.id}" placeholder="আপনার উত্তরটি লিখুন..." class="w-full p-2 text-sm bg-transparent outline-none dark:text-white resize-none h-20" autofocus></textarea>
                         <div class="flex justify-between items-center mt-1">
-                            <button onclick="toggleReplyForm('${c.id}')" class="text-gray-400 hover:text-red-500 p-1 transition-colors" title="বাতিল">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
-                                </svg>
-                            </button>
+                            <button onclick="toggleReplyForm('${c.id}')" class="text-gray-400 hover:text-red-500 p-1 font-bold text-xs" title="বাতিল">বাতিল</button>
                             <button onclick="postData('${c.id}')" id="btn-${c.id}" class="bg-[#1d9bf0] text-white text-[11px] px-4 py-1.5 rounded-full font-bold">পোস্ট</button>
                         </div>
                     ` : `
@@ -415,7 +421,7 @@
                                 </svg>
                                 প্রবেশ করুন
                             </button>
-                            <button onclick="toggleReplyForm('${c.id}')" class="text-[10px] text-gray-400 mt-2 hover:underline">বাতিল</button>
+                            <button onclick="toggleReplyForm('${c.id}')" class="text-[10px] text-gray-500 mt-2 font-bold">বাতিল</button>
                         </div>
                     `}
                 </div>
@@ -519,3 +525,4 @@
 </script>
 </body>
 </html>
+
