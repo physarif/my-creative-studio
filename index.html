@@ -91,6 +91,16 @@
         .admin-name { color: #1d9bf0; }
         .dark .admin-name { color: #38bdf8; }
 
+        /* মূল পোস্টের ডিভাইডার স্টাইল */
+        .root-divider {
+            height: 1px;
+            background-color: #f3f4f6;
+            margin: 24px 0;
+        }
+        .dark .root-divider {
+            background-color: #2f3336;
+        }
+
         @media (max-width: 640px) {
             #post-modal-overlay { align-items: center; }
             .post-modal-content { margin: 0 8px; }
@@ -156,7 +166,6 @@
 <!-- Post Modal Overlay -->
 <div id="post-modal-overlay" onclick="closeModalOnOutsideClick(event)">
     <div class="post-modal-content">
-        <!-- Auth Header for Logged-in Users -->
         <div id="post-header-auth" class="flex items-center justify-between p-4 border-b border-gray-100 dark:border-darkBorder hidden">
             <button onclick="togglePostModal()" class="text-gray-500 dark:text-gray-400 font-bold text-sm hover:text-red-500 transition-colors">বাতিল</button>
             <span class="text-gray-900 dark:text-white font-bold text-sm">নতুন পোস্ট</span>
@@ -168,7 +177,7 @@
                 <textarea id="user-comment" placeholder="আপনার পোস্টটি লিখুন..." class="w-full bg-transparent text-lg outline-none min-h-[150px] dark:text-white resize-none" autofocus></textarea>
             </div>
 
-            <!-- Login Prompt for Guest Users -->
+            <!-- Login Prompt -->
             <div id="login-required-prompt" class="py-10 text-center space-y-4">
                 <p class="text-gray-500 dark:text-gray-400 font-medium">পোস্ট করতে দয়া করে লগইন করুন</p>
                 <div class="flex flex-col gap-3 max-w-[200px] mx-auto">
@@ -194,10 +203,8 @@
     </div>
 </div>
 
-<!-- Hidden Admin Trigger -->
+<!-- Admin Trigger & Login -->
 <div onclick="toggleLoginModal()" class="fixed top-0 left-0 w-8 h-8 opacity-0 cursor-default z-[50]"></div>
-
-<!-- Admin Login Modal -->
 <div id="login-modal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-[110] p-4 backdrop-blur-sm">
     <div class="bg-white dark:bg-darkCard p-8 rounded-3xl max-w-sm w-full shadow-2xl">
         <h3 class="text-xl font-bold mb-6 text-center">এডমিন প্রবেশ</h3>
@@ -237,6 +244,7 @@
     let visibleCount = 10;
     let allRootThreads = [];
 
+    // Theme Management
     const themeToggle = document.getElementById('theme-toggle');
     const sunIcon = document.getElementById('sun-icon');
     const moonIcon = document.getElementById('moon-icon');
@@ -258,6 +266,7 @@
         updateIcons(isDark);
     });
 
+    // Auth Listener
     onAuthStateChanged(auth, (user) => {
         currentUser = user;
         const userInfoUi = document.getElementById('user-info-ui');
@@ -293,19 +302,7 @@
         load();
     });
 
-    window.googleLogin = async () => {
-        try { await signInWithPopup(auth, provider); } catch (e) {}
-    };
-
-    window.adminLogin = async () => {
-        const email = document.getElementById('admin-email').value;
-        const pass = document.getElementById('admin-password').value;
-        try {
-            await signInWithEmailAndPassword(auth, email, pass);
-            toggleLoginModal();
-        } catch (e) { alert("ভুল তথ্য"); }
-    };
-
+    window.googleLogin = async () => { try { await signInWithPopup(auth, provider); } catch (e) {} };
     window.handleLogout = () => signOut(auth);
     window.toggleLoginModal = () => {
         const modal = document.getElementById('login-modal');
@@ -327,7 +324,7 @@
 
     window.closeModalOnOutsideClick = (e) => { if (e.target.id === 'post-modal-overlay') togglePostModal(); };
 
-    const toBengaliNumber = (n) => n.toString().replace(/\d/g, d => "০১২৩৪৫৬৭৮৯"[d]);
+    const toBengaliNumber = (n) => n.toString().replace(/\d/g, d => "০১২৩৪৫ะ৭৮৯"[d]);
 
     window.setSort = (type) => { currentSort = type; visibleCount = 10; updateSortUI(); load(); };
 
@@ -404,31 +401,21 @@
                     ${isLoggedIn ? `
                         <textarea id="msg-${c.id}" placeholder="আপনার উত্তরটি লিখুন..." class="w-full p-2 text-sm bg-transparent outline-none dark:text-white resize-none h-20" autofocus></textarea>
                         <div class="flex justify-between items-center mt-1">
-                            <button onclick="toggleReplyForm('${c.id}')" class="text-gray-500 hover:text-red-500 p-1 font-bold text-xs" title="বাতিল">বাতিল</button>
+                            <button onclick="toggleReplyForm('${c.id}')" class="text-gray-500 hover:text-red-500 p-1 font-bold text-xs">বাতিল</button>
                             <button onclick="postData('${c.id}')" id="btn-${c.id}" class="bg-[#1d9bf0] text-white text-[11px] px-4 py-1.5 rounded-full font-bold">পোস্ট</button>
                         </div>
                     ` : `
-                        <div onclick="toggleReplyForm('${c.id}')" class="absolute top-2 right-2 cursor-pointer text-gray-400 hover:text-red-500">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </div>
                         <div class="p-4 text-center">
-                            <p class="text-[12px] text-gray-500 dark:text-gray-400 mb-3 font-medium">রিপ্লাই করতে দয়া করে লগইন করুন</p>
-                            <button onclick="googleLogin()" class="bg-white dark:bg-darkBg border border-gray-200 dark:border-darkBorder px-4 py-1.5 rounded-lg text-[11px] font-bold flex items-center gap-2 mx-auto shadow-sm hover:shadow-md transition-all">
-                                <svg class="w-4 h-4" viewBox="0 0 48 48">
-                                    <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path>
-                                    <path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path>
-                                    <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path>
-                                    <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path>
-                                </svg>
-                                লগইন করুন
-                            </button>
+                            <p class="text-[12px] text-gray-500 mb-3 font-medium">রিপ্লাই করতে দয়া করে লগইন করুন</p>
+                            <button onclick="googleLogin()" class="bg-white dark:bg-darkBg border border-gray-200 dark:border-darkBorder px-4 py-1.5 rounded-lg text-[11px] font-bold mx-auto">লগইন করুন</button>
                         </div>
                     `}
                 </div>
             </div>
             <div class="comment-replies">${c.replies.map(r => renderComment(r, depth + 1)).join('')}</div>
+            
+            <!-- মূল পোস্টগুলোর মাঝখানে সরু ডিভাইডার -->
+            ${depth === 0 ? '<div class="root-divider"></div>' : ''}
         </div>`;
     }
 
@@ -459,9 +446,7 @@
         const textarea = document.getElementById(`msg-${id}`);
         const isOpening = form.classList.toggle('hidden') === false;
         if (isOpening && authorName && textarea) {
-            if(!textarea.value.trim()) {
-                textarea.value = `@${authorName.replace(/\s+/g, '')} `;
-            }
+            if(!textarea.value.trim()) textarea.value = `@${authorName.replace(/\s+/g, '')} `;
             setTimeout(() => textarea.focus(), 50);
         }
     };
@@ -518,7 +503,7 @@
         const s = Math.floor((new Date() - new Date(ts.seconds * 1000))/1000);
         if(s < 60) return 'এখন';
         if(s < 3600) return toBengaliNumber(Math.floor(s/60)) + ' মি';
-        if(s < 8400) return toBengaliNumber(Math.floor(s/3600)) + ' ঘ';
+        if(s < 86400) return toBengaliNumber(Math.floor(s/3600)) + ' ঘ';
         return toBengaliNumber(new Date(ts.seconds*1000).getDate()) + ' ' + new Date(ts.seconds*1000).toLocaleDateString('bn-BD', {month:'short'});
     }
 
