@@ -29,7 +29,6 @@
         .comment-content pre { background: #f3f4f6; padding: 12px; border-radius: 8px; overflow-x: auto; margin: 8px 0; }
         .dark .comment-content pre { background: #1e2126; }
         
-        /* Floating Action Button (FAB) Fixes */
         .fab { 
             position: fixed; 
             bottom: 24px; 
@@ -44,8 +43,8 @@
             justify-content: center; 
             box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25); 
             cursor: pointer; 
-            z-index: 99; /* Increased z-index to stay above all content */
-            border: 2px solid white; /* Added border to prevent overlap visuals */
+            z-index: 99; 
+            border: 2px solid white; 
             transition: transform 0.2s;
         }
         .fab:active { transform: scale(0.95); }
@@ -94,7 +93,6 @@
         .dark .dropdown-content button:hover { background-color: #1c1f23; }
         .show { display: block; }
 
-        /* Google Login Button Style */
         .google-btn {
             display: flex;
             align-items: center;
@@ -111,10 +109,7 @@
             box-shadow: 0 1px 2px 0 rgba(60,64,67,.30), 0 1px 3px 1px rgba(60,64,67,.15);
             background-color: #f8f9fa;
         }
-        .google-icon-wrapper {
-            padding: 8px;
-            height: 100%;
-        }
+        .google-icon-wrapper { padding: 8px; height: 100%; }
         .google-btn-text {
             color: #3c4043;
             font-family: 'Roboto', arial, sans-serif;
@@ -123,33 +118,25 @@
             letter-spacing: .25px;
             padding-left: 4px;
         }
-        .dark .google-btn {
-            background-color: #16181c;
-            border-color: #2f3336;
-        }
-        .dark .google-btn:hover {
-            background-color: #1c1f23;
-        }
-        .dark .google-btn-text {
-            color: #e8eaed;
-        }
+        .dark .google-btn { background-color: #16181c; border-color: #2f3336; }
+        .dark .google-btn:hover { background-color: #1c1f23; }
+        .dark .google-btn-text { color: #e8eaed; }
+        
+        /* Vote styling */
+        .voted-up { color: #1d9bf0 !important; }
+        .voted-down { color: #f4245e !important; }
     </style>
 </head>
 <body class="p-4 md:p-8 bg-white text-gray-900 dark:bg-darkBg dark:text-gray-100 pb-32">
 
 <div class="max-w-2xl mx-auto">
-    <!-- Main Header Bar -->
     <div class="flex items-center justify-between mb-8 px-2">
-        
-        <!-- Left Side: Theme Toggle & Sorting -->
         <div class="flex items-center gap-3">
-            <!-- Theme Toggle -->
             <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-darkCard transition-all">
                 <svg id="sun-icon" class="w-5 h-5 hidden text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" /></svg>
                 <svg id="moon-icon" class="w-5 h-5 hidden text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" /></svg>
             </button>
 
-            <!-- Sorting Dropdown -->
             <div class="relative inline-block">
                 <button onclick="toggleSortDropdown()" id="sort-btn" class="flex items-center gap-1.5 border border-gray-300 dark:border-darkBorder rounded px-2.5 py-1 text-sm font-semibold bg-white dark:bg-darkCard">
                     <span id="current-sort-label">সেরা</span>
@@ -158,13 +145,10 @@
                 <div id="sort-dropdown" class="dropdown-content left-0 mt-1 rounded-xl overflow-hidden shadow-xl border border-gray-100 dark:border-darkBorder">
                     <button onclick="setSort('top', 'সেরা')" class="hover:bg-gray-50 dark:hover:bg-darkBorder">সেরা</button>
                     <button onclick="setSort('recent', 'সাম্প্রতিক')" class="hover:bg-gray-50 dark:hover:bg-darkBorder">সাম্প্রতিক</button>
-                    <button onclick="setSort('featured', 'নির্বাচিত')" class="hover:bg-gray-50 dark:hover:bg-darkBorder">নির্বাচিত</button>
-                    <button onclick="setSort('reports', 'অভিযোগ')" class="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10">অভিযোগ</button>
                 </div>
             </div>
         </div>
 
-        <!-- Right Side: Login/Profile -->
         <div id="auth-section">
             <div id="user-info-ui" class="hidden flex items-center gap-2">
                 <div class="flex flex-col items-end">
@@ -172,9 +156,6 @@
                     <button onclick="handleLogout()" class="text-[9px] font-bold text-gray-500 uppercase hover:text-red-500 transition-colors text-right">লগআউট</button>
                 </div>
                 <img id="user-avatar" src="" class="w-8 h-8 rounded-full border border-gray-200 dark:border-darkBorder">
-                <div id="admin-badge-ui" class="hidden absolute -top-1 -right-1">
-                    <div class="w-3 h-3 bg-blue-500 rounded-full border-2 border-white dark:border-darkBg"></div>
-                </div>
             </div>
             <div id="login-ui" class="flex items-center">
                 <button onclick="googleLogin()" class="google-btn">
@@ -193,12 +174,10 @@
     </div>
 </div>
 
-<!-- Floating Action Button -->
 <button onclick="togglePostModal()" class="fab" aria-label="New Post">
     <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
 </button>
 
-<!-- Post Modal Overlay -->
 <div id="post-modal-overlay" onclick="closeModalOnOutsideClick(event)">
     <div class="post-modal-content overflow-hidden">
         <div id="post-header-auth" class="flex items-center justify-between p-4 border-b border-gray-100 dark:border-darkBorder hidden">
@@ -231,7 +210,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-    import { getFirestore, collection, addDoc, query, onSnapshot, serverTimestamp, updateDoc, doc, deleteDoc, increment } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, query, onSnapshot, serverTimestamp, updateDoc, doc, increment } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
     import { getAuth, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
 
     const firebaseConfig = {
@@ -258,20 +237,6 @@
 
     window.toggleSortDropdown = () => document.getElementById("sort-dropdown").classList.toggle("show");
 
-    window.onclick = (e) => {
-        if (!e.target.closest('#sort-btn')) {
-            const dropdown = document.getElementById("sort-dropdown");
-            if (dropdown && dropdown.classList.contains('show')) dropdown.classList.remove('show');
-        }
-    };
-
-    window.setSort = (type, label) => {
-        currentSort = type;
-        document.getElementById('current-sort-label').innerText = label;
-        visibleCount = 10;
-        load();
-    };
-
     onAuthStateChanged(auth, (user) => {
         currentUser = user;
         const userInfoUi = document.getElementById('user-info-ui');
@@ -289,7 +254,6 @@
             postHeaderAuth.classList.remove('hidden');
             textareaContainer.classList.remove('hidden');
             loginPrompt.classList.add('hidden');
-            if (isAdmin) document.getElementById('admin-badge-ui').classList.remove('hidden');
         } else {
             isAdmin = false;
             userInfoUi.classList.add('hidden');
@@ -297,7 +261,6 @@
             postHeaderAuth.classList.add('hidden');
             textareaContainer.classList.add('hidden');
             loginPrompt.classList.remove('hidden');
-            document.getElementById('admin-badge-ui').classList.add('hidden');
         }
         load();
     });
@@ -334,8 +297,6 @@
         onSnapshot(query(commentsCol), (snap) => {
             let list = []; snap.forEach(doc => list.push({ id: doc.id, ...doc.data() }));
             let tree = buildTree(list);
-            if (currentSort === 'featured') tree = tree.filter(c => c.featured);
-            else if (currentSort === 'reports') tree = tree.filter(c => c.reported);
             tree.sort((a,b) => currentSort === 'top' ? (b.votes - a.votes) : (b.at?.seconds - a.at?.seconds));
             allRootThreads = tree; renderDisplay();
         });
@@ -366,6 +327,7 @@
         const date = formatTime(c.at);
         let messageHtml = DOMPurify.sanitize(marked.parse(c.msg));
         let threadClass = depth === 0 ? 'border-b dark:border-darkBorder pb-6' : 'ml-4 pl-4 border-l dark:border-darkBorder';
+        const voteStatus = localStorage.getItem(`voted_${pageId}_${c.id}`);
 
         return `
         <div id="comment-${c.id}" class="${threadClass} mb-4">
@@ -377,8 +339,16 @@
                 </div>
                 <div class="comment-content text-[15px] dark:text-gray-300 break-words">${messageHtml}</div>
                 <div class="flex items-center gap-4 mt-2 text-gray-500 text-[11px]">
-                    <button onclick="vote('${c.id}', 1)" class="flex items-center gap-1 font-bold hover:text-[#1d9bf0] transition-colors">▲ ${toBengaliNumber(c.votes || 0)}</button>
-                    <button onclick="toggleReplyForm('${c.id}', '${esc(c.name)}')" class="hover:text-[#1d9bf0]">রিপ্লাই</button>
+                    <div class="flex items-center gap-1.5 bg-gray-50 dark:bg-darkBorder/30 rounded-full px-2 py-0.5">
+                        <button onclick="vote('${c.id}', 1)" class="hover:text-[#1d9bf0] transition-colors ${voteStatus === 'up' ? 'voted-up' : ''}">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12.781 2.375c-.381-.475-1.181-.475-1.562 0l-8 10A1.001 1.001 0 004 14h4v7a1 1 0 001 1h6a1 1 0 001-1v-7h4a1.001 1.001 0 00.781-1.625l-8-10z"/></svg>
+                        </button>
+                        <span class="font-bold min-w-[12px] text-center">${toBengaliNumber(c.votes || 0)}</span>
+                        <button onclick="vote('${c.id}', -1)" class="hover:text-[#f4245e] transition-colors ${voteStatus === 'down' ? 'voted-down' : ''}">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M11.219 21.625c.381.475 1.181.475 1.562 0l8-10A1.001 1.001 0 0020 10h-4V3a1 1 0 00-1-1H9a1 1 0 00-1 1v7H4a1.001 1.001 0 00-.781 1.625l8 10z"/></svg>
+                        </button>
+                    </div>
+                    <button onclick="toggleReplyForm('${c.id}', '${esc(c.name)}')" class="hover:text-[#1d9bf0] font-bold">রিপ্লাই</button>
                 </div>
                 <div id="reply-form-${c.id}" class="hidden mt-3">
                     <textarea id="msg-${c.id}" placeholder="আপনার উত্তর..." class="w-full p-2 bg-gray-50 dark:bg-darkBorder/20 rounded-lg text-sm outline-none border dark:border-darkBorder dark:text-white h-20 resize-none"></textarea>
@@ -406,7 +376,7 @@
         if(!m?.trim()) return;
         try {
             await addDoc(commentsCol, { 
-                name: currentUser.displayName, msg: m, parentId: pid, votes: 0, featured: false, reported: false, reportCount: 0, 
+                name: currentUser.displayName, msg: m, parentId: pid, votes: 0,
                 isAdmin: isAdmin, photoURL: currentUser.photoURL, userId: currentUser.uid, at: serverTimestamp() 
             });
             if(!pid) { document.getElementById('user-comment').value = ''; togglePostModal(); }
@@ -416,9 +386,18 @@
 
     window.vote = async (id, val) => {
         const key = `voted_${pageId}_${id}`;
-        if (localStorage.getItem(key)) return;
-        await updateDoc(doc(db, 'blog_comments', 'pages', pageId, id), { votes: increment(val) });
-        localStorage.setItem(key, 'true');
+        const currentVote = localStorage.getItem(key);
+        
+        let finalVal = val;
+        
+        if (currentVote === 'up' && val === 1) return;
+        if (currentVote === 'down' && val === -1) return;
+        
+        if (currentVote === 'up' && val === -1) finalVal = -2;
+        if (currentVote === 'down' && val === 1) finalVal = 2;
+
+        await updateDoc(doc(db, 'blog_comments', 'pages', pageId, id), { votes: increment(finalVal) });
+        localStorage.setItem(key, val === 1 ? 'up' : 'down');
     };
 
     function toBengaliNumber(n) { return n.toString().replace(/\d/g, d => "০১২৩৪৫৬৭৮৯"[d]); }
