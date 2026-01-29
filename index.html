@@ -212,15 +212,30 @@
             loginTrigger.classList.remove('hidden');
             nameInputContainer.classList.remove('hidden');
             adminBadge.classList.add('hidden');
+            
+            // Re-auth anonymously if not logged in via Google
+            if(!user) signInAnonymously(auth).catch(e => console.error("Anonymouse auth fail:", e));
         }
         load();
     });
 
-    // Handle Redirect Result
-    getRedirectResult(auth).catch((error) => console.error("Redirect Error:", error));
+    // Handle Redirect Result explicitly
+    getRedirectResult(auth)
+        .then((result) => {
+            if (result?.user) {
+                console.log("Logged in:", result.user.displayName);
+            }
+        })
+        .catch((error) => {
+            console.error("Auth redirect error:", error.code, error.message);
+        });
 
-    window.googleLogin = () => signInWithRedirect(auth, provider);
-    window.handleLogout = () => signOut(auth);
+    window.googleLogin = () => {
+        console.log("Starting Google Login...");
+        signInWithRedirect(auth, provider);
+    };
+    
+    window.handleLogout = () => signOut(auth).then(() => window.location.reload());
 
     // Modal Control
     window.togglePostModal = () => {
@@ -387,8 +402,6 @@
     }
     function esc(t) { let d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
 
-    signInAnonymously(auth).catch(e => console.error("অ্যানোনিমাস এরর:", e));
 </script>
 </body>
 </html>
-
