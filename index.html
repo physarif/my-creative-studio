@@ -89,6 +89,46 @@
         .dropdown-content button:hover { background-color: #f9f9f9; }
         .dark .dropdown-content button:hover { background-color: #1c1f23; }
         .show { display: block; }
+
+        /* Google Login Button Style */
+        .google-btn {
+            display: flex;
+            align-items: center;
+            background-color: white;
+            border: 1px solid #dadce0;
+            border-radius: 4px;
+            padding: 0 8px 0 0;
+            height: 34px;
+            transition: background-color .218s, border-color .218s, box-shadow .218s;
+            cursor: pointer;
+            overflow: hidden;
+        }
+        .google-btn:hover {
+            box-shadow: 0 1px 2px 0 rgba(60,64,67,.30), 0 1px 3px 1px rgba(60,64,67,.15);
+            background-color: #f8f9fa;
+        }
+        .google-icon-wrapper {
+            padding: 8px;
+            height: 100%;
+        }
+        .google-btn-text {
+            color: #3c4043;
+            font-family: 'Roboto', arial, sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: .25px;
+            padding-left: 4px;
+        }
+        .dark .google-btn {
+            background-color: #16181c;
+            border-color: #2f3336;
+        }
+        .dark .google-btn:hover {
+            background-color: #1c1f23;
+        }
+        .dark .google-btn-text {
+            color: #e8eaed;
+        }
     </style>
 </head>
 <body class="p-4 md:p-8 bg-white text-gray-900 dark:bg-darkBg dark:text-gray-100 pb-24">
@@ -133,7 +173,12 @@
                 </div>
             </div>
             <div id="login-ui" class="flex items-center">
-                <button onclick="togglePostModal()" class="text-sm font-bold bg-[#1d9bf0] text-white px-4 py-1.5 rounded-full hover:bg-[#1a8cd8] transition-colors shadow-sm">লগইন</button>
+                <button onclick="googleLogin()" class="google-btn">
+                    <div class="google-icon-wrapper">
+                        <svg viewBox="0 0 18 18" width="18px" height="18px"><path fill="#4285F4" d="M17.64 9.2c0-.63-.06-1.25-.16-1.84H9v3.49h4.84c-.21 1.12-.84 2.07-1.79 2.7l2.86 2.22c1.67-1.55 2.63-3.83 2.63-6.57z"></path><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.86-2.22c-.8.53-1.82.85-3.1.85-2.39 0-4.41-1.61-5.13-3.78H.95v2.33C2.43 15.93 5.49 18 9 18z"></path><path fill="#FBBC05" d="M3.87 10.67c-.18-.53-.28-1.1-.28-1.67s.1-1.14.28-1.67V5.01H.95C.35 6.22 0 7.57 0 9s.35 2.78.95 3.99l2.92-2.32z"></path><path fill="#EA4335" d="M9 3.58c1.32 0 2.51.45 3.44 1.35l2.58-2.58C13.47.89 11.43 0 9 0 5.49 0 2.43 2.07.95 5.01l2.92 2.32C4.59 5.19 6.61 3.58 9 3.58z"></path></svg>
+                    </div>
+                    <span class="google-btn-text">লগইন</span>
+                </button>
             </div>
         </div>
     </div>
@@ -169,7 +214,12 @@
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
                 <p class="text-gray-500 dark:text-gray-400 font-medium text-sm">পোস্ট করতে দয়া করে লগইন করুন</p>
-                <button onclick="googleLogin()" class="bg-[#1d9bf0] text-white py-2.5 px-8 rounded-full font-bold shadow-md text-sm hover:bg-[#1a8cd8] transition-colors">গুগল দিয়ে লগইন</button>
+                <button onclick="googleLogin()" class="google-btn mx-auto">
+                    <div class="google-icon-wrapper">
+                        <svg viewBox="0 0 18 18" width="18px" height="18px"><path fill="#4285F4" d="M17.64 9.2c0-.63-.06-1.25-.16-1.84H9v3.49h4.84c-.21 1.12-.84 2.07-1.79 2.7l2.86 2.22c1.67-1.55 2.63-3.83 2.63-6.57z"></path><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.86-2.22c-.8.53-1.82.85-3.1.85-2.39 0-4.41-1.61-5.13-3.78H.95v2.33C2.43 15.93 5.49 18 9 18z"></path><path fill="#FBBC05" d="M3.87 10.67c-.18-.53-.28-1.1-.28-1.67s.1-1.14.28-1.67V5.01H.95C.35 6.22 0 7.57 0 9s.35 2.78.95 3.99l2.92-2.32z"></path><path fill="#EA4335" d="M9 3.58c1.32 0 2.51.45 3.44 1.35l2.58-2.58C13.47.89 11.43 0 9 0 5.49 0 2.43 2.07.95 5.01l2.92 2.32C4.59 5.19 6.61 3.58 9 3.58z"></path></svg>
+                    </div>
+                    <span class="google-btn-text">লগইন</span>
+                </button>
             </div>
         </div>
     </div>
@@ -227,7 +277,7 @@
         const loginPrompt = document.getElementById('login-required-prompt');
 
         if (user && !user.isAnonymous) {
-            isAdmin = (user.email === 'admin@fisarif.com' || user.email === 'fisarif@gmail.com'); 
+            isAdmin = (user.email === 'admin@fisarif.com' || user.email === 'phys.arif@gmail.com'); 
             userInfoUi.classList.remove('hidden');
             loginUi.classList.add('hidden');
             document.getElementById('user-avatar').src = user.photoURL || 'https://www.gravatar.com/avatar/000?d=mp';
