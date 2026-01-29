@@ -125,11 +125,8 @@
         .voted-up { color: #1d9bf0 !important; }
         .voted-down { color: #f4245e !important; }
 
-        /* Collapse styling */
-        .collapsed .comment-replies, 
-        .collapsed .comment-content, 
-        .collapsed .comment-actions,
-        .collapsed .reply-form-container { display: none; }
+        /* Updated Collapse styling: only hide replies, not the parent */
+        .collapsed-thread .comment-replies { display: none; }
         .reply-counter { cursor: pointer; user-select: none; }
     </style>
 </head>
@@ -335,9 +332,10 @@
 
     window.loadMore = () => { visibleCount += 10; renderDisplay(); };
 
+    // Function updated to only toggle 'collapsed-thread' class
     window.toggleCollapse = (id) => {
         const el = document.getElementById(`comment-${id}`);
-        if (el) el.classList.toggle('collapsed');
+        if (el) el.classList.toggle('collapsed-thread');
     };
 
     function renderComment(c, depth = 0, totalReplyCount = 0) {
