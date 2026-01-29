@@ -69,7 +69,7 @@
             box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); 
             display: flex;
             flex-direction: column;
-            position: relative; /* Essential for absolute positioning of the close button */
+            position: relative;
         }
         .dark .post-modal-content { background: #000000; border: 1px solid #2f3336; }
         
@@ -123,7 +123,6 @@
     <div class="flex items-center justify-between gap-4 mb-6 px-2">
         <div class="flex items-center gap-3">
             <div id="auth-section">
-                <!-- User UI -->
                 <div id="user-info-ui" class="hidden flex items-center gap-2">
                     <img id="user-avatar" src="" class="w-8 h-8 rounded-full border border-gray-200 dark:border-darkBorder">
                     <div class="flex flex-col">
@@ -132,7 +131,6 @@
                     </div>
                 </div>
 
-                <!-- Google Login Widget -->
                 <button onclick="googleLogin()" id="login-trigger-btn" class="flex items-center gap-2 bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder px-3 py-1.5 rounded-full shadow-sm hover:shadow-md transition-all">
                     <svg class="w-4 h-4" viewBox="0 0 48 48">
                         <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path>
@@ -177,7 +175,7 @@
 <!-- Post Modal Overlay -->
 <div id="post-modal-overlay" onclick="closeModalOnOutsideClick(event)">
     <div class="post-modal-content">
-        <!-- Close Button (X) - FIXED DESIGN AND POSITIONING -->
+        <!-- Close Button (X) -->
         <div onclick="togglePostModal()" class="modal-close-icon" title="বন্ধ করুন">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
@@ -186,12 +184,12 @@
 
         <!-- Auth Header for Logged-in Users -->
         <div id="post-header-auth" class="flex items-center justify-between p-4 border-b border-gray-100 dark:border-darkBorder hidden">
+            <button onclick="togglePostModal()" class="text-gray-500 dark:text-gray-400 font-bold text-sm hover:text-red-500 transition-colors">বাতিল</button>
             <span class="text-gray-900 dark:text-white font-bold text-sm">নতুন পোস্ট</span>
             <button onclick="postData(null)" id="submit-btn" class="bg-[#1d9bf0] hover:bg-[#1a8cd8] text-white font-bold py-1.5 px-6 rounded-full text-sm">পোস্ট</button>
         </div>
 
         <div class="p-4">
-            <!-- Textarea for Logged-in Users -->
             <div id="textarea-container" class="hidden">
                 <textarea id="user-comment" placeholder="আপনার পোস্টটি লিখুন..." class="w-full bg-transparent text-lg outline-none min-h-[150px] dark:text-white resize-none" autofocus></textarea>
             </div>
@@ -263,7 +261,6 @@
     let visibleCount = 10;
     let allRootThreads = [];
 
-    // Theme logic
     const themeToggle = document.getElementById('theme-toggle');
     const sunIcon = document.getElementById('sun-icon');
     const moonIcon = document.getElementById('moon-icon');
@@ -431,17 +428,15 @@
                     ${isLoggedIn ? `
                         <textarea id="msg-${c.id}" placeholder="আপনার উত্তরটি লিখুন..." class="w-full p-2 text-sm bg-transparent outline-none dark:text-white resize-none h-20" autofocus></textarea>
                         <div class="flex justify-between items-center mt-1">
-                            <button onclick="toggleReplyForm('${c.id}')" class="text-gray-400 hover:text-red-500 p-1 font-bold text-xs" title="বাতিল">বাতিল</button>
+                            <button onclick="toggleReplyForm('${c.id}')" class="text-gray-500 hover:text-red-500 p-1 font-bold text-xs" title="বাতিল">বাতিল</button>
                             <button onclick="postData('${c.id}')" id="btn-${c.id}" class="bg-[#1d9bf0] text-white text-[11px] px-4 py-1.5 rounded-full font-bold">পোস্ট</button>
                         </div>
                     ` : `
-                        <!-- Close Icon -->
                         <div onclick="toggleReplyForm('${c.id}')" class="absolute top-2 right-2 cursor-pointer text-gray-400 hover:text-red-500">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                             </svg>
                         </div>
-
                         <div class="p-4 text-center">
                             <p class="text-[12px] text-gray-500 dark:text-gray-400 mb-3 font-medium">রিপ্লাই করতে দয়া করে লগইন করুন</p>
                             <button onclick="googleLogin()" class="bg-white dark:bg-darkBg border border-gray-200 dark:border-darkBorder px-4 py-1.5 rounded-lg text-[11px] font-bold flex items-center gap-2 mx-auto shadow-sm hover:shadow-md transition-all">
