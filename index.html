@@ -26,9 +26,6 @@
         body { font-family: 'Inter', 'Hind Siliguri', sans-serif; transition: background-color 0.2s, color 0.2s; }
         
         .comment-content p { margin-bottom: 0.5rem; }
-        .comment-content pre { background: #f3f4f6; padding: 12px; border-radius: 8px; overflow-x: auto; margin: 8px 0; }
-        .dark .comment-content pre { background: #1e2126; }
-        
         .fab { 
             position: fixed; bottom: 24px; right: 24px; width: 56px; height: 56px; 
             background-color: #1d9bf0; color: white; border-radius: 50%; 
@@ -41,79 +38,57 @@
             backdrop-filter: blur(4px); display: none; align-items: center; 
             justify-content: center; z-index: 100; padding: 16px; 
         }
-        .post-modal-content { width: 100%; max-width: 600px; background: white; border-radius: 16px; position: relative; }
+        .post-modal-content { width: 100%; max-width: 500px; background: white; border-radius: 16px; position: relative; }
         .dark .post-modal-content { background: #000000; border: 1px solid #2f3336; }
         
-        .dropdown-content {
-            display: none; position: absolute; background-color: white; min-width: 120px;
-            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.1); z-index: 50; border-radius: 8px;
-            margin-top: 4px; border: 1px solid #f3f4f6;
-        }
-        .dark .dropdown-content { background-color: #16181c; border-color: #2f3336; }
-        .dropdown-content button { width: 100%; text-align: left; padding: 10px 16px; font-size: 14px; font-weight: 600; }
-        .dropdown-content button:hover { background-color: #f9f9f9; }
-        .dark .dropdown-content button:hover { background-color: #1c1f23; }
-        .show { display: block; }
-
         .google-btn {
             display: flex; align-items: center; background-color: white; border: 1px solid #dadce0;
-            border-radius: 4px; padding: 0 8px 0 0; height: 34px; cursor: pointer; overflow: hidden;
+            border-radius: 4px; padding: 0 8px 0 0; height: 34px; cursor: pointer;
         }
         .dark .google-btn { background-color: #16181c; border-color: #2f3336; }
-        .google-btn-text { color: #3c4043; font-family: 'Roboto', arial, sans-serif; font-size: 14px; font-weight: 500; padding-left: 4px; }
-        .dark .google-btn-text { color: #e8eaed; }
-
-        /* Collapse styling */
-        .thread-line { cursor: pointer; }
-        .thread-line:hover { border-color: #1d9bf0 !important; }
-        .collapsed-content { display: none; }
+        .char-counter { font-size: 12px; font-weight: bold; }
+        .limit-reached { color: #ef4444; }
+        
+        .post-entry { animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body class="p-4 md:p-8 bg-white text-gray-900 dark:bg-darkBg dark:text-gray-100 pb-24">
 
 <div class="max-w-2xl mx-auto">
-    <!-- Header Bar -->
+    <!-- Header -->
     <div class="flex items-center justify-between mb-8 px-2">
         <div class="flex items-center gap-3">
             <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-darkCard transition-all">
                 <svg id="sun-icon" class="w-5 h-5 hidden text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" /></svg>
                 <svg id="moon-icon" class="w-5 h-5 hidden text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" /></svg>
             </button>
-            <div class="relative inline-block">
-                <button onclick="toggleSortDropdown()" id="sort-btn" class="flex items-center gap-1.5 border border-gray-300 dark:border-darkBorder rounded px-2.5 py-1 text-sm font-semibold bg-white dark:bg-darkCard">
-                    <span id="current-sort-label">সেরা</span>
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>
-                </button>
-                <div id="sort-dropdown" class="dropdown-content left-0 mt-1 rounded-xl overflow-hidden shadow-xl border border-gray-100 dark:border-darkBorder">
-                    <button onclick="setSort('top', 'সেরা')" class="hover:bg-gray-50 dark:hover:bg-darkBorder">সেরা</button>
-                    <button onclick="setSort('recent', 'সাম্প্রতিক')" class="hover:bg-gray-50 dark:hover:bg-darkBorder">সাম্প্রতিক</button>
-                </div>
-            </div>
+            <h1 class="text-xl font-bold tracking-tight">আলোচনা</h1>
         </div>
         <div id="auth-section">
             <div id="user-info-ui" class="hidden flex items-center gap-2">
                 <div class="flex flex-col items-end">
                     <span id="display-name-nav" class="text-[11px] font-bold truncate max-w-[80px]"></span>
-                    <button onclick="handleLogout()" class="text-[9px] font-bold text-gray-500 uppercase hover:text-red-500 transition-colors">লগআউট</button>
+                    <button onclick="handleLogout()" class="text-[9px] font-bold text-gray-500 uppercase hover:text-red-500">লগআউট</button>
                 </div>
-                <img id="user-avatar" src="" class="w-8 h-8 rounded-full border border-gray-200 dark:border-darkBorder">
+                <img id="user-avatar" src="" class="w-8 h-8 rounded-full border dark:border-darkBorder">
             </div>
             <div id="login-ui" class="flex items-center">
                 <button onclick="googleLogin()" class="google-btn">
-                    <div class="google-icon-wrapper p-1.5"><svg viewBox="0 0 18 18" width="18px" height="18px"><path fill="#4285F4" d="M17.64 9.2c0-.63-.06-1.25-.16-1.84H9v3.49h4.84c-.21 1.12-.84 2.07-1.79 2.7l2.86 2.22c1.67-1.55 2.63-3.83 2.63-6.57z"></path><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.86-2.22c-.8.53-1.82.85-3.1.85-2.39 0-4.41-1.61-5.13-3.78H.95v2.33C2.43 15.93 5.49 18 9 18z"></path><path fill="#FBBC05" d="M3.87 10.67c-.18-.53-.28-1.1-.28-1.67s.1-1.14.28-1.67V5.01H.95C.35 6.22 0 7.57 0 9s.35 2.78.95 3.99l2.92-2.32z"></path><path fill="#EA4335" d="M9 3.58c1.32 0 2.51.45 3.44 1.35l2.58-2.58C13.47.89 11.43 0 9 0 5.49 0 2.43 2.07.95 5.01l2.92 2.32C4.59 5.19 6.61 3.58 9 3.58z"></path></svg></div>
-                    <span class="google-btn-text">লগইন</span>
+                    <div class="p-1.5"><svg viewBox="0 0 18 18" width="18px" height="18px"><path fill="#4285F4" d="M17.64 9.2c0-.63-.06-1.25-.16-1.84H9v3.49h4.84c-.21 1.12-.84 2.07-1.79 2.7l2.86 2.22c1.67-1.55 2.63-3.83 2.63-6.57z"></path><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.86-2.22c-.8.53-1.82.85-3.1.85-2.39 0-4.41-1.61-5.13-3.78H.95v2.33C2.43 15.93 5.49 18 9 18z"></path><path fill="#FBBC05" d="M3.87 10.67c-.18-.53-.28-1.1-.28-1.67s.1-1.14.28-1.67V5.01H.95C.35 6.22 0 7.57 0 9s.35 2.78.95 3.99l2.92-2.32z"></path><path fill="#EA4335" d="M9 3.58c1.32 0 2.51.45 3.44 1.35l2.58-2.58C13.47.89 11.43 0 9 0 5.49 0 2.43 2.07.95 5.01l2.92 2.32C4.59 5.19 6.61 3.58 9 3.58z"></path></svg></div>
+                    <span class="text-[14px] font-medium pr-2">লগইন</span>
                 </button>
             </div>
         </div>
     </div>
 
-    <div id="comments-container" class="space-y-4"></div>
-    <div id="load-more-container" class="flex justify-center mt-10 hidden">
-        <button onclick="loadMore()" class="text-sm font-bold text-[#1d9bf0] bg-blue-50 dark:bg-blue-900/20 px-8 py-2.5 rounded-full hover:bg-blue-100">আরো লোড করুন</button>
-    </div>
+    <!-- Feed Container -->
+    <div id="comments-container" class="space-y-6"></div>
 </div>
 
-<!-- Floating Action Button -->
 <button onclick="togglePostModal()" class="fab">
     <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
 </button>
@@ -124,17 +99,32 @@
         <div id="post-header-auth" class="flex items-center justify-between p-4 border-b dark:border-darkBorder hidden">
             <button onclick="togglePostModal()" class="p-1.5 text-gray-500 hover:bg-gray-100 dark:hover:bg-darkBorder rounded-full"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
             <span class="dark:text-white font-bold text-sm">নতুন পোস্ট</span>
-            <button onclick="postData(null)" class="bg-[#1d9bf0] text-white font-bold py-1.5 px-6 rounded-full text-sm">পোস্ট</button>
+            <button id="submit-post-btn" onclick="postData()" class="bg-[#1d9bf0] text-white font-bold py-1.5 px-6 rounded-full text-sm disabled:opacity-50">পোস্ট</button>
         </div>
         <div class="p-4">
-            <div id="textarea-container" class="hidden">
-                <textarea id="user-comment" placeholder="আপনার পোস্টটি লিখুন..." class="w-full bg-transparent text-lg outline-none min-h-[150px] dark:text-white resize-none" autofocus></textarea>
+            <div id="textarea-container" class="hidden space-y-3">
+                <textarea id="user-comment" maxlength="140" placeholder="কি ভাবছেন? (সর্বোচ্চ ১৪০ অক্ষর)" class="w-full bg-transparent text-lg outline-none min-h-[120px] dark:text-white resize-none"></textarea>
+                
+                <div id="image-preview-container" class="hidden relative inline-block">
+                    <img id="image-preview" src="" class="max-h-48 rounded-lg border dark:border-darkBorder">
+                    <button onclick="removeImage()" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-lg">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                    </button>
+                </div>
+
+                <div class="flex items-center justify-between border-t dark:border-darkBorder pt-3">
+                    <label class="cursor-pointer text-[#1d9bf0] hover:bg-blue-50 dark:hover:bg-blue-900/20 p-2 rounded-full transition-all">
+                        <input type="file" id="image-input" accept="image/*" class="hidden" onchange="previewImage(event)">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    </label>
+                    <div id="char-count" class="char-counter text-gray-500">০/১৪০</div>
+                </div>
             </div>
             <div id="login-required-prompt" class="py-10 text-center space-y-4">
-                <p class="text-gray-500 dark:text-gray-400 text-sm">পোস্ট করতে দয়া করে লগইন করুন</p>
+                <p class="text-gray-500 dark:text-gray-400 text-sm">পোস্ট করতে লগইন করুন</p>
                 <button onclick="googleLogin()" class="google-btn mx-auto">
-                    <div class="google-icon-wrapper p-1.5"><svg viewBox="0 0 18 18" width="18px" height="18px"><path fill="#4285F4" d="M17.64 9.2c0-.63-.06-1.25-.16-1.84H9v3.49h4.84c-.21 1.12-.84 2.07-1.79 2.7l2.86 2.22c1.67-1.55 2.63-3.83 2.63-6.57z"></path><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.86-2.22c-.8.53-1.82.85-3.1.85-2.39 0-4.41-1.61-5.13-3.78H.95v2.33C2.43 15.93 5.49 18 9 18z"></path><path fill="#FBBC05" d="M3.87 10.67c-.18-.53-.28-1.1-.28-1.67s.1-1.14.28-1.67V5.01H.95C.35 6.22 0 7.57 0 9s.35 2.78.95 3.99l2.92-2.32z"></path><path fill="#EA4335" d="M9 3.58c1.32 0 2.51.45 3.44 1.35l2.58-2.58C13.47.89 11.43 0 9 0 5.49 0 2.43 2.07.95 5.01l2.92 2.32C4.59 5.19 6.61 3.58 9 3.58z"></path></svg></div>
-                    <span class="google-btn-text">লগইন</span>
+                   <div class="p-1.5"><svg viewBox="0 0 18 18" width="18px" height="18px"><path fill="#4285F4" d="M17.64 9.2c0-.63-.06-1.25-.16-1.84H9v3.49h4.84c-.21 1.12-.84 2.07-1.79 2.7l2.86 2.22c1.67-1.55 2.63-3.83 2.63-6.57z"></path><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.86-2.22c-.8.53-1.82.85-3.1.85-2.39 0-4.41-1.61-5.13-3.78H.95v2.33C2.43 15.93 5.49 18 9 18z"></path><path fill="#FBBC05" d="M3.87 10.67c-.18-.53-.28-1.1-.28-1.67s.1-1.14.28-1.67V5.01H.95C.35 6.22 0 7.57 0 9s.35 2.78.95 3.99l2.92-2.32z"></path><path fill="#EA4335" d="M9 3.58c1.32 0 2.51.45 3.44 1.35l2.58-2.58C13.47.89 11.43 0 9 0 5.49 0 2.43 2.07.95 5.01l2.92 2.32C4.59 5.19 6.61 3.58 9 3.58z"></path></svg></div>
+                    <span class="text-[14px] font-medium pr-2">গুগল দিয়ে লগইন</span>
                 </button>
             </div>
         </div>
@@ -143,8 +133,9 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-    import { getFirestore, collection, addDoc, query, onSnapshot, serverTimestamp, updateDoc, doc, increment } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, query, onSnapshot, serverTimestamp, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
     import { getAuth, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-storage.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyB_xkcJ87-E4jkYIDT2dBxOFJHUQvZxbU8",
@@ -158,22 +149,13 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth(app);
+    const storage = getStorage(app);
     const provider = new GoogleAuthProvider();
     const pageId = window.location.pathname.replace(/\//g, '_') || 'homepage';
     const commentsCol = collection(db, 'blog_comments', 'pages', pageId);
 
     let currentUser = null;
-    let currentSort = 'top';
-    let visibleCount = 10;
-    let allRootThreads = [];
-
-    // Global Functions
-    window.toggleSortDropdown = () => document.getElementById("sort-dropdown").classList.toggle("show");
-    window.setSort = (type, label) => {
-        currentSort = type;
-        document.getElementById('current-sort-label').innerText = label;
-        load();
-    };
+    let selectedImageFile = null;
 
     onAuthStateChanged(auth, (user) => {
         currentUser = user;
@@ -197,6 +179,33 @@
         load();
     });
 
+    const textarea = document.getElementById('user-comment');
+    const counterDisplay = document.getElementById('char-count');
+    textarea.addEventListener('input', () => {
+        const len = textarea.value.length;
+        counterDisplay.textContent = `${toBengaliNumber(len)}/১৪০`;
+        counterDisplay.classList.toggle('limit-reached', len >= 140);
+    });
+
+    window.previewImage = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            selectedImageFile = file;
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                document.getElementById('image-preview').src = event.target.result;
+                document.getElementById('image-preview-container').classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    window.removeImage = () => {
+        selectedImageFile = null;
+        document.getElementById('image-input').value = '';
+        document.getElementById('image-preview-container').classList.add('hidden');
+    };
+
     window.googleLogin = async () => { try { await signInWithPopup(auth, provider); } catch(e){} };
     window.handleLogout = () => signOut(auth);
 
@@ -205,11 +214,11 @@
         const isHidden = overlay.style.display === 'none' || overlay.style.display === '';
         overlay.style.display = isHidden ? 'flex' : 'none';
         document.body.style.overflow = isHidden ? 'hidden' : '';
+        if(!isHidden) removeImage();
     };
 
     window.closeModalOnOutsideClick = (e) => { if (e.target.id === 'post-modal-overlay') togglePostModal(); };
 
-    // Theme Management
     const themeToggle = document.getElementById('theme-toggle');
     const updateIcons = (isDark) => {
         document.getElementById('sun-icon').classList.toggle('hidden', !isDark);
@@ -225,139 +234,75 @@
     };
 
     function load() {
-        onSnapshot(query(commentsCol), (snap) => {
-            let list = []; snap.forEach(doc => list.push({ id: doc.id, ...doc.data() }));
-            let tree = buildTree(list);
-            tree.sort((a,b) => currentSort === 'top' ? (b.votes - a.votes) : (b.at?.seconds - a.at?.seconds));
-            allRootThreads = tree; renderDisplay();
+        // লিমিট ছাড়াই রিয়েল-টাইম ডাটা লোড করা হচ্ছে
+        onSnapshot(query(commentsCol, orderBy('at', 'desc')), (snap) => {
+            let list = [];
+            snap.forEach(doc => list.push({ id: doc.id, ...doc.data() }));
+            renderDisplay(list);
         });
     }
 
-    function buildTree(list) {
-        const map = {}, roots = [];
-        list.forEach(c => map[c.id] = { ...c, replies: [] });
-        list.forEach(c => {
-            if (c.parentId && map[c.parentId]) map[c.parentId].replies.push(map[c.id]);
-            else roots.push(map[c.id]);
-        });
-        return roots;
-    }
-
-    function renderDisplay() {
+    function renderDisplay(posts) {
         const container = document.getElementById('comments-container');
-        const subset = allRootThreads.slice(0, visibleCount);
-        container.innerHTML = subset.map(c => renderComment(c)).join('');
-        document.getElementById('load-more-container').classList.toggle('hidden', allRootThreads.length <= visibleCount);
-    }
-
-    window.loadMore = () => { visibleCount += 10; renderDisplay(); };
-
-    // Rendering with Collapse & Vote
-    function renderComment(c, depth = 0) {
-        const date = formatTime(c.at);
-        let messageHtml = DOMPurify.sanitize(marked.parse(c.msg));
-        const hasReplies = c.replies && c.replies.length > 0;
-        
-        return `
-        <div id="comment-${c.id}" class="group">
-            <div class="flex gap-3">
-                <!-- Thread Line / Collapse Trigger -->
-                <div class="flex flex-col items-center">
-                    <img src="${c.photoURL || 'https://www.gravatar.com/avatar/000?d=mp'}" class="w-8 h-8 rounded-full z-10 border dark:border-darkBorder">
-                    ${depth < 10 ? `<div onclick="toggleCollapse('${c.id}')" class="thread-line w-[2px] h-full bg-gray-100 dark:bg-darkBorder my-1 transition-colors"></div>` : ''}
-                </div>
-
-                <div class="flex-1 pb-4">
+        container.innerHTML = posts.map(c => `
+            <div class="post-entry flex gap-4 group">
+                <img src="${c.photoURL || 'https://www.gravatar.com/avatar/000?d=mp'}" class="w-10 h-10 rounded-full border dark:border-darkBorder shrink-0">
+                <div class="flex-1 border-b dark:border-darkBorder pb-6">
                     <div class="flex items-center gap-2 mb-1">
-                        <span class="font-bold text-[14px] ${c.isAdmin ? 'text-blue-500' : ''}">${esc(c.name)}</span>
-                        <span class="text-[11px] text-gray-500">· ${date}</span>
-                        ${hasReplies ? `<button onclick="toggleCollapse('${c.id}')" id="collapse-btn-${c.id}" class="text-[10px] bg-gray-100 dark:bg-darkBorder px-1.5 rounded font-bold ml-1">[-]</button>` : ''}
+                        <span class="font-bold text-[15px] dark:text-white">${esc(c.name)}</span>
+                        <span class="text-[12px] text-gray-500">${formatTime(c.at)}</span>
                     </div>
-                    
-                    <div id="content-body-${c.id}" class="comment-body">
-                        <div class="comment-content text-[15px] dark:text-gray-300 break-words leading-relaxed">${messageHtml}</div>
-                        
-                        <!-- Interactions: Vote & Reply -->
-                        <div class="flex items-center gap-4 mt-2 text-gray-500 text-[12px] font-bold">
-                            <div class="flex items-center bg-gray-50 dark:bg-darkCard rounded-full px-2 py-0.5 border dark:border-darkBorder">
-                                <button onclick="vote('${c.id}', 1)" class="hover:text-blue-500 px-1 p-0.5">▲</button>
-                                <span class="mx-1 min-w-[20px] text-center text-[11px]">${toBengaliNumber(c.votes || 0)}</span>
-                                <button onclick="vote('${c.id}', -1)" class="hover:text-red-500 px-1 p-0.5">▼</button>
-                            </div>
-                            <button onclick="toggleReplyForm('${c.id}', '${esc(c.name)}')" class="hover:text-[#1d9bf0] ml-1">রিপ্লাই</button>
-                        </div>
-
-                        <div id="reply-form-${c.id}" class="hidden mt-3 max-w-lg">
-                            <textarea id="msg-${c.id}" placeholder="আপনার উত্তর..." class="w-full p-3 bg-gray-50 dark:bg-darkBorder/20 rounded-xl text-sm outline-none border dark:border-darkBorder dark:text-white h-24 resize-none"></textarea>
-                            <div class="flex justify-end mt-2">
-                                <button onclick="postData('${c.id}')" class="bg-[#1d9bf0] text-white text-[11px] px-5 py-1.5 rounded-full font-bold">পোস্ট</button>
-                            </div>
-                        </div>
-
-                        <!-- Recursive Replies -->
-                        <div id="replies-container-${c.id}" class="mt-4">
-                            ${c.replies.map(r => renderComment(r, depth + 1)).join('')}
-                        </div>
+                    <div class="comment-content text-[16px] dark:text-gray-300 break-words leading-relaxed">
+                        ${DOMPurify.sanitize(marked.parse(c.msg || ''))}
                     </div>
-                    
-                    <div id="collapsed-msg-${c.id}" class="hidden italic text-gray-400 text-[12px] mt-1 cursor-pointer" onclick="toggleCollapse('${c.id}')">থ্রেডটি বিস্তারিত দেখতে ক্লিক করুন...</div>
+                    ${c.imageUrl ? `<img src="${c.imageUrl}" class="mt-3 rounded-xl max-h-80 w-auto border dark:border-darkBorder shadow-sm hover:opacity-95 transition-opacity cursor-pointer" onclick="window.open('${c.imageUrl}', '_blank')">` : ''}
                 </div>
             </div>
-        </div>`;
+        `).join('');
     }
 
-    window.toggleCollapse = (id) => {
-        const body = document.getElementById(`content-body-${id}`);
-        const collapsedMsg = document.getElementById(`collapsed-msg-${id}`);
-        const btn = document.getElementById(`collapse-btn-${id}`);
-        const isCollapsed = body.classList.toggle('collapsed-content');
-        collapsedMsg.classList.toggle('hidden', !isCollapsed);
-        if(btn) btn.innerText = isCollapsed ? '[+]' : '[-]';
-    };
+    window.postData = async () => {
+        if (!currentUser || currentUser.isAnonymous) return;
+        const btn = document.getElementById('submit-post-btn');
+        const m = textarea.value;
+        if(!m?.trim() && !selectedImageFile) return;
+        
+        btn.disabled = true;
+        btn.textContent = 'লোড হচ্ছে...';
 
-    window.toggleReplyForm = (id, name) => {
-        if(!currentUser || currentUser.isAnonymous) { togglePostModal(); return; }
-        const form = document.getElementById(`reply-form-${id}`);
-        const area = document.getElementById(`msg-${id}`);
-        form.classList.toggle('hidden');
-        if(!form.classList.contains('hidden')) {
-            area.value = `@${name.replace(/\s+/g, '')} `;
-            area.focus();
+        try {
+            let imageUrl = null;
+            if (selectedImageFile) {
+                const storageRef = ref(storage, `images/${Date.now()}_${selectedImageFile.name}`);
+                const snapshot = await uploadBytes(storageRef, selectedImageFile);
+                imageUrl = await getDownloadURL(snapshot.ref);
+            }
+
+            await addDoc(commentsCol, { 
+                name: currentUser.displayName, msg: m, imageUrl: imageUrl,
+                photoURL: currentUser.photoURL, userId: currentUser.uid, at: serverTimestamp()
+            });
+            
+            textarea.value = '';
+            counterDisplay.textContent = '০/১৪০';
+            togglePostModal();
+        } catch(e) {
+            console.error(e);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'পোস্ট';
         }
     };
 
-    window.postData = async (pid) => {
-        if (!currentUser || currentUser.isAnonymous) return;
-        const input = pid ? document.getElementById(`msg-${pid}`) : document.getElementById('user-comment');
-        const m = input.value;
-        if(!m?.trim()) return;
-        try {
-            await addDoc(commentsCol, { 
-                name: currentUser.displayName, msg: m, parentId: pid, votes: 0,
-                photoURL: currentUser.photoURL, userId: currentUser.uid, at: serverTimestamp(),
-                isAdmin: (currentUser.email === 'phys.arif@gmail.com')
-            });
-            input.value = '';
-            if(!pid) togglePostModal();
-            else document.getElementById(`reply-form-${pid}`).classList.add('hidden');
-        } catch(e) {}
-    };
-
-    window.vote = async (id, val) => {
-        const key = `voted_${pageId}_${id}`;
-        if (localStorage.getItem(key)) return;
-        await updateDoc(doc(db, 'blog_comments', 'pages', pageId, id), { votes: increment(val) });
-        localStorage.setItem(key, 'true');
-    };
-
-    function toBengaliNumber(n) { return Math.abs(n).toString().replace(/\d/g, d => "০১২৩৪৫৬৭৮৯"[d]); }
+    function toBengaliNumber(n) { return n.toString().replace(/\d/g, d => "০১২৩৪৫৬৭৮৯"[d]); }
     function formatTime(ts) {
-        if(!ts) return 'এখন';
+        if(!ts) return 'এইমাত্র';
         const s = Math.floor((new Date() - new Date(ts.seconds * 1000))/1000);
-        if(s < 60) return 'এখন';
-        if(s < 3600) return toBengaliNumber(Math.floor(s/60)) + 'মি';
-        if(s < 86400) return toBengaliNumber(Math.floor(s/3600)) + 'ঘ';
-        return toBengaliNumber(new Date(ts.seconds*1000).getDate()) + ' ' + new Date(ts.seconds*1000).toLocaleDateString('bn-BD', {month:'short'});
+        if(s < 60) return 'এইমাত্র';
+        if(s < 3600) return toBengaliNumber(Math.floor(s/60)) + ' মিনিট আগে';
+        if(s < 86400) return toBengaliNumber(Math.floor(s/3600)) + ' ঘণ্টা আগে';
+        const dt = new Date(ts.seconds * 1000);
+        return toBengaliNumber(dt.getDate()) + ' ' + dt.toLocaleDateString('bn-BD', {month:'long'});
     }
     function esc(t) { let d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
     signInAnonymously(auth);
