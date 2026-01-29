@@ -67,6 +67,9 @@
             border-radius: 16px; 
             overflow: hidden; 
             box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); 
+            display: flex;
+            flex-direction: column;
+            position: relative;
         }
         .dark .post-modal-content { background: #000000; border: 1px solid #2f3336; }
         
@@ -87,6 +90,16 @@
         
         .admin-name { color: #1d9bf0; }
         .dark .admin-name { color: #38bdf8; }
+
+        .modal-close-icon {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            cursor: pointer;
+            color: #9ca3af;
+            z-index: 10;
+        }
+        .modal-close-icon:hover { color: #ef4444; }
 
         @media (max-width: 640px) {
             #post-modal-overlay { align-items: center; }
@@ -118,7 +131,7 @@
                         <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path>
                         <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path>
                     </svg>
-                    <span class="text-[11px] font-bold text-gray-700 dark:text-gray-200">প্রবেশ করুন</span>
+                    <span class="text-[11px] font-bold text-gray-700 dark:text-gray-200">লগইন করুন</span>
                 </button>
 
                 <div id="admin-badge-ui" class="hidden flex items-center gap-1.5 bg-blue-50 dark:bg-blue-500/10 px-2 py-0.5 rounded-full border border-blue-100 dark:border-blue-500/20 ml-2">
@@ -155,32 +168,37 @@
 <!-- Post Modal Overlay -->
 <div id="post-modal-overlay" onclick="closeModalOnOutsideClick(event)">
     <div class="post-modal-content">
+        <!-- Close Button (X) -->
+        <div onclick="togglePostModal()" class="modal-close-icon">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </div>
+
+        <!-- Auth Header for Logged-in Users -->
         <div id="post-header-auth" class="flex items-center justify-between p-4 border-b border-gray-100 dark:border-darkBorder hidden">
             <button onclick="togglePostModal()" class="text-gray-500 dark:text-gray-400 font-bold text-sm">বাতিল</button>
             <button onclick="postData(null)" id="submit-btn" class="bg-[#1d9bf0] hover:bg-[#1a8cd8] text-white font-bold py-1.5 px-6 rounded-full text-sm">পোস্ট</button>
         </div>
 
         <div class="p-4">
+            <!-- Textarea for Logged-in Users -->
             <div id="textarea-container" class="hidden">
                 <textarea id="user-comment" placeholder="আপনার পোস্টটি লিখুন..." class="w-full bg-transparent text-lg outline-none min-h-[150px] dark:text-white resize-none" autofocus></textarea>
             </div>
 
+            <!-- Login Prompt for Guest Users -->
             <div id="login-required-prompt" class="py-10 text-center space-y-4">
-                <div class="flex justify-center">
-                    <div class="w-16 h-16 bg-blue-50 dark:bg-blue-900/20 rounded-full flex items-center justify-center text-[#1d9bf0]">
-                         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-                    </div>
-                </div>
-                <!-- Google Login Button -->
+                <p class="text-gray-500 dark:text-gray-400 font-medium">পোস্ট করতে দয়া করে লগইন করুন</p>
                 <button onclick="googleLogin()" class="mx-auto flex items-center justify-center gap-3 bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder py-3 px-8 rounded-xl font-bold shadow-sm hover:shadow-md transition-all mt-4">
                     <svg class="w-5 h-5" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path></svg>
-                    প্রবেশ করুন
+                    লগইন করুন
                 </button>
-                <div class="block">
-                    <button onclick="togglePostModal()" class="text-xs text-gray-500 font-bold">বাতিল</button>
-                </div>
             </div>
         </div>
+
+        <!-- login-footer removed as per instruction to replace Cancel with Cross icon -->
+        
         <div id="posting-status-null" class="hidden text-[12px] text-green-600 p-4 text-center">আপনার পোস্টটি শেয়ার করা হচ্ছে...</div>
     </div>
 </div>
@@ -206,7 +224,7 @@
         <div class="space-y-4">
             <input type="email" id="admin-email" placeholder="ইমেইল" class="w-full p-3 bg-gray-50 dark:bg-darkBg border dark:border-darkBorder rounded-xl outline-none">
             <input type="password" id="admin-password" placeholder="পাসওয়ার্ড" class="w-full p-3 bg-gray-50 dark:bg-darkBg border dark:border-darkBorder rounded-xl outline-none">
-            <button onclick="adminLogin()" id="login-btn" class="w-full bg-[#1d9bf0] text-white py-3 rounded-xl font-bold">লগইন</button>
+            <button onclick="adminLogin()" id="login-btn" class="w-full bg-[#1d9bf0] text-white py-3 rounded-xl font-bold">লগইন করুন</button>
             <button onclick="toggleLoginModal()" class="w-full text-gray-500 text-sm font-bold text-center">বাতিল</button>
         </div>
     </div>
@@ -419,7 +437,7 @@
                                     <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path>
                                     <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path>
                                 </svg>
-                                প্রবেশ করুন
+                                লগইন করুন
                             </button>
                             <button onclick="toggleReplyForm('${c.id}')" class="text-[10px] text-gray-500 mt-2 font-bold">বাতিল</button>
                         </div>
