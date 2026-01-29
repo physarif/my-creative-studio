@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>প্রোফাইল - ফিজারিফ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.2/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkBg: '#000000',
+                        darkCard: '#16181c',
+                        darkBorder: '#2f3336',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Hind+Siliguri:wght@400;600;700&display=swap');
+        body { font-family: 'Inter', 'Hind Siliguri', sans-serif; }
+        .comment-content p { margin-bottom: 0.5rem; }
+    </style>
+</head>
+<body class="bg-white text-gray-900 dark:bg-darkBg dark:text-gray-100 min-h-screen">
+
+<div class="max-w-2xl mx-auto p-4 md:p-8">
+    <!-- Back Button -->
+    <a href="index.html" class="inline-flex items-center gap-2 text-gray-500 hover:text-[#1d9bf0] mb-8 transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+        <span class="font-bold">ফিরে যান</span>
+    </a>
+
+    <!-- Profile Header -->
+    <div id="profile-header" class="mb-10 text-center md:text-left flex flex-col md:flex-row items-center gap-6">
+        <div class="relative">
+            <img id="p-avatar" src="https://www.gravatar.com/avatar/000?d=mp" class="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-white dark:border-darkCard shadow-lg">
+        </div>
+        <div class="flex-1">
+            <h1 id="p-name" class="text-2xl md:text-3xl font-bold mb-1">লোড হচ্ছে...</h1>
+            <p id="p-uid" class="text-gray-500 text-sm mb-3">@user_id</p>
+            <div class="flex flex-wrap justify-center md:justify-start gap-4 text-sm font-medium">
+                <span class="flex items-center gap-1"><span id="p-post-count" class="font-bold text-[#1d9bf0]">০</span> পোস্ট</span>
+                <span class="flex items-center gap-1"><span id="p-total-votes" class="font-bold text-green-500">০</span> ভোট</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab Section -->
+    <div class="border-b border-gray-100 dark:border-darkBorder mb-6">
+        <h2 class="text-lg font-bold pb-2 border-b-2 border-[#1d9bf0] inline-block">সাম্প্রতিক পোস্টসমূহ</h2>
+    </div>
+
+    <!-- User Posts Container -->
+    <div id="user-posts-container" class="space-y-6">
+        <div class="text-center py-10 text-gray-400 italic">পোস্ট লোড করা হচ্ছে...</div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+    import { getFirestore, collectionGroup, query, where, getDocs, orderBy } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyB_xkcJ87-E4jkYIDT2dBxOFJHUQvZxbU8",
+        authDomain: "myblogcomments-22808.firebaseapp.com",
+        projectId: "myblogcomments-22808",
+        storageBucket: "myblogcomments-22808.firebasestorage.app",
+        messagingSenderId: "1067155293144",
+        appId: "1:1067155293144:web:8f10b016462b52d36628ad"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Dark Mode Support
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+    }
+
+    // Get UID from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const targetUid = urlParams.get('uid');
+
+    const toBengaliNumber = (n) => n.toString().replace(/\d/g, d => "০১২৩৪৫৬৭৮৯"[d]);
+
+    async function loadProfile() {
+        if (!targetUid) {
+            document.getElementById('user-posts-container').innerHTML = "ইউজার আইডি পাওয়া যায়নি।";
+            return;
+        }
+
+        try {
+            // Firestore-এর সব 'pages' এর ভেতর থেকে ওই ইউজারের কমেন্টগুলো খুঁজার জন্য collectionGroup ব্যবহার করছি
+            // দ্রষ্টব্য: এর জন্য Firebase Console-এ Index তৈরি করার প্রয়োজন হতে পারে যদি ত্রুটি দেখায়।
+            const commentsRef = collectionGroup(db, 'data'); // আপনার স্ট্রাকচার অনুযায়ী সঠিক কালেকশন পাথ দিন
+            
+            // আপনার বর্তমান স্ট্রাকচার অনুযায়ী সব কমেন্ট পেতে আমরা সাধারণ কুয়েরি করছি
+            // এখানে আমি ধরে নিচ্ছি আপনি 'blog_comments' কালেকশন গ্রুপ ব্যবহার করবেন
+            const q = query(collectionGroup(db, 'blog_comments'), where("userId", "==", targetUid));
+            
+            const querySnapshot = await getDocs(q);
+            let userPosts = [];
+            let totalVotes = 0;
+            let userData = null;
+
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+                userPosts.push({ id: doc.id, ...data });
+                totalVotes += (data.votes || 0);
+                if (!userData) userData = data; // প্রথম পোস্ট থেকে নাম ও ছবি সংগ্রহ
+            });
+
+            // সর্টিং (সাম্প্রতিক আগে)
+            userPosts.sort((a, b) => (b.at?.seconds || 0) - (a.at?.seconds || 0));
+
+            // UI Update
+            if (userData) {
+                document.getElementById('p-name').textContent = userData.name;
+                document.getElementById('p-avatar').src = userData.photoURL || 'https://www.gravatar.com/avatar/000?d=mp';
+                document.getElementById('p-uid').textContent = `@${targetUid.substring(0, 8)}...`;
+                document.getElementById('p-post-count').textContent = toBengaliNumber(userPosts.length);
+                document.getElementById('p-total-votes').textContent = toBengaliNumber(totalVotes);
+                document.title = `${userData.name} - প্রোফাইল`;
+            }
+
+            renderPosts(userPosts);
+
+        } catch (e) {
+            console.error("Error loading profile:", e);
+            document.getElementById('user-posts-container').innerHTML = "ডেটা লোড করতে সমস্যা হয়েছে।";
+        }
+    }
+
+    function renderPosts(posts) {
+        const container = document.getElementById('user-posts-container');
+        if (posts.length === 0) {
+            container.innerHTML = `<p class="text-center text-gray-400 py-10 italic">এই ইউজার এখনো কোনো পোস্ট করেননি।</p>`;
+            return;
+        }
+
+        container.innerHTML = posts.map(p => {
+            const date = p.at ? new Date(p.at.seconds * 1000).toLocaleDateString('bn-BD', { day: 'numeric', month: 'long', year: 'numeric' }) : 'অজানা সময়';
+            const messageHtml = DOMPurify.sanitize(marked.parse(p.msg));
+            
+            return `
+            <div class="bg-gray-50 dark:bg-darkCard p-5 rounded-2xl border border-gray-100 dark:border-darkBorder transition-all hover:shadow-md">
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="text-[12px] text-gray-400 font-medium">${toBengaliNumber(date)}</span>
+                    <span class="text-gray-300">·</span>
+                    <span class="text-[12px] text-[#1d9bf0] font-bold">ভোট: ${toBengaliNumber(p.votes || 0)}</span>
+                </div>
+                <div class="comment-content text-[15px] dark:text-gray-300 break-words line-clamp-4">
+                    ${messageHtml}
+                </div>
+            </div>
+            `;
+        }).join('');
+    }
+
+    loadProfile();
+</script>
+</body>
+</html>
+
