@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>আলোচনা ফোরাম - Nested Replies</title>
+    <title>আলোচনা ফোরাম - Advanced</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.2/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
@@ -25,35 +25,17 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap');
         body { font-family: 'Hind Siliguri', sans-serif; transition: all 0.3s; }
-        
         .forum-card { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); border-left: 3px solid transparent; }
         .forum-card:hover { border-left-color: #3498db; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         .dark .forum-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
-
         .view-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); display: none; z-index: 100; }
-        .view-body { 
-            position: absolute; right: 0; top: 0; width: 100%; max-width: 650px; height: 100%; 
-            background: white; display: flex; flex-direction: column; animation: slideIn 0.3s ease-out;
-        }
+        .view-body { position: absolute; right: 0; top: 0; width: 100%; max-width: 650px; height: 100%; background: white; display: flex; flex-direction: column; animation: slideIn 0.3s ease-out; }
         .dark .view-body { background: #0b0e11; border-left: 1px solid #2d333b; }
         @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
-
-        .fab-post {
-            position: fixed; bottom: 24px; right: 24px; width: 56px; height: 56px;
-            background-color: #3498db; color: white; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 8px 16px rgba(52, 152, 219, 0.3); cursor: pointer;
-            z-index: 90; transition: all 0.3s;
-        }
-
+        .fab-post { position: fixed; bottom: 24px; right: 24px; width: 56px; height: 56px; background-color: #3498db; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 16px rgba(52, 152, 219, 0.3); cursor: pointer; z-index: 90; transition: all 0.3s; }
         .btn-loading { pointer-events: none; opacity: 0.7; position: relative; color: transparent !important; }
-        .btn-loading::after {
-            content: ""; position: absolute; width: 16px; height: 16px; top: 50%; left: 50%;
-            margin-top: -8px; margin-left: -8px; border: 2px solid rgba(255,255,255,0.3);
-            border-radius: 50%; border-top-color: white; animation: spin 0.6s linear infinite;
-        }
+        .btn-loading::after { content: ""; position: absolute; width: 16px; height: 16px; top: 50%; left: 50%; margin-top: -8px; margin-left: -8px; border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: white; animation: spin 0.6s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-thumb { background: #2d333b; border-radius: 10px; }
         .filter-active { background-color: rgba(52, 152, 219, 0.1); color: #3498db; }
@@ -67,7 +49,20 @@
             <h1 class="text-xl font-black text-accent tracking-tighter cursor-pointer" onclick="location.reload()">আলোচনা.</h1>
             <span id="admin-badge" class="hidden px-2 py-0.5 bg-red-500 text-white text-[10px] font-bold rounded uppercase">Admin</span>
         </div>
+        
         <div class="flex items-center gap-2">
+            <!-- Search Interface -->
+            <div id="search-box" class="hidden flex items-center bg-gray-100 dark:bg-darkCard rounded-xl px-2">
+                <input id="search-input" type="text" placeholder="খুঁজুন..." class="bg-transparent border-none outline-none text-xs p-2 w-32 md:w-48">
+                <button onclick="toggleSearch(false)" class="p-1 text-gray-400 hover:text-red-500">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
+            <button id="search-trigger" onclick="toggleSearch(true)" class="p-2 rounded-xl bg-gray-100 dark:bg-darkCard hover:ring-2 ring-accent transition-all">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            </button>
+
             <button id="theme-toggle" class="p-2 rounded-xl bg-gray-100 dark:bg-darkCard hover:ring-2 ring-accent transition-all">
                 <svg id="theme-icon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"></svg>
             </button>
@@ -112,6 +107,10 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-7.714 2.143L11 21l-2.286-6.857L1 12l7.714-2.143L11 3z"></path></svg>
                     ফিচার
                 </button>
+                <button id="filter-bookmarks" onclick="setFilter('bookmarks')" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-left w-full">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg>
+                    বুকমার্কস
+                </button>
             </div>
         </div>
     </aside>
@@ -135,11 +134,12 @@
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
             </button>
             <span class="font-bold text-sm">বিস্তারিত আলোচনা</span>
-            <div class="w-10"></div>
+            <button id="bookmark-btn" onclick="toggleBookmark()" class="p-2 hover:bg-gray-100 dark:hover:bg-darkCard rounded-lg text-gray-400">
+                <svg id="bookmark-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg>
+            </button>
         </div>
         <div id="details-content" class="flex-1 overflow-y-auto p-5 pb-24"></div>
         
-        <!-- Fixed Input Area -->
         <div class="absolute bottom-0 left-0 right-0 p-4 bg-white dark:bg-darkCard border-t dark:border-darkBorder">
             <div id="reply-to-info" class="hidden flex items-center justify-between mb-2 px-3 py-1 bg-accent/10 rounded-lg text-[10px] text-accent font-bold">
                 <span id="reply-to-name">রিপ্লাই করা হচ্ছে...</span>
@@ -182,6 +182,9 @@
     </div>
 </div>
 
+<!-- Notification Message Toast -->
+<div id="toast" class="fixed top-16 left-1/2 -translate-x-1/2 z-[300] bg-darkCard text-white px-4 py-2 rounded-full text-xs font-bold shadow-2xl opacity-0 transition-opacity pointer-events-none"></div>
+
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
     import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, increment, query, serverTimestamp, onSnapshot, where } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
@@ -201,7 +204,9 @@
     const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
     const POSTS_PATH = 'blog_comments/pages/forum_v2_voted';
+    const REPORTS_PATH = 'blog_comments/pages/reports';
     const commentsCol = collection(db, POSTS_PATH);
+    const reportsCol = collection(db, REPORTS_PATH);
     const ADMIN_EMAIL = "phys.arif@gmail.com";
 
     window.currentUser = null;
@@ -212,7 +217,8 @@
     let editModeId = null;
     let notifications = [];
     let notificationUnsubscribe = null;
-    let currentReplyTo = null; // To track if we are replying to a nested comment
+    let currentReplyTo = null;
+    let bookmarks = JSON.parse(localStorage.getItem('forum_bookmarks') || '[]');
 
     onSnapshot(commentsCol, (snapshot) => {
         allData = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -237,6 +243,69 @@
     });
 
     window.googleLogin = async () => { try { await signInWithPopup(auth, provider); } catch(e){} };
+
+    // Search Toggle
+    window.toggleSearch = (show) => {
+        document.getElementById('search-box').classList.toggle('hidden', !show);
+        document.getElementById('search-trigger').classList.toggle('hidden', show);
+        if(show) document.getElementById('search-input').focus();
+        else {
+            document.getElementById('search-input').value = '';
+            render();
+        }
+    };
+
+    document.getElementById('search-input').oninput = (e) => {
+        render(e.target.value.toLowerCase());
+    };
+
+    // Bookmark Logic
+    window.toggleBookmark = () => {
+        if(!activeThreadId) return;
+        if(bookmarks.includes(activeThreadId)) {
+            bookmarks = bookmarks.filter(id => id !== activeThreadId);
+            showToast('বুকমার্ক থেকে সরানো হয়েছে');
+        } else {
+            bookmarks.push(activeThreadId);
+            showToast('বুকমার্ক করা হয়েছে');
+        }
+        localStorage.setItem('forum_bookmarks', JSON.stringify(bookmarks));
+        updateBookmarkIcon();
+        if(currentFilter === 'bookmarks') render();
+    };
+
+    function updateBookmarkIcon() {
+        const icon = document.getElementById('bookmark-icon');
+        const isBookmarked = bookmarks.includes(activeThreadId);
+        icon.style.fill = isBookmarked ? '#3498db' : 'none';
+        icon.classList.toggle('text-accent', isBookmarked);
+    }
+
+    // Report Logic
+    window.reportContent = async (id, msg) => {
+        if(!currentUser) return googleLogin();
+        if(!confirm('আপনি কি এই কন্টেন্টটি রিপোর্ট করতে চান?')) return;
+        
+        try {
+            await addDoc(reportsCol, {
+                postId: id,
+                reportedBy: currentUser.uid,
+                reporterName: currentUser.displayName,
+                contentPreview: msg.substring(0, 50),
+                at: serverTimestamp()
+            });
+            showToast('রিপোর্ট জমা দেওয়া হয়েছে');
+        } catch(e) {
+            showToast('কিছু ভুল হয়েছে');
+        }
+    };
+
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        t.innerText = msg;
+        t.style.opacity = '1';
+        setTimeout(() => t.style.opacity = '0', 3000);
+    }
 
     function setupRealtimeNotifications(uid) {
         if(notificationUnsubscribe) notificationUnsubscribe();
@@ -295,17 +364,29 @@
         render();
     };
 
-    function render() {
+    function render(searchTerm = '') {
         const container = document.getElementById('posts-container');
         let posts = allData.filter(c => !c.parentId);
         
+        if(searchTerm) {
+            posts = posts.filter(p => p.msg.toLowerCase().includes(searchTerm));
+        }
+
         if(currentFilter === 'latest') posts.sort((a,b) => (b.at?.seconds || 0) - (a.at?.seconds || 0));
         else if(currentFilter === 'popular') posts.sort((a,b) => (b.votes || 0) - (a.votes || 0));
         else if(currentFilter === 'featured') {
             posts = posts.filter(p => p.featured === true);
             posts.sort((a,b) => (b.at?.seconds || 0) - (a.at?.seconds || 0));
         }
+        else if(currentFilter === 'bookmarks') {
+            posts = posts.filter(p => bookmarks.includes(p.id));
+        }
         
+        if(posts.length === 0) {
+            container.innerHTML = `<div class="p-20 text-center text-gray-400 text-sm italic">কিছু পাওয়া যায়নি</div>`;
+            return;
+        }
+
         container.innerHTML = posts.map(c => {
             const repliesCount = allData.filter(r => r.parentId === c.id).length;
             const isOwner = currentUser && c.userId === currentUser.uid;
@@ -331,13 +412,17 @@
                                     <button onclick="event.stopPropagation(); initEdit('${c.id}')" class="text-gray-400 hover:text-accent p-1"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></button>
                                     <button onclick="event.stopPropagation(); deletePost('${c.id}')" class="text-gray-400 hover:text-red-500 p-1"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
                                 ` : ''}
+                                <button onclick="event.stopPropagation(); reportContent('${c.id}', '${c.msg}')" class="text-gray-400 hover:text-orange-500 p-1"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-7h.01M9 16h.01"></path></svg></button>
                             </div>
                         </div>
                         <div class="cursor-pointer" onclick="openDetails('${c.id}')">
                             <h2 class="text-sm font-semibold mb-2 leading-normal line-clamp-3">${c.msg}</h2>
-                            <div class="flex items-center gap-2 text-gray-400 text-[10px] font-bold">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
-                                <span>${toBN(repliesCount)} মন্তব্য</span>
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2 text-gray-400 text-[10px] font-bold">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                                    <span>${toBN(repliesCount)} মন্তব্য</span>
+                                </div>
+                                ${bookmarks.includes(c.id) ? '<svg class="w-3 h-3 text-accent" fill="currentColor" viewBox="0 0 24 24"><path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg>' : ''}
                             </div>
                         </div>
                     </div>
@@ -414,16 +499,10 @@
         if(!input.value.trim() || !currentUser || !activeThreadId) return;
         
         btn.classList.add('btn-loading');
-        let finalMsg = input.value;
-        
-        // If it's a nested reply, we append the @mention for data reference (optional)
-        // or just send as a regular reply to the parent thread. 
-        // We'll keep it simple: all replies are linked to activeThreadId
-        
         try {
             await addDoc(commentsCol, { 
                 name: currentUser.displayName, 
-                msg: finalMsg, 
+                msg: input.value, 
                 parentId: activeThreadId, 
                 photoURL: currentUser.photoURL, 
                 userId: currentUser.uid, 
@@ -472,7 +551,7 @@
         `;
     };
     window.closeProfile = () => { document.getElementById('profile-view').style.display = 'none'; };
-    window.openDetails = (id) => { activeThreadId = id; document.getElementById('details-view').style.display = 'block'; updateDetails(); };
+    window.openDetails = (id) => { activeThreadId = id; document.getElementById('details-view').style.display = 'block'; updateDetails(); updateBookmarkIcon(); };
     window.closeView = () => { document.getElementById('details-view').style.display = 'none'; activeThreadId = null; cancelReplyTo(); };
 
     function updateDetails() {
@@ -484,29 +563,28 @@
             <div class="mb-6">
                 <div class="flex items-center gap-3 mb-4">
                     <img src="${post.photoURL}" class="w-10 h-10 rounded-lg">
-                    <div><div class="font-black text-sm">${post.name}</div><div class="text-[10px] text-gray-400 uppercase font-bold">${formatTime(post.at)}</div></div>
+                    <div class="flex-1"><div class="font-black text-sm">${post.name}</div><div class="text-[10px] text-gray-400 uppercase font-bold">${formatTime(post.at)}</div></div>
                 </div>
                 <div class="prose dark:prose-invert max-w-none text-base mb-6 border-b dark:border-darkBorder pb-6 whitespace-pre-line">${DOMPurify.sanitize(marked.parse(post.msg))}</div>
-                <div class="space-y-5">
-                    ${replies.map(r => {
-                        const isReplyingToSomeone = r.msg.startsWith('@');
-                        return `
+                <div class="space-y-4">
+                    ${replies.map(r => `
                         <div class="flex gap-3">
                             <img src="${r.photoURL}" class="w-8 h-8 rounded-lg cursor-pointer" onclick="openProfile('${r.userId}')">
                             <div class="flex-1">
-                                <div class="bg-gray-100 dark:bg-darkCard p-3 rounded-2xl border dark:border-darkBorder relative group">
+                                <div class="bg-gray-100 dark:bg-darkCard p-3 rounded-xl border dark:border-darkBorder relative group">
                                     <div class="flex justify-between items-center mb-1">
                                         <span class="text-[10px] font-bold text-accent uppercase">${r.name}</span>
                                         <div class="flex gap-2">
                                             <button onclick="handleReplyTo('${r.name}')" class="text-[9px] font-bold text-gray-400 hover:text-accent uppercase">Reply</button>
+                                            <button onclick="reportContent('${r.id}', '${r.msg}')" class="text-[9px] font-bold text-gray-400 hover:text-orange-500 uppercase">Report</button>
                                             ${(currentUser && r.userId === currentUser.uid || isAdmin) ? `<button onclick="deletePost('${r.id}')" class="text-[9px] font-bold text-gray-400 hover:text-red-500 uppercase">Delete</button>` : ''}
                                         </div>
                                     </div>
                                     <div class="text-xs leading-relaxed">${r.msg}</div>
                                 </div>
-                                <div class="text-[8px] font-bold text-gray-400 mt-1 uppercase px-1">${formatTime(r.at)}</div>
+                                <div class="text-[8px] font-bold text-gray-400 mt-1 uppercase text-right px-1">${formatTime(r.at)}</div>
                             </div>
-                        </div>`}).join('')}
+                        </div>`).join('')}
                 </div>
             </div>
         `;
