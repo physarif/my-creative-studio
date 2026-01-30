@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>আলোচনা ফোরাম - Nested Reply System</title>
+    <title>আলোচনা ফোরাম - User Profiles</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.2/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
@@ -35,9 +35,8 @@
         @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
         .fab-post { position: fixed; bottom: 24px; right: 24px; width: 56px; height: 56px; background-color: #3498db; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 16px rgba(52, 152, 219, 0.3); cursor: pointer; z-index: 90; transition: all 0.3s; }
         .filter-active { background-color: rgba(52, 152, 219, 0.1); color: #3498db; }
-        
-        /* Reply Indentation Style */
         .reply-node { margin-left: 2rem; border-left: 2px solid #3498db44; padding-left: 0.75rem; }
+        .user-link:hover { text-decoration: underline; cursor: pointer; color: #3498db; }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-900 dark:bg-darkBg dark:text-gray-100">
@@ -106,11 +105,6 @@
     </section>
 </main>
 
-<!-- Floating Action Button -->
-<div class="fab-post" onclick="togglePostModal(true)">
-    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"></path></svg>
-</div>
-
 <!-- Details View Overlay -->
 <div id="details-view" class="view-overlay" onclick="if(event.target.id === 'details-view') closeView()">
     <div class="view-body" onclick="event.stopPropagation()">
@@ -137,7 +131,24 @@
     </div>
 </div>
 
-<!-- Modal -->
+<!-- Profile View Overlay -->
+<div id="profile-view" class="view-overlay" onclick="if(event.target.id === 'profile-view') closeProfile()">
+    <div class="view-body" onclick="event.stopPropagation()">
+        <div class="p-3 border-b dark:border-darkBorder flex items-center justify-between sticky top-0 bg-white dark:bg-darkBg z-10">
+            <button onclick="closeProfile()" class="p-2 hover:bg-gray-100 dark:hover:bg-darkCard rounded-lg">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            <span class="font-bold text-sm">প্রোফাইল</span>
+            <div class="w-9"></div>
+        </div>
+        <div id="profile-content" class="flex-1 overflow-y-auto p-5"></div>
+    </div>
+</div>
+
+<div class="fab-post" onclick="togglePostModal(true)">
+    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"></path></svg>
+</div>
+
 <div id="post-modal-overlay" class="fixed inset-0 bg-black/70 z-[200] hidden items-center justify-center p-4 backdrop-blur-sm">
     <div class="bg-white dark:bg-darkCard w-full max-w-lg rounded-2xl p-5 shadow-2xl">
         <h2 class="text-lg font-black mb-4 text-center">নতুন আলোচনা</h2>
@@ -198,6 +209,7 @@
         document.getElementById('admin-badge').classList.toggle('hidden', !isAdmin);
         if (user) {
             document.getElementById('user-avatar').src = user.photoURL;
+            document.getElementById('user-avatar').onclick = () => openProfile(user.uid);
             onSnapshot(doc(db, BOOKMARKS_PATH, user.uid), (docSnap) => {
                 userBookmarks = docSnap.exists() ? (docSnap.data().postIds || []) : [];
                 updateBookmarkIcon();
@@ -259,13 +271,11 @@
     window.postReply = async () => {
         const rawMsg = document.getElementById('reply-input').value.trim();
         if(!rawMsg || !currentUser || !activeThreadId) return;
-        
-        // Save reply with reference to parent comment if exists
         await addDoc(collection(db, BASE_PATH), {
             name: currentUser.displayName, 
             msg: rawMsg, 
             parentId: activeThreadId,
-            replyToId: replyingToId || null, // Stores ID of the specific comment being replied to
+            replyToId: replyingToId || null,
             replyToName: replyingToName || null,
             photoURL: currentUser.photoURL, 
             userId: currentUser.uid, 
@@ -274,6 +284,52 @@
         document.getElementById('reply-input').value = '';
         cancelReplyTag();
     };
+
+    window.openProfile = (uid) => {
+        const userDocs = allData.filter(d => d.userId === uid);
+        if (userDocs.length === 0) return;
+        
+        const user = userDocs[0];
+        const userPosts = userDocs.filter(d => !d.parentId);
+        const userComments = userDocs.filter(d => d.parentId);
+        const totalVotes = userPosts.reduce((acc, curr) => acc + (curr.votes || 0), 0);
+
+        document.getElementById('profile-content').innerHTML = `
+            <div class="flex flex-col items-center mb-8">
+                <img src="${user.photoURL}" class="w-20 h-20 rounded-2xl mb-4 border-2 border-accent">
+                <h2 class="text-xl font-black">${user.name}</h2>
+                <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">${uid === ADMIN_EMAIL ? 'Admin' : 'Member'}</p>
+            </div>
+            
+            <div class="grid grid-cols-3 gap-3 mb-8">
+                <div class="bg-gray-50 dark:bg-darkCard p-4 rounded-xl text-center border dark:border-darkBorder">
+                    <div class="text-lg font-black text-accent">${toBN(userPosts.length)}</div>
+                    <div class="text-[9px] text-gray-400 font-bold uppercase">আলোচনা</div>
+                </div>
+                <div class="bg-gray-50 dark:bg-darkCard p-4 rounded-xl text-center border dark:border-darkBorder">
+                    <div class="text-lg font-black text-accent">${toBN(userComments.length)}</div>
+                    <div class="text-[9px] text-gray-400 font-bold uppercase">মন্তব্য</div>
+                </div>
+                <div class="bg-gray-50 dark:bg-darkCard p-4 rounded-xl text-center border dark:border-darkBorder">
+                    <div class="text-lg font-black text-accent">${toBN(totalVotes)}</div>
+                    <div class="text-[9px] text-gray-400 font-bold uppercase">ভোট</div>
+                </div>
+            </div>
+
+            <h3 class="font-bold text-xs uppercase text-gray-400 mb-4 px-1">সাম্প্রতিক আলোচনা</h3>
+            <div class="space-y-3">
+                ${userPosts.slice(0, 10).map(p => `
+                    <div onclick="closeProfile(); openDetails('${p.id}')" class="p-3 bg-white dark:bg-darkCard border dark:border-darkBorder rounded-xl cursor-pointer hover:border-accent">
+                        <p class="text-xs font-semibold line-clamp-2">${p.msg}</p>
+                        <span class="text-[9px] text-gray-400 font-bold">${formatTime(p.at)}</span>
+                    </div>
+                `).join('') || '<p class="text-center text-gray-400 text-xs py-10">কোনো আলোচনা নেই</p>'}
+            </div>
+        `;
+        document.getElementById('profile-view').style.display = 'block';
+    };
+
+    window.closeProfile = () => { document.getElementById('profile-view').style.display = 'none'; };
 
     function render(searchTerm = '') {
         const container = document.getElementById('posts-container');
@@ -319,8 +375,9 @@
                     <div class="flex-1">
                         <div class="flex items-center justify-between mb-1.5 text-[10px] font-bold text-gray-400 uppercase">
                             <div class="flex items-center gap-2">
-                                <img src="${c.photoURL}" class="w-4 h-4 rounded-full">
-                                <span>${c.name} • ${formatTime(c.at)}</span>
+                                <img src="${c.photoURL}" class="w-4 h-4 rounded-full cursor-pointer" onclick="openProfile('${c.userId}')">
+                                <span class="user-link" onclick="openProfile('${c.userId}')">${c.name}</span>
+                                <span> • ${formatTime(c.at)}</span>
                             </div>
                             <div class="flex items-center gap-1">
                                 ${isAdmin ? `
@@ -349,10 +406,7 @@
         const post = allData.find(c => c.id === activeThreadId);
         if(!post) return;
         
-        // Sorting and filtering replies
         const allReplies = allData.filter(r => r.parentId === activeThreadId).sort((a,b) => (a.at?.seconds || 0) - (b.at?.seconds || 0));
-        
-        // Main comments (those not replying to another comment)
         const rootComments = allReplies.filter(r => !r.replyToId);
         
         const renderComment = (comment, isReply = false) => {
@@ -360,14 +414,14 @@
             return `
                 <div class="${isReply ? 'reply-node' : 'mb-4'}">
                     <div class="flex gap-3">
-                        <img src="${comment.photoURL}" class="w-8 h-8 rounded-lg">
+                        <img src="${comment.photoURL}" class="w-8 h-8 rounded-lg cursor-pointer" onclick="openProfile('${comment.userId}')">
                         <div class="bg-gray-100 dark:bg-darkCard p-3 rounded-xl border dark:border-darkBorder text-xs flex-1">
                             <div class="flex justify-between items-start mb-1">
-                                <div class="font-bold text-[10px]">${comment.name}</div>
+                                <div class="font-bold text-[10px] user-link" onclick="openProfile('${comment.userId}')">${comment.name}</div>
                                 <button onclick="prepareReply('${comment.id}', '${comment.name}')" class="text-accent text-[9px] font-bold hover:underline">উত্তর দিন</button>
                             </div>
                             <div class="text-gray-700 dark:text-gray-300 text-[11px] leading-relaxed">
-                                ${comment.replyToName ? `<span class="text-accent font-bold mr-1">@${comment.replyToName}</span>` : ''}
+                                ${comment.replyToName ? `<span class="text-accent font-bold mr-1 cursor-pointer" onclick="openProfile('${allData.find(u => u.id === comment.replyToId)?.userId}')">@${comment.replyToName}</span>` : ''}
                                 ${DOMPurify.sanitize(marked.parse(comment.msg))}
                             </div>
                         </div>
@@ -380,9 +434,9 @@
         document.getElementById('details-content').innerHTML = `
             <div class="mb-6">
                 <div class="flex items-center gap-3 mb-4">
-                    <img src="${post.photoURL}" class="w-10 h-10 rounded-lg">
+                    <img src="${post.photoURL}" class="w-10 h-10 rounded-lg cursor-pointer" onclick="openProfile('${post.userId}')">
                     <div>
-                        <div class="font-black text-sm">${post.name} ${post.isFeatured ? '⭐' : ''}</div>
+                        <div class="font-black text-sm user-link" onclick="openProfile('${post.userId}')">${post.name} ${post.isFeatured ? '⭐' : ''}</div>
                         <div class="text-[10px] text-gray-400 uppercase">${formatTime(post.at)}</div>
                     </div>
                 </div>
