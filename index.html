@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>আলোচনা - ক্লিন লেআউট</title>
+    <title>আলোচনা - সোশ্যাল ফিড</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.2/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
@@ -25,18 +25,19 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Hind+Siliguri:wght@400;600;700&display=swap');
         body { font-family: 'Inter', 'Hind Siliguri', sans-serif; transition: background-color 0.2s, color 0.2s; }
         
-        #thread-modal { 
-            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); 
+        /* Modal & Views */
+        .view-overlay { 
+            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.7); 
             backdrop-filter: blur(4px); display: none; z-index: 100;
         }
-        .modal-body {
+        .view-body {
             position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
-            width: 100%; max-width: 550px; height: 85vh;
+            width: 100%; max-width: 600px; height: 92vh;
             background: white; border-radius: 20px 20px 0 0;
             display: flex; flex-direction: column; overflow: hidden;
             animation: slideUp 0.3s ease-out;
         }
-        .dark .modal-body { background: #16181c; border: 1px solid #2f3336; }
+        .dark .view-body { background: #16181c; border: 1px solid #2f3336; }
         
         @keyframes slideUp {
             from { transform: translate(-50%, 100%); }
@@ -44,68 +45,87 @@
         }
 
         @media (min-width: 768px) {
-            .modal-body { height: 75vh; bottom: 50%; transform: translate(-50%, 50%); border-radius: 16px; }
+            .view-body { height: 85vh; bottom: 50%; transform: translate(-50%, 50%); border-radius: 16px; }
         }
 
-        .comment-bubble {
+        .reply-bubble {
             background-color: #f0f2f5;
-            border-radius: 18px;
-            padding: 8px 12px;
+            border-radius: 16px;
+            padding: 8px 14px;
             display: inline-block;
             max-width: 100%;
         }
-        .dark .comment-bubble { background-color: #262728; }
+        .dark .reply-bubble { background-color: #262728; }
         
-        .fab { position: fixed; bottom: 24px; right: 24px; width: 48px; height: 48px; background-color: #1d9bf0; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(29, 155, 240, 0.4); cursor: pointer; z-index: 40; border: none; }
-        #post-modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.4); display: none; align-items: center; justify-content: center; z-index: 200; padding: 16px; }
+        .fab { position: fixed; bottom: 24px; right: 24px; width: 56px; height: 56px; background-color: #1d9bf0; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(29, 155, 240, 0.4); cursor: pointer; z-index: 40; border: none; }
+        
+        #post-modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); display: none; align-items: center; justify-content: center; z-index: 200; padding: 16px; }
     </style>
 </head>
-<body class="bg-white text-gray-900 dark:bg-darkBg dark:text-gray-100 pb-20">
+<body class="bg-gray-50 text-gray-900 dark:bg-darkBg dark:text-gray-100 pb-20">
 
 <div class="max-w-xl mx-auto p-4">
     <!-- Header -->
-    <div class="flex items-center justify-between mb-6">
-        <h1 class="text-lg font-bold">Comments</h1>
-        <div class="flex items-center gap-3">
-            <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-darkCard">
-                <svg id="sun-icon" class="w-4 h-4 hidden text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" /></svg>
-                <svg id="moon-icon" class="w-4 h-4 hidden text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" /></svg>
+    <div class="flex items-center justify-between mb-8 pt-4">
+        <h1 class="text-2xl font-black tracking-tight">আলোচনা</h1>
+        <div class="flex items-center gap-4">
+            <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-darkCard transition-all">
+                <svg id="sun-icon" class="w-5 h-5 hidden text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" /></svg>
+                <svg id="moon-icon" class="w-5 h-5 hidden text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" /></svg>
             </button>
             <div id="auth-section">
-                <div id="user-info-ui" class="hidden"><img id="user-avatar" class="w-8 h-8 rounded-full"></div>
-                <button id="login-ui" onclick="googleLogin()" class="text-xs font-bold border rounded-lg px-3 py-1">Login</button>
+                <div id="user-info-ui" class="hidden"><img id="user-avatar" class="w-10 h-10 rounded-full border-2 border-white dark:border-darkBorder cursor-pointer"></div>
+                <button id="login-ui" onclick="googleLogin()" class="px-4 py-1.5 bg-black dark:bg-white dark:text-black text-white rounded-full text-sm font-bold">Login</button>
             </div>
         </div>
     </div>
 
-    <!-- List -->
-    <div id="comments-container" class="space-y-3">
-        <div class="flex justify-center py-10"><div class="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500"></div></div>
+    <!-- Feed List -->
+    <div id="comments-container" class="space-y-4">
+        <div class="flex justify-center py-20"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div></div>
     </div>
 </div>
 
-<!-- Thread Modal -->
-<div id="thread-modal" onclick="if(event.target.id === 'thread-modal') closeThread()">
-    <div class="modal-body">
-        <div class="p-3 border-b dark:border-darkBorder flex items-center justify-between">
-            <span class="font-bold text-sm">Thread</span>
-            <button onclick="closeThread()" class="p-1"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"></path></svg></button>
+<!-- Thread View (Overlay) -->
+<div id="thread-view" class="view-overlay" onclick="if(event.target.id === 'thread-view') closeView('thread-view')">
+    <div class="view-body">
+        <div class="p-4 border-b dark:border-darkBorder flex items-center justify-between sticky top-0 bg-inherit z-10">
+            <span class="font-bold">আলোচনা থ্রেড</span>
+            <button onclick="closeView('thread-view')" class="p-2 hover:bg-gray-100 dark:hover:bg-darkCard rounded-full"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"></path></svg></button>
         </div>
-        <div id="thread-content" class="flex-1 overflow-y-auto p-3 space-y-4"></div>
-        <div class="p-3 border-t dark:border-darkBorder">
-            <button onclick="togglePostModal(true)" class="w-full bg-gray-100 dark:bg-darkCard text-gray-500 text-left py-2 px-4 rounded-full text-xs">রিপ্লাই দিন...</button>
+        <div id="thread-content" class="flex-1 overflow-y-auto p-4 space-y-6"></div>
+        <div class="p-4 border-t dark:border-darkBorder">
+            <button onclick="togglePostModal(true)" class="w-full bg-gray-100 dark:bg-darkCard text-gray-500 text-left py-3 px-5 rounded-full text-sm font-medium">কমেন্ট লিখুন...</button>
         </div>
     </div>
 </div>
 
-<button onclick="togglePostModal(false)" class="fab"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"></path></svg></button>
+<!-- Profile View (Overlay) -->
+<div id="profile-view" class="view-overlay" onclick="if(event.target.id === 'profile-view') closeView('profile-view')">
+    <div class="view-body">
+        <div class="p-4 border-b dark:border-darkBorder flex items-center justify-between sticky top-0 bg-inherit z-10">
+            <span class="font-bold">প্রোফাইল</span>
+            <button onclick="closeView('profile-view')" class="p-2 hover:bg-gray-100 dark:hover:bg-darkCard rounded-full"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"></path></svg></button>
+        </div>
+        <div id="profile-content" class="flex-1 overflow-y-auto">
+            <!-- Profile header and activities -->
+        </div>
+    </div>
+</div>
 
+<!-- FAB -->
+<button onclick="togglePostModal(false)" class="fab">
+    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+</button>
+
+<!-- New Post Modal -->
 <div id="post-modal-overlay" onclick="if(event.target.id === 'post-modal-overlay') togglePostModal()">
-    <div class="bg-white dark:bg-darkCard w-full max-w-sm rounded-xl p-4">
-        <textarea id="user-comment" placeholder="আপনার মন্তব্য..." class="w-full bg-transparent outline-none h-24 resize-none text-sm"></textarea>
-        <div class="flex justify-end gap-2 mt-2">
-            <button onclick="togglePostModal()" class="text-xs font-bold text-gray-500">বাতিল</button>
-            <button onclick="postData()" id="submit-btn" class="bg-blue-500 text-white px-4 py-1.5 rounded-full text-xs font-bold">পোস্ট</button>
+    <div class="bg-white dark:bg-darkCard w-full max-w-md rounded-2xl p-6">
+        <h2 id="modal-title" class="text-xl font-bold mb-4">নতুন পোস্ট</h2>
+        <textarea id="user-comment" placeholder="আপনার কথাগুলো লিখুন..." class="w-full bg-transparent outline-none h-40 resize-none text-lg dark:text-white" autofocus></textarea>
+        <div class="flex justify-end gap-3 mt-4">
+            <button onclick="togglePostModal()" class="px-5 py-2 text-sm font-bold text-gray-500">বাতিল</button>
+            <button onclick="postData()" id="submit-btn" class="bg-blue-500 text-white px-8 py-2 rounded-full text-sm font-bold">পোস্ট</button>
         </div>
     </div>
 </div>
@@ -139,106 +159,186 @@
         currentUser = user;
         document.getElementById('user-info-ui').classList.toggle('hidden', !user);
         document.getElementById('login-ui').classList.toggle('hidden', !!user);
-        if (user) document.getElementById('user-avatar').src = user.photoURL;
+        if (user) {
+            document.getElementById('user-avatar').src = user.photoURL;
+            document.getElementById('user-avatar').onclick = () => openProfile(user.uid);
+        }
         loadComments();
     });
 
     window.googleLogin = async () => { try { await signInWithPopup(auth, provider); } catch(e){} };
 
     async function loadComments() {
-        const snap = await getDocs(query(commentsCol));
-        allData = [];
-        snap.forEach(d => allData.push({ id: d.id, ...d.data() }));
-        render();
+        try {
+            const snap = await getDocs(query(commentsCol));
+            allData = [];
+            snap.forEach(d => allData.push({ id: d.id, ...d.data() }));
+            render();
+        } catch(e) {}
     }
 
     function render() {
         const container = document.getElementById('comments-container');
         const roots = allData.filter(c => !c.parentId).sort((a,b) => (b.at?.seconds || 0) - (a.at?.seconds || 0));
-        container.innerHTML = roots.map(c => renderUI(c)).join('') || '<p class="text-center text-xs text-gray-400 py-10">No comments</p>';
-        if (activeThreadId) updateThread();
+        container.innerHTML = roots.map(c => renderMainPostUI(c)).join('') || '<div class="text-center py-20 text-gray-400">কোনো পোস্ট নেই।</div>';
     }
 
-    function renderUI(c, isMinimal = false) {
+    function renderMainPostUI(c) {
         const date = c.at ? formatTime(c.at) : 'এখন';
         const replies = allData.filter(r => r.parentId === c.id).length;
+        const msgHtml = DOMPurify.sanitize(marked.parse(c.msg));
+
         return `
-        <div class="flex gap-2 items-start">
-            <img src="${c.photoURL}" class="w-7 h-7 rounded-full mt-1">
-            <div class="flex flex-col items-start">
-                <div class="comment-bubble" onclick="openThread('${c.id}')">
-                    <div class="font-bold text-[11px] leading-tight">${c.name}</div>
-                    <div class="text-[13px] leading-tight mt-0.5">${c.msg}</div>
+        <div class="bg-white dark:bg-darkCard border border-gray-100 dark:border-darkBorder rounded-2xl overflow-hidden shadow-sm">
+            <div class="p-5">
+                <div class="flex items-center gap-3 mb-4">
+                    <img src="${c.photoURL}" class="w-10 h-10 rounded-full cursor-pointer" onclick="openProfile('${c.userId}')">
+                    <div>
+                        <div class="font-bold text-sm leading-tight hover:underline cursor-pointer" onclick="openProfile('${c.userId}')">${c.name}</div>
+                        <div class="text-[11px] text-gray-500 font-medium">${date}</div>
+                    </div>
                 </div>
-                <div class="flex gap-3 ml-2 mt-1 text-[10px] text-gray-500 font-bold">
-                    <span>${date}</span>
-                    <button onclick="openThread('${c.id}')" class="hover:underline">রিপ্লাই (${replies})</button>
+                <div onclick="openThread('${c.id}')" class="text-[16px] leading-relaxed dark:text-gray-200 mb-6 cursor-pointer">
+                    ${msgHtml}
+                </div>
+                <div class="flex items-center justify-between pt-4 border-t dark:border-darkBorder/50">
+                    <button onclick="openThread('${c.id}')" class="flex items-center gap-2 text-gray-500 hover:text-blue-500 font-bold text-sm">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                        <span>${replies > 0 ? toBN(replies) + ' টি কমেন্ট' : 'কমেন্ট করুন'}</span>
+                    </button>
                 </div>
             </div>
         </div>`;
     }
 
+    function renderReplyUI(c) {
+        const date = c.at ? formatTime(c.at) : 'এখন';
+        return `
+        <div class="flex gap-3 items-start">
+            <img src="${c.photoURL}" class="w-8 h-8 rounded-full mt-1 cursor-pointer" onclick="openProfile('${c.userId}')">
+            <div class="flex flex-col items-start max-w-[85%]">
+                <div class="reply-bubble shadow-sm">
+                    <div class="font-bold text-[12px] text-blue-600 dark:text-blue-400 mb-0.5 cursor-pointer" onclick="openProfile('${c.userId}')">${c.name}</div>
+                    <div class="text-[14px] leading-snug dark:text-gray-200">${c.msg}</div>
+                </div>
+                <div class="ml-2 mt-1 text-[10px] text-gray-400 font-bold">${date}</div>
+            </div>
+        </div>`;
+    }
+
+    // --- Social Views ---
+    window.openProfile = (uid) => {
+        const userPosts = allData.filter(c => c.userId === uid);
+        const user = userPosts[0]; // Get basic info from first post
+        if(!user) return;
+
+        const isFollowing = localStorage.getItem(`following_${uid}`) === 'true';
+
+        const content = document.getElementById('profile-content');
+        document.getElementById('profile-view').style.display = 'block';
+        document.body.style.overflow = 'hidden';
+
+        content.innerHTML = `
+            <div class="p-6 text-center border-b dark:border-darkBorder">
+                <img src="${user.photoURL}" class="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-white shadow-lg dark:border-darkCard">
+                <h2 class="text-2xl font-black">${user.name}</h2>
+                <p class="text-gray-500 text-sm mt-1">@${uid.substring(0,8)}</p>
+                <div class="mt-6 flex justify-center gap-4">
+                    <button onclick="toggleFollow('${uid}')" id="follow-btn" class="px-8 py-2 rounded-full font-bold text-sm ${isFollowing ? 'bg-gray-200 dark:bg-gray-800' : 'bg-blue-500 text-white'} transition-all">
+                        ${isFollowing ? 'Following' : 'Follow'}
+                    </button>
+                </div>
+            </div>
+            <div class="p-4 space-y-4">
+                <h3 class="font-bold text-sm uppercase tracking-widest text-gray-400 pl-2">Activities</h3>
+                <div class="space-y-4">
+                    ${userPosts.map(p => `
+                        <div class="p-4 bg-gray-50 dark:bg-darkCard/50 rounded-xl border dark:border-darkBorder">
+                            <div class="text-xs text-blue-500 font-bold mb-2 uppercase">${p.parentId ? 'Commented' : 'Posted'}</div>
+                            <div class="text-sm line-clamp-2">${p.msg}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    };
+
+    window.toggleFollow = (uid) => {
+        const isFollowing = localStorage.getItem(`following_${uid}`) === 'true';
+        localStorage.setItem(`following_${uid}`, !isFollowing);
+        const btn = document.getElementById('follow-btn');
+        btn.innerText = !isFollowing ? 'Following' : 'Follow';
+        btn.className = !isFollowing ? 'px-8 py-2 rounded-full font-bold text-sm bg-gray-200 dark:bg-gray-800' : 'px-8 py-2 rounded-full font-bold text-sm bg-blue-500 text-white';
+    };
+
     window.openThread = (id) => {
         activeThreadId = id;
-        document.getElementById('thread-modal').style.display = 'block';
+        document.getElementById('thread-view').style.display = 'block';
+        document.body.style.overflow = 'hidden';
         updateThread();
     };
 
-    window.closeThread = () => {
-        activeThreadId = null;
-        document.getElementById('thread-modal').style.display = 'none';
+    window.closeView = (id) => {
+        document.getElementById(id).style.display = 'none';
+        document.body.style.overflow = '';
+        if(id === 'thread-view') activeThreadId = null;
     };
 
     function updateThread() {
         const parent = allData.find(c => c.id === activeThreadId);
         if (!parent) return;
         const replies = allData.filter(c => c.parentId === activeThreadId).sort((a,b) => (a.at?.seconds || 0) - (b.at?.seconds || 0));
+        
         document.getElementById('thread-content').innerHTML = `
-            ${renderUI(parent)}
-            <div class="pl-8 space-y-3 mt-4 border-l dark:border-darkBorder">
-                ${replies.map(r => renderUI(r)).join('')}
+            ${renderMainPostUI(parent)}
+            <div class="space-y-4 pt-4 border-t dark:border-darkBorder">
+                <h3 class="text-xs font-black text-gray-400 uppercase tracking-widest">মন্তব্যসমূহ (${toBN(replies.length)})</h3>
+                <div class="space-y-4">${replies.map(r => renderReplyUI(r)).join('')}</div>
             </div>
         `;
     }
 
     window.togglePostModal = (isReply) => {
         const modal = document.getElementById('post-modal-overlay');
-        modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
-        document.getElementById('submit-btn').innerText = isReply ? 'রিপ্লাই' : 'পোস্ট';
+        const isOpen = modal.style.display === 'flex';
+        modal.style.display = isOpen ? 'none' : 'flex';
+        document.getElementById('modal-title').innerText = isReply ? 'মন্তব্য করুন' : 'নতুন পোস্ট';
+        if (!isOpen) setTimeout(() => document.getElementById('user-comment').focus(), 100);
     };
 
     window.postData = async () => {
         const msg = document.getElementById('user-comment').value.trim();
         if (!msg || !currentUser) return;
         await addDoc(commentsCol, {
-            name: currentUser.displayName, msg, parentId: activeThreadId,
-            photoURL: currentUser.photoURL, at: serverTimestamp()
+            name: currentUser.displayName, msg, 
+            parentId: activeThreadId || null,
+            photoURL: currentUser.photoURL, userId: currentUser.uid, at: serverTimestamp()
         });
         document.getElementById('user-comment').value = '';
         togglePostModal();
         loadComments();
     };
 
+    const toBN = (n) => n.toString().replace(/\d/g, d => "০১২৩৪৫৬৭৮৯"[d]);
     function formatTime(ts) {
         const s = Math.floor((new Date() - new Date(ts.seconds * 1000))/1000);
         if(s < 60) return 'এখন';
-        if(s < 3600) return Math.floor(s/60) + 'm';
-        if(s < 86400) return Math.floor(s/3600) + 'h';
+        if(s < 3600) return toBN(Math.floor(s/60)) + 'মি আগে';
+        if(s < 86400) return toBN(Math.floor(s/3600)) + 'ঘ আগে';
         return new Date(ts.seconds*1000).toLocaleDateString('bn-BD', {day:'numeric', month:'short'});
     }
 
-    // Theme
-    const updateIcons = (dark) => {
-        document.getElementById('sun-icon').classList.toggle('hidden', !dark);
-        document.getElementById('moon-icon').classList.toggle('hidden', dark);
-    };
+    // Theme Toggle
     const isDark = localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
     document.documentElement.classList.toggle('dark', isDark);
-    updateIcons(isDark);
+    document.getElementById('sun-icon').classList.toggle('hidden', !isDark);
+    document.getElementById('moon-icon').classList.toggle('hidden', isDark);
+
     document.getElementById('theme-toggle').onclick = () => {
         const dark = document.documentElement.classList.toggle('dark');
         localStorage.theme = dark ? 'dark' : 'light';
-        updateIcons(dark);
+        document.getElementById('sun-icon').classList.toggle('hidden', !dark);
+        document.getElementById('moon-icon').classList.toggle('hidden', dark);
     };
 </script>
 </body>
