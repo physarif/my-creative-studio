@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>আলোচনা ফোরাম - Bookmarks Fixed</title>
+    <title>আলোচনা ফোরাম</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.2/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
@@ -37,9 +37,6 @@
         .filter-active { background-color: rgba(52, 152, 219, 0.1); color: #3498db; }
         .reply-node { margin-left: 2rem; border-left: 2px solid #3498db44; padding-left: 0.75rem; }
         .user-link:hover { text-decoration: underline; cursor: pointer; color: #3498db; }
-        #notification-dropdown { display: none; transform-origin: top right; transition: all 0.2s; }
-        #notification-dropdown.active { display: block; animation: scaleIn 0.2s ease-out; }
-        @keyframes scaleIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-900 dark:bg-darkBg dark:text-gray-100">
@@ -52,26 +49,17 @@
         </div>
         
         <div class="flex items-center gap-2 relative">
-            <div id="search-box" class="hidden flex items-center bg-gray-100 dark:bg-darkCard rounded-xl px-2">
-                <input id="search-input" type="text" placeholder="খুঁজুন..." class="bg-transparent border-none outline-none text-xs p-2 w-32 md:w-48">
-            </div>
-            <button onclick="toggleSearch(true)" class="p-2 rounded-xl bg-gray-100 dark:bg-darkCard hover:ring-2 ring-accent transition-all">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-            </button>
-
             <div id="noti-wrapper" class="relative hidden">
                 <button id="noti-trigger" onclick="toggleNotifications()" class="p-2 rounded-xl bg-gray-100 dark:bg-darkCard hover:ring-2 ring-accent transition-all relative">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
                     <span id="noti-badge" class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-darkCard hidden"></span>
                 </button>
-                <div id="notification-dropdown" class="absolute right-0 mt-2 w-72 bg-white dark:bg-darkCard border dark:border-darkBorder rounded-2xl shadow-2xl z-[100] overflow-hidden">
+                <div id="notification-dropdown" class="absolute right-0 mt-2 w-72 bg-white dark:bg-darkCard border dark:border-darkBorder rounded-2xl shadow-2xl z-[100] hidden">
                     <div class="p-3 border-b dark:border-darkBorder flex items-center justify-between">
                         <span class="text-xs font-black uppercase">নোটিফিকেশন</span>
                         <button onclick="clearAllNotifications()" class="text-[10px] text-accent font-bold hover:underline">সব মুছুন</button>
                     </div>
-                    <div id="noti-list" class="max-h-80 overflow-y-auto">
-                        <div class="p-8 text-center text-gray-400 text-[10px]">কোনো নোটিফিকেশন নেই</div>
-                    </div>
+                    <div id="noti-list" class="max-h-80 overflow-y-auto"></div>
                 </div>
             </div>
 
@@ -109,7 +97,6 @@
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg>
                         বুকমার্কস
                     </button>
-                    <div class="h-px bg-gray-200 dark:bg-darkBorder my-2 hidden lg:block"></div>
                     <button id="filter-pending" onclick="setFilter('pending')" class="flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-left w-full whitespace-nowrap relative">
                         <div class="flex items-center gap-3">
                             <svg class="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
@@ -138,22 +125,19 @@
                 </button>
                 <span class="font-bold text-sm">বিস্তারিত আলোচনা</span>
             </div>
-            
-            <button id="bookmark-btn" onclick="toggleBookmark()" class="p-2 hover:bg-gray-100 dark:hover:bg-darkCard rounded-lg text-gray-400 hidden group">
-                <svg id="bookmark-icon" class="w-6 h-6 transition-all duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
-                </svg>
+            <button id="bookmark-btn" onclick="toggleBookmark()" class="p-2 hover:bg-gray-100 dark:hover:bg-darkCard rounded-lg text-gray-400 hidden">
+                <svg id="bookmark-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg>
             </button>
         </div>
         <div id="details-content" class="flex-1 overflow-y-auto p-5 pb-24"></div>
         <div id="reply-input-section" class="absolute bottom-0 left-0 right-0 p-4 bg-white dark:bg-darkCard border-t dark:border-darkBorder hidden">
-            <div id="reply-tag-ui" class="hidden items-center justify-between px-3 py-1 bg-gray-100 dark:bg-darkBg text-[10px] border-x border-t dark:border-darkBorder rounded-t-lg">
+            <div id="reply-tag-ui" class="hidden items-center justify-between px-3 py-1 bg-gray-100 dark:bg-darkBg text-[10px] rounded-t-lg">
                 <span class="text-accent italic" id="replying-to-text"></span>
                 <button onclick="cancelReplyTag()" class="text-red-500 font-bold">×</button>
             </div>
             <div class="flex gap-2">
                 <input id="reply-input" type="text" placeholder="মতামত দিন..." class="flex-1 bg-gray-50 dark:bg-darkBg border dark:border-darkBorder rounded-lg px-3 py-2 text-xs outline-none focus:ring-2 ring-accent">
-                <button onclick="postReply()" class="bg-accent text-white px-5 py-2 rounded-lg text-xs font-bold min-w-[70px]">পাঠান</button>
+                <button onclick="postReply()" class="bg-accent text-white px-5 py-2 rounded-lg text-xs font-bold">পাঠান</button>
             </div>
         </div>
     </div>
@@ -255,8 +239,6 @@
                 userNotis = snap.docs.map(d => ({id: d.id, ...d.data()})).sort((a,b) => (b.at?.seconds || 0) - (a.at?.seconds || 0));
                 renderNotifications();
             });
-        } else {
-            if(['bookmarks', 'pending'].includes(currentFilter)) setFilter('latest');
         }
         render();
     });
@@ -272,8 +254,8 @@
 
     window.toggleNotifications = () => {
         const drop = document.getElementById('notification-dropdown');
-        drop.classList.toggle('active');
-        if(drop.classList.contains('active')) markNotisAsRead();
+        drop.classList.toggle('hidden');
+        if(!drop.classList.contains('hidden')) markNotisAsRead();
     };
 
     async function markNotisAsRead() {
@@ -302,26 +284,22 @@
             return;
         }
         list.innerHTML = userNotis.map(n => `
-            <div onclick="openFromNoti('${n.postId}')" class="p-3 flex gap-3 hover:bg-gray-50 dark:hover:bg-darkBg border-b dark:border-darkBorder cursor-pointer transition-colors ${!n.read ? 'bg-blue-50/30 dark:bg-blue-900/10' : ''}">
+            <div onclick="openFromNoti('${n.postId}')" class="p-3 flex gap-3 hover:bg-gray-50 dark:hover:bg-darkBg border-b dark:border-darkBorder cursor-pointer ${!n.read ? 'bg-blue-50/20 dark:bg-blue-900/10' : ''}">
                 <img src="${n.senderPhoto}" class="w-8 h-8 rounded-lg">
                 <div class="flex-1">
-                    <p class="text-[11px] leading-snug">
-                        <span class="font-bold">${n.senderName}</span> 
-                        ${n.type === 'reply' ? 'আপনার কমেন্টে উত্তর দিয়েছেন' : 'আপনার পোস্টে কমেন্ট করেছেন'}
-                    </p>
-                    <p class="text-[9px] text-gray-400 mt-1 line-clamp-1 italic">"${n.postSnippet}"</p>
+                    <p class="text-[11px] leading-snug"><span class="font-bold">${n.senderName}</span> ${n.type === 'reply' ? 'আপনার কমেন্টে উত্তর দিয়েছেন' : 'আপনার পোস্টে কমেন্ট করেছেন'}</p>
                     <p class="text-[8px] text-accent font-bold mt-1">${formatTime(n.at)}</p>
                 </div>
             </div>`).join('');
     }
 
     window.openFromNoti = (postId) => {
-        document.getElementById('notification-dropdown').classList.remove('active');
+        document.getElementById('notification-dropdown').classList.add('hidden');
         openDetails(postId);
     };
 
     window.clearAllNotifications = async () => {
-        if(!currentUser || !confirm('সব নোটিফিকেশন মুছে ফেলবেন?')) return;
+        if(!currentUser) return;
         for (const n of userNotis) {
             await deleteDoc(doc(db, NOTI_PATH, currentUser.uid, 'items', n.id));
         }
@@ -330,8 +308,10 @@
     function updateBadges() {
         const pCount = allData.filter(p => !p.parentId && p.status === 'pending').length;
         const pBadge = document.getElementById('pending-badge');
-        pBadge.innerText = toBN(pCount); 
-        pBadge.classList.toggle('hidden', !isAdmin || pCount === 0 || !currentUser);
+        if(pBadge) {
+            pBadge.innerText = toBN(pCount); 
+            pBadge.classList.toggle('hidden', !isAdmin || pCount === 0);
+        }
     }
 
     window.submitPost = async () => {
@@ -401,36 +381,30 @@
 
     window.closeProfile = () => { document.getElementById('profile-view').style.display = 'none'; };
 
-    function render(searchTerm = '') {
+    function render() {
         const container = document.getElementById('posts-container');
         let posts = allData.filter(c => !c.parentId);
         
-        if(currentFilter === 'pending') posts = posts.filter(p => p.status === 'pending' && (isAdmin || p.userId === currentUser?.uid));
+        if(currentFilter === 'pending') posts = posts.filter(p => p.status === 'pending');
         else if(currentFilter === 'featured') posts = posts.filter(p => p.status === 'approved' && p.isFeatured === true);
         else if(currentFilter === 'bookmarks') posts = posts.filter(p => userBookmarks.includes(p.id));
         else posts = posts.filter(p => p.status === 'approved');
 
-        if(searchTerm) posts = posts.filter(p => p.msg.toLowerCase().includes(searchTerm));
         if(currentFilter === 'popular') posts.sort((a, b) => (b.votes || 0) - (a.votes || 0));
         else posts.sort((a, b) => (b.at?.seconds || 0) - (a.at?.seconds || 0));
 
-        if(posts.length === 0) { 
-            container.innerHTML = `<div class="p-20 text-center text-gray-400 text-sm">কিছু পাওয়া যায়নি</div>`; 
-            return; 
-        }
+        if(posts.length === 0) { container.innerHTML = `<div class="p-20 text-center text-gray-400 text-sm">কিছু পাওয়া যায়নি</div>`; return; }
 
-        container.innerHTML = posts.map(c => {
-            const repliesCount = allData.filter(r => r.parentId === c.id).length;
-            return `
-            <div class="forum-card bg-white dark:bg-darkCard p-4 rounded-xl border ${c.isFeatured ? 'featured-card border-featured' : 'dark:border-darkBorder'} relative">
+        container.innerHTML = posts.map(c => `
+            <div class="forum-card bg-white dark:bg-darkCard p-4 rounded-xl border ${c.isFeatured ? 'featured-card border-featured' : 'dark:border-darkBorder'}">
                 <div class="flex gap-4">
-                    <div class="flex flex-col items-center gap-1 bg-gray-50 dark:bg-darkBg p-1.5 rounded-lg min-w-[42px] h-fit">
-                        <button onclick="handleVote('${c.id}', 1)" class="text-gray-400 hover:text-accent"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12.781 2.375c-.381-.475-1.181-.475-1.562 0l-8 10A1.001 1.001 0 004 14h4v7a1 1 0 001 1h6a1 1 0 001-1v-7h4a1.001 1.001 0 00.781-1.625l-8-10z"/></svg></button>
-                        <span class="font-bold text-xs text-accent">${toBN(c.votes || 0)}</span>
-                        <button onclick="handleVote('${c.id}', -1)" class="text-gray-400 hover:text-red-500"><svg class="w-5 h-5 rotate-180" fill="currentColor" viewBox="0 0 24 24"><path d="M12.781 2.375c-.381-.475-1.181-.475-1.562 0l-8 10A1.001 1.001 0 004 14h4v7a1 1 0 001 1h6a1 1 0 001-1v-7h4a1.001 1.001 0 00.781-1.625l-8-10z"/></svg></button>
+                    <div class="flex flex-col items-center gap-2 bg-gray-50 dark:bg-darkBg p-2 rounded-lg min-w-[42px] h-fit">
+                        <button onclick="handleVote('${c.id}', 1)" class="text-gray-400 hover:text-accent transition-colors"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12.781 2.375c-.381-.475-1.181-.475-1.562 0l-8 10A1.001 1.001 0 004 14h4v7a1 1 0 001 1h6a1 1 0 001-1v-7h4a1.001 1.001 0 00.781-1.625l-8-10z"/></svg></button>
+                        <span class="font-bold text-xs text-accent leading-none">${toBN(c.votes || 0)}</span>
+                        <button onclick="handleVote('${c.id}', -1)" class="text-gray-400 hover:text-red-500 transition-colors"><svg class="w-5 h-5 rotate-180" fill="currentColor" viewBox="0 0 24 24"><path d="M12.781 2.375c-.381-.475-1.181-.475-1.562 0l-8 10A1.001 1.001 0 004 14h4v7a1 1 0 001 1h6a1 1 0 001-1v-7h4a1.001 1.001 0 00.781-1.625l-8-10z"/></svg></button>
                     </div>
                     <div class="flex-1">
-                        <div class="flex items-center justify-between mb-1.5 text-[10px] font-bold text-gray-400 uppercase">
+                        <div class="flex items-center justify-between mb-1 text-[10px] font-bold text-gray-400 uppercase">
                             <div class="flex items-center gap-2">
                                 <img src="${c.photoURL}" class="w-4 h-4 rounded-full cursor-pointer" onclick="openProfile('${c.userId}')">
                                 <span class="user-link" onclick="openProfile('${c.userId}')">${c.name}</span>
@@ -438,16 +412,11 @@
                             </div>
                         </div>
                         <div class="cursor-pointer" onclick="openDetails('${c.id}')">
-                            <h2 class="text-sm font-semibold mb-2 line-clamp-3 text-gray-800 dark:text-gray-200">${c.msg}</h2>
-                            <div class="flex items-center gap-2 text-gray-400 text-[10px] font-bold">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 12h.01M12 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" stroke-width="2"></path></svg>
-                                <span>${toBN(repliesCount)} মন্তব্য</span>
-                            </div>
+                            <h2 class="text-sm font-semibold mb-2 line-clamp-3 text-gray-800 dark:text-gray-200 leading-relaxed">${c.msg}</h2>
                         </div>
                     </div>
                 </div>
-            </div>`;
-        }).join('');
+            </div>`).join('');
     }
 
     function updateDetails() {
@@ -464,7 +433,7 @@
                         <div class="bg-gray-100 dark:bg-darkCard p-3 rounded-xl border dark:border-darkBorder text-xs flex-1">
                             <div class="flex justify-between items-start mb-1">
                                 <div class="font-bold text-[10px] user-link" onclick="openProfile('${comment.userId}')">${comment.name}</div>
-                                ${currentUser ? `<button onclick="prepareReply('${comment.id}', '${comment.name}')" class="text-accent text-[9px] font-bold hover:underline">উত্তর দিন</button>` : ''}
+                                ${currentUser ? `<button onclick="prepareReply('${comment.id}', '${comment.name}')" class="text-accent text-[9px] font-bold">উত্তর দিন</button>` : ''}
                             </div>
                             <div class="text-gray-700 dark:text-gray-300 text-[11px] leading-relaxed">
                                 ${comment.replyToName ? `<span class="text-accent font-bold mr-1 cursor-pointer" onclick="openProfile('${allData.find(u => u.id === comment.replyToId)?.userId}')">@${comment.replyToName}</span>` : ''}
@@ -489,50 +458,25 @@
             </div>`;
     }
 
-    window.prepareReply = (id, userName) => { replyingToId = id; replyingToName = userName; const tagUi = document.getElementById('reply-tag-ui'); const tagText = document.getElementById('replying-to-text'); const input = document.getElementById('reply-input'); tagText.innerText = `${userName} কে উত্তর দিচ্ছেন`; tagUi.classList.remove('hidden'); input.focus(); };
+    window.prepareReply = (id, userName) => { replyingToId = id; replyingToName = userName; const tagUi = document.getElementById('reply-tag-ui'); const tagText = document.getElementById('replying-to-text'); tagText.innerText = `${userName} কে উত্তর দিচ্ছেন`; tagUi.classList.remove('hidden'); document.getElementById('reply-input').focus(); };
     window.cancelReplyTag = () => { replyingToId = null; replyingToName = null; document.getElementById('reply-tag-ui').classList.add('hidden'); };
     window.handleVote = async (id, val) => { if(!currentUser) return googleLogin(); await updateDoc(doc(db, BASE_PATH, id), { votes: increment(val) }); };
     
-    window.openDetails = (id) => { 
-        activeThreadId = id; 
-        cancelReplyTag(); 
-        document.getElementById('details-view').style.display = 'block'; 
-        updateDetails(); 
-        updateBookmarkIcon(); 
-    };
-
-    window.closeView = () => { 
-        document.getElementById('details-view').style.display = 'none'; 
-        activeThreadId = null; 
-        cancelReplyTag(); 
-    };
+    window.openDetails = (id) => { activeThreadId = id; cancelReplyTag(); document.getElementById('details-view').style.display = 'block'; updateDetails(); updateBookmarkIcon(); };
+    window.closeView = () => { document.getElementById('details-view').style.display = 'none'; activeThreadId = null; };
 
     window.togglePostModal = (show) => { document.getElementById('post-modal-overlay').style.display = show ? 'flex' : 'none'; };
     window.showToast = (msg) => { const t = document.getElementById('toast'); t.innerText = msg; t.style.opacity = '1'; setTimeout(() => t.style.opacity = '0', 3000); };
-    window.toggleSearch = (show) => { document.getElementById('search-box').classList.toggle('hidden', !show); if(show) document.getElementById('search-input').focus(); };
-    document.getElementById('search-input').oninput = (e) => render(e.target.value.toLowerCase());
 
     window.toggleBookmark = async () => { 
-        if (!currentUser || !activeThreadId) return;
-        const isCurrentlyBookmarked = userBookmarks.includes(activeThreadId);
-        const newList = isCurrentlyBookmarked 
-            ? userBookmarks.filter(id => id !== activeThreadId) 
-            : [...userBookmarks, activeThreadId];
-        
-        await setDoc(doc(db, BOOKMARKS_PATH, currentUser.uid), { postIds: newList }, { merge: true });
-        showToast(isCurrentlyBookmarked ? 'বুকমার্ক সরানো হয়েছে' : 'বুকমার্ক করা হয়েছে');
+        if (!currentUser) return;
+        const exists = userBookmarks.includes(activeThreadId);
+        const newList = exists ? userBookmarks.filter(id => id !== activeThreadId) : [...userBookmarks, activeThreadId];
+        await setDoc(doc(db, BOOKMARKS_PATH, currentUser.uid), { postIds: newList });
+        showToast(exists ? 'বুকমার্ক সরানো হয়েছে' : 'বুকমার্ক করা হয়েছে');
     };
 
-    function updateBookmarkIcon() { 
-        const icon = document.getElementById('bookmark-icon'); 
-        const btn = document.getElementById('bookmark-btn');
-        if(!icon || !activeThreadId) return; 
-
-        const isBookmarked = userBookmarks.includes(activeThreadId);
-        icon.setAttribute('fill', isBookmarked ? 'currentColor' : 'none');
-        btn.classList.toggle('text-accent', isBookmarked);
-        btn.classList.toggle('text-gray-400', !isBookmarked);
-    }
+    function updateBookmarkIcon() { const icon = document.getElementById('bookmark-icon'); const btn = document.getElementById('bookmark-btn'); if(!icon || !activeThreadId) return; const isBookmarked = userBookmarks.includes(activeThreadId); icon.setAttribute('fill', isBookmarked ? 'currentColor' : 'none'); btn.classList.toggle('text-accent', isBookmarked); btn.classList.toggle('text-gray-400', !isBookmarked); }
 
     const toBN = (n) => n.toString().replace(/\d/g, d => "০১২৩৪৫৬৭৮৯"[d]);
     function formatTime(ts) { if(!ts) return 'এখন'; const s = Math.floor((new Date() - new Date(ts.seconds * 1000))/1000); if(s < 60) return 'এইমাত্র'; if(s < 3600) return toBN(Math.floor(s/60)) + 'মি আগে'; if(s < 86400) return toBN(Math.floor(s/3600)) + 'ঘন্টা আগে'; return new Date(ts.seconds*1000).toLocaleDateString('bn-BD', {day:'numeric', month:'short'}); }
@@ -540,17 +484,13 @@
     const setDarkMode = (dark) => {
         document.documentElement.classList.toggle('dark', dark);
         localStorage.theme = dark ? 'dark' : 'light';
-        document.getElementById('theme-icon').innerHTML = dark ? '<path d="M12 3v1m0 16v1m9-9h-1M4 9H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" stroke="currentColor" stroke-width="2"></path>' : '<path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" stroke="currentColor" stroke-width="2"></path>';
+        const icon = document.getElementById('theme-icon');
+        if(icon) {
+            icon.innerHTML = dark ? '<path d="M12 3v1m0 16v1m9-9h-1M4 9H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" stroke="currentColor" stroke-width="2"></path>' : '<path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" stroke="currentColor" stroke-width="2"></path>';
+        }
     };
     setDarkMode(localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches));
     document.getElementById('theme-toggle').onclick = () => setDarkMode(!document.documentElement.classList.contains('dark'));
-
-    window.addEventListener('click', (e) => {
-        if(!document.getElementById('noti-trigger').contains(e.target) && !document.getElementById('notification-dropdown').contains(e.target)) {
-            document.getElementById('notification-dropdown').classList.remove('active');
-        }
-    });
 </script>
 </body>
 </html>
-
