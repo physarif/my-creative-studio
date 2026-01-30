@@ -24,16 +24,42 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Hind+Siliguri:wght@400;600;700&display=swap');
         body { font-family: 'Inter', 'Hind Siliguri', sans-serif; transition: background-color 0.2s, color 0.2s; }
+        
+        /* Modal Animation Like Facebook */
+        #thread-modal { 
+            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); 
+            backdrop-filter: blur(4px); display: none; z-index: 100;
+        }
+        .modal-body {
+            position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+            width: 100%; max-width: 650px; height: 90vh;
+            background: white; border-radius: 20px 20px 0 0;
+            display: flex; flex-direction: column; overflow: hidden;
+            animation: slideUp 0.3s ease-out;
+        }
+        .dark .modal-body { background: #16181c; border: 1px solid #2f3336; border-bottom: 0; }
+        
+        @keyframes slideUp {
+            from { transform: translate(-50%, 100%); }
+            to { transform: translate(-50%, 0); }
+        }
+
+        @media (min-width: 768px) {
+            .modal-body { height: 80vh; bottom: 50%; transform: translate(-50%, 50%); border-radius: 16px; }
+            @keyframes slideUp {
+                from { opacity: 0; transform: translate(-50%, 60%); }
+                to { opacity: 1; transform: translate(-50%, 50%); }
+            }
+        }
+
         .comment-content pre { background: #f3f4f6; padding: 12px; border-radius: 8px; overflow-x: auto; margin: 8px 0; font-size: 13px; }
         .dark .comment-content pre { background: #1e2126; }
+        
         .fab { position: fixed; bottom: 24px; right: 24px; width: 56px; height: 56px; background-color: #1d9bf0; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(29, 155, 240, 0.4); cursor: pointer; z-index: 40; border: none; }
-        #post-modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 100; padding: 16px; }
+        
+        #post-modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 200; padding: 16px; }
         .post-modal-content { width: 100%; max-width: 600px; background: white; border-radius: 16px; position: relative; }
         .dark .post-modal-content { background: #000000; border: 1px solid #2f3336; }
-        .google-btn { display: flex; align-items: center; background-color: white; border: 1px solid #dadce0; border-radius: 4px; padding: 0 12px; height: 36px; cursor: pointer; font-weight: 600; font-size: 14px; gap: 8px; }
-        .dark .google-btn { background-color: #16181c; border-color: #2f3336; color: white; }
-        .vote-btn { transition: all 0.2s ease; }
-        .vote-btn:active { transform: scale(0.9); }
     </style>
 </head>
 <body class="p-4 md:p-8 bg-white text-gray-900 dark:bg-darkBg dark:text-gray-100 pb-24">
@@ -41,53 +67,65 @@
 <div class="max-w-2xl mx-auto">
     <!-- Header -->
     <div class="flex items-center justify-between mb-6 px-2">
-        <div id="nav-left" class="flex items-center gap-3">
-            <button id="back-btn" onclick="closeThread()" class="hidden p-2 rounded-full hover:bg-gray-100 dark:hover:bg-darkCard">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path></svg>
+        <div class="flex items-center gap-3">
+            <h1 class="text-xl font-bold">আলোচনা</h1>
+            <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-darkCard transition-all">
+                <svg id="sun-icon" class="w-5 h-5 hidden text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" /></svg>
+                <svg id="moon-icon" class="w-5 h-5 hidden text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" /></svg>
             </button>
-            <div id="main-controls" class="flex items-center gap-3">
-                <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-darkCard transition-all">
-                    <svg id="sun-icon" class="w-5 h-5 hidden text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" /></svg>
-                    <svg id="moon-icon" class="w-5 h-5 hidden text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" /></svg>
-                </button>
-                <button onclick="toggleSort()" class="border border-gray-300 dark:border-darkBorder rounded-lg px-3 py-1 text-sm font-semibold bg-white dark:bg-darkCard">
-                    <span id="sort-label">সেরা</span>
-                </button>
-            </div>
-            <span id="thread-title" class="hidden font-bold text-lg">থ্রেড</span>
         </div>
-
+        
         <div id="auth-section">
             <div id="user-info-ui" class="hidden flex items-center gap-3">
                 <img id="user-avatar" src="" class="w-9 h-9 rounded-full border dark:border-darkBorder">
             </div>
             <div id="login-ui">
-                <button onclick="googleLogin()" class="google-btn text-xs">লগইন</button>
+                <button onclick="googleLogin()" class="px-4 py-1.5 border border-gray-300 dark:border-darkBorder rounded-lg font-bold text-sm">লগইন</button>
             </div>
         </div>
     </div>
 
-    <!-- Active Parent Comment (Only shown in thread view) -->
-    <div id="active-parent-container" class="mb-6 hidden"></div>
+    <div class="flex items-center gap-2 mb-6">
+        <button onclick="toggleSort('top')" id="sort-top" class="px-4 py-1.5 rounded-full text-sm font-bold bg-blue-500 text-white">সেরা</button>
+        <button onclick="toggleSort('recent')" id="sort-recent" class="px-4 py-1.5 rounded-full text-sm font-bold bg-gray-100 dark:bg-darkCard text-gray-500">সাম্প্রতিক</button>
+    </div>
 
-    <div class="border-b dark:border-darkBorder mb-6"></div>
-
-    <!-- Comments List -->
+    <!-- Main List -->
     <div id="comments-container" class="space-y-4">
         <div class="flex justify-center py-10"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div></div>
     </div>
     
     <div id="load-more-container" class="flex justify-center mt-10 hidden">
-        <button onclick="loadMore()" class="text-sm font-bold text-[#1d9bf0] bg-blue-50 dark:bg-blue-900/20 px-8 py-2.5 rounded-full hover:bg-blue-100 transition-all">আরো লোড করুন</button>
+        <button onclick="loadMore()" class="text-sm font-bold text-blue-500 bg-blue-50 dark:bg-blue-900/20 px-8 py-2.5 rounded-full hover:bg-blue-100 transition-all">আরো লোড করুন</button>
     </div>
 </div>
 
-<!-- FAB -->
-<button onclick="togglePostModal()" class="fab">
+<!-- Thread Modal (Facebook Style) -->
+<div id="thread-modal" onclick="if(event.target.id === 'thread-modal') closeThread()">
+    <div class="modal-body">
+        <div class="p-4 border-b dark:border-darkBorder flex items-center justify-between sticky top-0 bg-inherit z-10">
+            <h2 class="font-bold text-lg">থ্রেড</h2>
+            <button onclick="closeThread()" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-darkCard">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+        <div id="thread-content" class="flex-1 overflow-y-auto p-4 space-y-6">
+            <!-- Parent comment and replies go here -->
+        </div>
+        <div class="p-4 border-t dark:border-darkBorder">
+            <button onclick="togglePostModal(true)" class="w-full bg-gray-100 dark:bg-darkCard text-gray-500 text-left py-2.5 px-4 rounded-full text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-800 transition-all">
+                আপনার উত্তর লিখুন...
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- FAB (Post Button) -->
+<button onclick="togglePostModal(false)" class="fab">
     <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
 </button>
 
-<!-- Modal -->
+<!-- New Post/Reply Modal -->
 <div id="post-modal-overlay" onclick="if(event.target.id === 'post-modal-overlay') togglePostModal()">
     <div class="post-modal-content overflow-hidden">
         <div id="post-header-auth" class="flex items-center justify-between p-4 border-b dark:border-darkBorder hidden">
@@ -99,8 +137,8 @@
                 <textarea id="user-comment" placeholder="আপনার কথাগুলো লিখুন..." class="w-full bg-transparent text-lg outline-none min-h-[150px] dark:text-white resize-none"></textarea>
             </div>
             <div id="login-required-prompt" class="py-10 text-center">
-                <p class="text-gray-500 mb-6 font-medium">মন্তব্য করতে লগইন করুন</p>
-                <button onclick="googleLogin()" class="google-btn mx-auto">গুগল দিয়ে লগইন</button>
+                <p class="text-gray-500 mb-6 font-medium">অংশ নিতে লগইন করুন</p>
+                <button onclick="googleLogin()" class="px-6 py-2 border border-gray-300 dark:border-darkBorder rounded-lg font-bold">গুগল দিয়ে লগইন</button>
             </div>
         </div>
     </div>
@@ -108,7 +146,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, query, serverTimestamp, updateDoc, doc, increment, where } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, query, serverTimestamp, updateDoc, doc, increment } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
 
     const firebaseConfig = {
@@ -136,31 +174,22 @@
     // --- Authentication ---
     onAuthStateChanged(auth, (user) => {
         currentUser = user;
-        const userInfoUi = document.getElementById('user-info-ui');
-        const loginUi = document.getElementById('login-ui');
-        const postHeaderAuth = document.getElementById('post-header-auth');
-        const textareaContainer = document.getElementById('textarea-container');
-        const loginPrompt = document.getElementById('login-required-prompt');
-
+        document.getElementById('user-info-ui').classList.toggle('hidden', !user);
+        document.getElementById('login-ui').classList.toggle('hidden', !!user);
         if (user) {
-            userInfoUi.classList.remove('hidden');
-            loginUi.classList.add('hidden');
             document.getElementById('user-avatar').src = user.photoURL;
-            postHeaderAuth.classList.remove('hidden');
-            textareaContainer.classList.remove('hidden');
-            loginPrompt.classList.add('hidden');
+            document.getElementById('post-header-auth').classList.remove('hidden');
+            document.getElementById('textarea-container').classList.remove('hidden');
+            document.getElementById('login-required-prompt').classList.add('hidden');
         } else {
-            userInfoUi.classList.add('hidden');
-            loginUi.classList.remove('hidden');
-            postHeaderAuth.classList.add('hidden');
-            textareaContainer.classList.add('hidden');
-            loginPrompt.classList.remove('hidden');
+            document.getElementById('post-header-auth').classList.add('hidden');
+            document.getElementById('textarea-container').classList.add('hidden');
+            document.getElementById('login-required-prompt').classList.remove('hidden');
         }
         loadComments();
     });
 
     window.googleLogin = async () => { try { await signInWithPopup(auth, provider); } catch (e) {} };
-    window.handleLogout = () => signOut(auth);
 
     // --- Data Loading ---
     async function loadComments() {
@@ -174,59 +203,24 @@
 
     function renderDisplay() {
         const container = document.getElementById('comments-container');
-        const parentContainer = document.getElementById('active-parent-container');
-        const backBtn = document.getElementById('back-btn');
-        const mainControls = document.getElementById('main-controls');
-        const threadTitle = document.getElementById('thread-title');
+        const roots = allData.filter(c => !c.parentId);
+        roots.sort((a,b) => (currentSort === 'top') ? (b.votes || 0) - (a.votes || 0) : (b.at?.seconds || 0) - (a.at?.seconds || 0));
 
-        if (activeThreadId) {
-            backBtn.classList.remove('hidden');
-            threadTitle.classList.remove('hidden');
-            mainControls.classList.add('hidden');
-            parentContainer.classList.remove('hidden');
+        const subset = roots.slice(0, visibleCount);
+        container.innerHTML = subset.map(c => renderCommentUI(c)).join('') || `<p class="text-center text-gray-400 py-10">কোনো মন্তব্য পাওয়া যায়নি।</p>`;
+        document.getElementById('load-more-container').classList.toggle('hidden', roots.length <= visibleCount);
 
-            const parentData = allData.find(c => c.id === activeThreadId);
-            if (parentData) parentContainer.innerHTML = renderCommentUI(parentData, true);
-
-            const replies = allData.filter(c => c.parentId === activeThreadId);
-            replies.sort((a,b) => (b.at?.seconds || 0) - (a.at?.seconds || 0));
-            
-            container.innerHTML = replies.length > 0 ? 
-                `<h3 class="text-xs font-bold text-gray-400 mb-4 uppercase tracking-wider">রিপ্লাই (${toBN(replies.length)})</h3>` + replies.map(c => renderCommentUI(c)).join('') 
-                : `<p class="text-center text-gray-400 py-10 italic">এখনো কোনো রিপ্লাই নেই।</p>`;
-            
-            document.getElementById('load-more-container').classList.add('hidden');
-            document.getElementById('submit-post-btn').innerText = "রিপ্লাই দিন";
-        } else {
-            backBtn.classList.add('hidden');
-            threadTitle.classList.add('hidden');
-            mainControls.classList.remove('hidden');
-            parentContainer.classList.add('hidden');
-
-            const roots = allData.filter(c => !c.parentId);
-            roots.sort((a,b) => {
-                if(currentSort === 'top') return (b.votes || 0) - (a.votes || 0);
-                return (b.at?.seconds || 0) - (a.at?.seconds || 0);
-            });
-
-            const subset = roots.slice(0, visibleCount);
-            container.innerHTML = subset.length > 0 ? subset.map(c => renderCommentUI(c)).join('') : `<p class="text-center text-gray-400 py-10 italic">কোনো মন্তব্য পাওয়া যায়নি।</p>`;
-            document.getElementById('load-more-container').classList.toggle('hidden', roots.length <= visibleCount);
-            document.getElementById('submit-post-btn').innerText = "পোস্ট";
-        }
+        if (activeThreadId) updateThreadModal();
     }
 
-    function renderCommentUI(c, isParent = false) {
+    function renderCommentUI(c, isThreadParent = false) {
         const date = c.at ? formatTime(c.at) : 'এখন';
         const msgHtml = DOMPurify.sanitize(marked.parse(c.msg));
         const replyCount = allData.filter(r => r.parentId === c.id).length;
-        const score = c.votes || 0;
-        
-        // চেক করা ইউজার আগে ভোট দিয়েছে কিনা
         const userVote = localStorage.getItem(`voted_${c.id}`);
 
         return `
-        <div id="comment-${c.id}" class="${isParent ? 'bg-blue-50/50 dark:bg-blue-900/10 border-blue-100 dark:border-blue-900' : 'bg-gray-50 dark:bg-darkCard/30 border-gray-100 dark:border-darkBorder'} border rounded-2xl p-4 transition-all">
+        <div id="comment-${c.id}" class="bg-gray-50 dark:bg-darkCard/30 border border-gray-100 dark:border-darkBorder rounded-2xl p-4 transition-all">
             <div class="flex items-center gap-3 mb-3">
                 <img src="${c.photoURL || 'https://www.gravatar.com/avatar/000?d=mp'}" class="w-8 h-8 rounded-full">
                 <div>
@@ -234,18 +228,20 @@
                     <div class="text-[10px] text-gray-400 font-medium">${date}</div>
                 </div>
             </div>
-            <div class="comment-content text-[15px] dark:text-gray-300 leading-relaxed">${msgHtml}</div>
-            <div class="mt-4 flex items-center justify-between border-t dark:border-darkBorder/50 pt-3">
+            <div onclick="${!isThreadParent ? `openThread('${c.id}')` : ''}" class="comment-content text-[15px] dark:text-gray-300 leading-relaxed ${!isThreadParent ? 'cursor-pointer' : ''}">
+                ${msgHtml}
+            </div>
+            <div class="mt-4 flex items-center justify-between pt-3 border-t dark:border-darkBorder/50">
                 <div class="flex items-center gap-1 bg-white dark:bg-darkCard border dark:border-darkBorder rounded-full p-0.5">
-                    <button onclick="handleVote('${c.id}', 1)" class="vote-btn p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 ${userVote === 'up' ? 'text-orange-500' : 'text-gray-400'}">
-                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd" /></svg>
+                    <button onclick="handleVote('${c.id}', 1)" class="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 ${userVote === 'up' ? 'text-orange-500' : 'text-gray-400'}">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" /></svg>
                     </button>
-                    <span class="text-xs font-bold min-w-[1.5rem] text-center ${score > 0 ? 'text-orange-500' : score < 0 ? 'text-blue-500' : ''}">${toBN(score)}</span>
-                    <button onclick="handleVote('${c.id}', -1)" class="vote-btn p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 ${userVote === 'down' ? 'text-blue-500' : 'text-gray-400'}">
-                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                    <span class="text-xs font-bold min-w-[1.5rem] text-center">${toBN(c.votes || 0)}</span>
+                    <button onclick="handleVote('${c.id}', -1)" class="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 ${userVote === 'down' ? 'text-blue-500' : 'text-gray-400'}">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" /></svg>
                     </button>
                 </div>
-                ${!isParent ? `
+                ${!isThreadParent ? `
                 <button onclick="openThread('${c.id}')" class="text-[11px] font-bold text-gray-500 hover:text-blue-500 flex items-center gap-1">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
                     ${replyCount > 0 ? toBN(replyCount) + ' টি উত্তর' : 'উত্তর দিন'}
@@ -254,92 +250,90 @@
         </div>`;
     }
 
-    // --- Actions ---
-    window.handleVote = async (id, delta) => {
-        const voteKey = `voted_${id}`;
-        const existingVote = localStorage.getItem(voteKey);
-        
-        // যদি অলরেডি একই ভোট দেওয়া থাকে, তবে সেটি ক্যানসেল হবে
-        if ((delta === 1 && existingVote === 'up') || (delta === -1 && existingVote === 'down')) {
-            try {
-                await updateDoc(doc(db, 'blog_comments', 'pages', pageId, id), { votes: increment(-delta) });
-                localStorage.removeItem(voteKey);
-                loadComments();
-            } catch(e) {}
-            return;
-        }
-
-        // যদি আগে অন্য ভোট দেওয়া থাকে (যেমন আপভোট দেওয়া ছিল এখন ডাউনভোট দিচ্ছে)
-        let finalDelta = delta;
-        if (existingVote) {
-            finalDelta = delta * 2; // আগের ভোট মুছতে ১ আর নতুন যোগ করতে ১ = ২
-        }
-
-        try {
-            await updateDoc(doc(db, 'blog_comments', 'pages', pageId, id), { votes: increment(finalDelta) });
-            localStorage.setItem(voteKey, delta === 1 ? 'up' : 'down');
-            loadComments();
-        } catch(e) {}
-    };
-
+    // --- Modal Logic ---
     window.openThread = (id) => {
         activeThreadId = id;
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        renderDisplay();
+        document.getElementById('thread-modal').style.display = 'block';
+        document.body.style.overflow = 'hidden';
+        updateThreadModal();
     };
 
     window.closeThread = () => {
         activeThreadId = null;
-        renderDisplay();
+        document.getElementById('thread-modal').style.display = 'none';
+        document.body.style.overflow = '';
     };
 
-    window.postData = async () => {
-        if (!currentUser) return;
-        const input = document.getElementById('user-comment');
-        const m = input.value.trim();
-        if(!m) return;
+    function updateThreadModal() {
+        const content = document.getElementById('thread-content');
+        const parent = allData.find(c => c.id === activeThreadId);
+        if (!parent) return;
 
-        try {
-            await addDoc(commentsCol, {
-                name: currentUser.displayName, 
-                msg: m, 
-                votes: 0,
-                parentId: activeThreadId || null,
-                photoURL: currentUser.photoURL, 
-                userId: currentUser.uid, 
-                at: serverTimestamp()
-            });
-            input.value = '';
-            togglePostModal();
-            loadComments();
-        } catch(e) { console.error(e); }
+        const replies = allData.filter(c => c.parentId === activeThreadId);
+        replies.sort((a,b) => (b.at?.seconds || 0) - (a.at?.seconds || 0));
+
+        content.innerHTML = `
+            ${renderCommentUI(parent, true)}
+            <div class="pl-4 border-l-2 dark:border-darkBorder space-y-4">
+                <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mt-6">উত্তরসমূহ (${toBN(replies.length)})</h3>
+                ${replies.map(r => renderCommentUI(r, true)).join('') || `<p class="text-sm text-gray-400 italic py-4">প্রথম উত্তরটি আপনি লিখুন...</p>`}
+            </div>
+        `;
+    }
+
+    // --- Actions ---
+    window.handleVote = async (id, delta) => {
+        const voteKey = `voted_${id}`;
+        const existingVote = localStorage.getItem(voteKey);
+        if ((delta === 1 && existingVote === 'up') || (delta === -1 && existingVote === 'down')) {
+            await updateDoc(doc(db, 'blog_comments', 'pages', pageId, id), { votes: increment(-delta) });
+            localStorage.removeItem(voteKey);
+        } else {
+            let finalDelta = existingVote ? delta * 2 : delta;
+            await updateDoc(doc(db, 'blog_comments', 'pages', pageId, id), { votes: increment(finalDelta) });
+            localStorage.setItem(voteKey, delta === 1 ? 'up' : 'down');
+        }
+        loadComments();
     };
 
-    window.toggleSort = () => {
-        currentSort = currentSort === 'top' ? 'recent' : 'top';
-        document.getElementById('sort-label').innerText = currentSort === 'top' ? 'সেরা' : 'সাম্প্রতিক';
-        renderDisplay();
-    };
-
-    window.togglePostModal = () => {
+    window.togglePostModal = (isReply = false) => {
         const modal = document.getElementById('post-modal-overlay');
         const isOpen = modal.style.display === 'flex';
         modal.style.display = isOpen ? 'none' : 'flex';
-        document.body.style.overflow = isOpen ? '' : 'hidden';
+        document.getElementById('submit-post-btn').innerText = isReply ? "রিপ্লাই" : "পোস্ট";
         if (!isOpen) setTimeout(() => document.getElementById('user-comment').focus(), 100);
+    };
+
+    window.postData = async () => {
+        const input = document.getElementById('user-comment');
+        const m = input.value.trim();
+        if(!m || !currentUser) return;
+        await addDoc(commentsCol, {
+            name: currentUser.displayName, msg: m, votes: 0,
+            parentId: activeThreadId || null,
+            photoURL: currentUser.photoURL, userId: currentUser.uid, at: serverTimestamp()
+        });
+        input.value = '';
+        togglePostModal();
+        loadComments();
+    };
+
+    window.toggleSort = (type) => {
+        currentSort = type;
+        document.getElementById('sort-top').className = type === 'top' ? 'px-4 py-1.5 rounded-full text-sm font-bold bg-blue-500 text-white' : 'px-4 py-1.5 rounded-full text-sm font-bold bg-gray-100 dark:bg-darkCard text-gray-500';
+        document.getElementById('sort-recent').className = type === 'recent' ? 'px-4 py-1.5 rounded-full text-sm font-bold bg-blue-500 text-white' : 'px-4 py-1.5 rounded-full text-sm font-bold bg-gray-100 dark:bg-darkCard text-gray-500';
+        renderDisplay();
     };
 
     window.loadMore = () => { visibleCount += 10; renderDisplay(); };
 
-    // --- Utilities ---
+    // --- Utils ---
     const toBN = (n) => {
         const sign = n < 0 ? '-' : '';
-        const absN = Math.abs(n);
-        return sign + absN.toString().replace(/\d/g, d => "০১২৩৪৫৬৭৮৯"[d]);
+        return sign + Math.abs(n).toString().replace(/\d/g, d => "০১২৩৪৫६৭৮৯"[d]);
     };
     const esc = (t) => { let d = document.createElement('div'); d.textContent = t; return d.innerHTML; };
     function formatTime(ts) {
-        if (!ts) return 'এখন';
         const s = Math.floor((new Date() - new Date(ts.seconds * 1000))/1000);
         if(s < 60) return 'এখন';
         if(s < 3600) return toBN(Math.floor(s/60)) + 'মি আগে';
