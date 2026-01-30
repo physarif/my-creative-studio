@@ -57,6 +57,13 @@
         .tab-active { border-bottom: 2px solid #3498db; color: #3498db; }
         .vote-btn { transition: all 0.2s ease; }
         .vote-btn:active { transform: scale(1.2); }
+
+        /* Notification Toast Animation */
+        @keyframes toastIn {
+            from { transform: translateX(-100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .toast-animate { animation: toastIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-900 dark:bg-darkBg dark:text-gray-100">
@@ -159,9 +166,11 @@
     </div>
 </div>
 
+<div id="notification-container" class="fixed bottom-6 left-6 z-[300] flex flex-col gap-3 pointer-events-none"></div>
+
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, increment, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, increment, query, serverTimestamp, onSnapshot, where } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
 
     const firebaseConfig = {
@@ -186,6 +195,7 @@
     let activeThreadId = null;
     let currentFilter = 'latest';
     let editModeId = null;
+    let notificationUnsubscribe = null;
 
     onAuthStateChanged(auth, (user) => {
         window.currentUser = user;
@@ -193,7 +203,12 @@
         document.getElementById('user-avatar').classList.toggle('hidden', !user);
         document.getElementById('login-ui').classList.toggle('hidden', !!user);
         document.getElementById('admin-badge').classList.toggle('hidden', !isAdmin);
-        if (user) document.getElementById('user-avatar').src = user.photoURL;
+        if (user) {
+            document.getElementById('user-avatar').src = user.photoURL;
+            setupNotifications(user.uid);
+        } else {
+            if(notificationUnsubscribe) notificationUnsubscribe();
+        }
         loadComments();
     });
 
@@ -206,6 +221,58 @@
             render();
             if(activeThreadId) updateDetails();
         } catch(e) {}
+    }
+
+    // Notification Logic
+    function setupNotifications(uid) {
+        if(notificationUnsubscribe) notificationUnsubscribe();
+        
+        // Listen for all new comments
+        const q = query(commentsCol, where("parentId", "!=", null));
+        
+        notificationUnsubscribe = onSnapshot(q, (snapshot) => {
+            snapshot.docChanges().forEach((change) => {
+                if (change.type === "added") {
+                    const newComment = { id: change.doc.id, ...change.doc.data() };
+                    
+                    // Logic: If comment is not by current user AND it belongs to current user's post
+                    // We check against allData which contains our posts
+                    const myPost = allData.find(p => p.id === newComment.parentId && p.userId === uid);
+                    
+                    // Only show if the data is fresh (within last 10 seconds) to avoid historical notification spam
+                    const isFresh = newComment.at && (Date.now() - (newComment.at.seconds * 1000) < 10000);
+
+                    if (myPost && newComment.userId !== uid && isFresh) {
+                        showNotificationToast(newComment);
+                    }
+                }
+            });
+        });
+    }
+
+    function showNotificationToast(comment) {
+        const container = document.getElementById('notification-container');
+        const toast = document.createElement('div');
+        toast.className = "bg-white dark:bg-darkCard border dark:border-darkBorder shadow-2xl p-3 rounded-xl flex items-center gap-3 pointer-events-auto toast-animate cursor-pointer hover:scale-105 transition-transform";
+        toast.style.minWidth = "250px";
+        toast.onclick = () => { 
+            openDetails(comment.parentId); 
+            toast.remove(); 
+        };
+
+        toast.innerHTML = `
+            <img src="${comment.photoURL}" class="w-8 h-8 rounded-lg">
+            <div class="flex-1">
+                <p class="text-[9px] font-black text-accent uppercase mb-0.5">আপনার পোস্টে মন্তব্য</p>
+                <p class="text-[11px] font-bold text-gray-700 dark:text-gray-200 line-clamp-1">${comment.name}: ${comment.msg}</p>
+            </div>
+            <button onclick="event.stopPropagation(); this.parentElement.remove()" class="text-gray-400 hover:text-red-500">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        `;
+        
+        container.appendChild(toast);
+        setTimeout(() => { if(toast.parentNode) toast.remove(); }, 6000);
     }
 
     window.setFilter = (filter) => {
@@ -276,7 +343,6 @@
         const userPosts = allData.filter(p => p.userId === userId && !p.parentId).sort((a,b) => (b.at?.seconds || 0) - (a.at?.seconds || 0));
         const userComments = allData.filter(p => p.userId === userId && p.parentId).sort((a,b) => (b.at?.seconds || 0) - (a.at?.seconds || 0));
         
-        // If user not in data (should not happen if they clicked), fallback to basic info
         const userInfo = userPosts.length > 0 ? userPosts[0] : (userComments.length > 0 ? userComments[0] : null);
         if(!userInfo) return;
 
@@ -297,7 +363,6 @@
                 </div>
 
                 <div id="profile-tab-content" class="space-y-3">
-                    <!-- Default: Posts -->
                     ${renderProfilePosts(userPosts)}
                 </div>
             </div>
