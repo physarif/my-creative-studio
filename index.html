@@ -98,13 +98,6 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
                     সর্বশেষ
                 </button>
-                <button id="filter-pending" onclick="setFilter('pending')" class="flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-left w-full whitespace-nowrap relative">
-                    <div class="flex items-center gap-3">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-                        পেন্ডিং পোস্ট
-                    </div>
-                    <span id="pending-badge" class="hidden bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold"></span>
-                </button>
                 <button id="filter-popular" onclick="setFilter('popular')" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-left w-full whitespace-nowrap">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                     জনপ্রিয়
@@ -116,6 +109,13 @@
                 <button id="filter-bookmarks" onclick="setFilter('bookmarks')" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-left w-full whitespace-nowrap">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg>
                     বুকমার্কস
+                </button>
+                <button id="filter-pending" onclick="setFilter('pending')" class="flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-left w-full whitespace-nowrap relative">
+                    <div class="flex items-center gap-3">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                        পেন্ডিং পোস্ট
+                    </div>
+                    <span id="pending-badge" class="hidden bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold"></span>
                 </button>
                 <button id="filter-reports" onclick="setFilter('reports')" class="hidden flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-left w-full whitespace-nowrap">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
@@ -155,20 +155,6 @@
                 <button id="reply-btn" onclick="postReply()" class="bg-accent text-white px-5 py-2 rounded-lg text-xs font-bold relative min-w-[70px]">পাঠান</button>
             </div>
         </div>
-    </div>
-</div>
-
-<!-- Profile Sidebar -->
-<div id="profile-view" class="view-overlay" style="z-index: 110;" onclick="if(event.target.id === 'profile-view') closeProfile()">
-    <div class="view-body" onclick="event.stopPropagation()">
-        <div class="p-3 border-b dark:border-darkBorder flex items-center justify-between sticky top-0 bg-white dark:bg-darkBg z-10">
-            <button onclick="closeProfile()" class="p-2 hover:bg-gray-100 dark:hover:bg-darkCard rounded-lg">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
-            <span class="font-bold text-sm">ইউজার প্রোফাইল</span>
-            <div class="w-10"></div>
-        </div>
-        <div id="profile-content" class="flex-1 overflow-y-auto p-0"></div>
     </div>
 </div>
 
