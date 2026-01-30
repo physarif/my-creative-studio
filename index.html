@@ -98,10 +98,12 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
                     সর্বশেষ
                 </button>
-                <button id="filter-pending" onclick="setFilter('pending')" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-left w-full whitespace-nowrap relative">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-                    পেন্ডিং পোস্ট
-                    <span id="pending-badge" class="hidden absolute right-2 bg-red-500 text-white text-[10px] px-1.5 rounded-full"></span>
+                <button id="filter-pending" onclick="setFilter('pending')" class="flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-left w-full whitespace-nowrap relative">
+                    <div class="flex items-center gap-3">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                        পেন্ডিং পোস্ট
+                    </div>
+                    <span id="pending-badge" class="hidden bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold"></span>
                 </button>
                 <button id="filter-popular" onclick="setFilter('popular')" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-left w-full whitespace-nowrap">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
@@ -173,7 +175,7 @@
 <!-- Post Modal -->
 <div id="post-modal-overlay" class="fixed inset-0 bg-black/70 z-[200] hidden items-center justify-center p-4 backdrop-blur-sm">
     <div class="bg-white dark:bg-darkCard w-full max-w-lg rounded-2xl p-5 shadow-2xl">
-        <h2 class="text-lg font-black mb-4">নতুন আলোচনা</h2>
+        <h2 id="modal-title" class="text-lg font-black mb-4">নতুন আলোচনা</h2>
         <textarea id="user-comment" placeholder="আপনার মনের কথা লিখুন..." class="w-full bg-gray-50 dark:bg-darkBg border dark:border-darkBorder rounded-xl px-4 py-3 h-48 outline-none focus:ring-2 ring-accent resize-none text-base"></textarea>
         <div class="flex justify-end pt-3 gap-2">
             <button onclick="togglePostModal(false)" class="px-6 py-2.5 rounded-full text-sm font-bold text-gray-500">বাতিল</button>
@@ -216,7 +218,6 @@
     let activeThreadId = null;
     let currentFilter = 'latest';
     let userBookmarks = [];
-    let notifications = [];
     let editModeId = null;
 
     onSnapshot(commentsCol, (snapshot) => {
@@ -337,11 +338,12 @@
                             <div class="flex items-center gap-1">
                                 ${isAdmin && c.status === 'pending' ? `<button onclick="approvePost('${c.id}')" class="bg-green-500 text-white px-2 py-0.5 rounded text-[9px] hover:bg-green-600">APPROVE</button>` : ''}
                                 ${isAdmin ? `<button onclick="toggleFeatured('${c.id}', ${c.featured})" class="p-1 ${c.featured ? 'text-yellow-500' : 'text-gray-400'}"><svg class="w-3.5 h-3.5" fill="${c.featured ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-7.714 2.143L11 21l-2.286-6.857L1 12l7.714-2.143L11 3z"></path></svg></button>` : ''}
-                                ${isOwner || isAdmin ? `<button onclick="initEdit('${c.id}')" class="p-1"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></button><button onclick="deletePost('${c.id}')" class="p-1"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>` : ''}
+                                ${isAdmin ? `<button onclick="initEdit('${c.id}')" class="p-1 text-gray-400 hover:text-accent"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></button>` : ''}
+                                ${isOwner || isAdmin ? `<button onclick="deletePost('${c.id}')" class="p-1 text-gray-400 hover:text-red-500"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>` : ''}
                             </div>
                         </div>
-                        <div class="cursor-pointer" onclick="${c.status === 'approved' ? `openDetails('${c.id}')` : ''}">
-                            <h2 class="text-sm font-semibold mb-2 line-clamp-3">${c.msg}</h2>
+                        <div class="cursor-pointer" onclick="${c.status === 'approved' || isOwner || isAdmin ? `openDetails('${c.id}')` : ''}">
+                            <h2 class="text-sm font-semibold mb-2 line-clamp-3 text-gray-800 dark:text-gray-200">${c.msg}</h2>
                             <div class="flex items-center gap-2 text-gray-400 text-[10px] font-bold"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg><span>${toBN(repliesCount)} মন্তব্য</span></div>
                         </div>
                     </div>
@@ -350,13 +352,15 @@
         `}).join('');
     }
 
-    // --- অন্যান্য ফাংশন যা আগের মতো রাখা হয়েছে ---
     window.handleVote = async (id, val) => { if(!currentUser) return googleLogin(); await updateDoc(doc(db, POSTS_PATH, id), { votes: increment(val) }); };
     window.openDetails = (id) => { activeThreadId = id; document.getElementById('details-view').style.display = 'block'; updateDetails(); updateBookmarkIcon(); };
     window.closeView = () => { document.getElementById('details-view').style.display = 'none'; activeThreadId = null; };
     window.deletePost = async (id) => { if(confirm('মুছতে চান?')) await deleteDoc(doc(db, POSTS_PATH, id)); };
-    window.togglePostModal = (show) => { document.getElementById('post-modal-overlay').style.display = show ? 'flex' : 'none'; };
-    window.initEdit = (id) => { editModeId = id; document.getElementById('user-comment').value = allData.find(x => x.id === id).msg; togglePostModal(true); };
+    window.togglePostModal = (show) => { 
+        if(!show) { editModeId = null; document.getElementById('user-comment').value = ''; document.getElementById('modal-title').innerText = 'নতুন আলোচনা'; }
+        document.getElementById('post-modal-overlay').style.display = show ? 'flex' : 'none'; 
+    };
+    window.initEdit = (id) => { editModeId = id; document.getElementById('user-comment').value = allData.find(x => x.id === id).msg; document.getElementById('modal-title').innerText = 'সম্পাদনা করুন'; togglePostModal(true); };
     window.showToast = (msg) => { const t = document.getElementById('toast'); t.innerText = msg; t.style.opacity = '1'; setTimeout(() => t.style.opacity = '0', 3000); };
     window.toggleSearch = (show) => { document.getElementById('search-box').classList.toggle('hidden', !show); document.getElementById('search-trigger').classList.toggle('hidden', show); if(show) document.getElementById('search-input').focus(); };
     document.getElementById('search-input').oninput = (e) => render(e.target.value.toLowerCase());
@@ -367,8 +371,8 @@
         const replies = allData.filter(r => r.parentId === activeThreadId);
         document.getElementById('details-content').innerHTML = `
             <div class="mb-6"><div class="flex items-center gap-3 mb-4"><img src="${post.photoURL}" class="w-10 h-10 rounded-lg"><div><div class="font-black text-sm">${post.name}</div><div class="text-[10px] text-gray-400 uppercase">${formatTime(post.at)}</div></div></div>
-            <div class="text-base mb-6 border-b dark:border-darkBorder pb-6 whitespace-pre-line">${DOMPurify.sanitize(marked.parse(post.msg))}</div>
-            <div class="space-y-4">${replies.map(r => `<div class="flex gap-3"><img src="${r.photoURL}" class="w-8 h-8 rounded-lg"><div class="flex-1 bg-gray-100 dark:bg-darkCard p-3 rounded-xl border dark:border-darkBorder text-xs">${r.msg}</div></div>`).join('')}</div></div>`;
+            <div class="text-base mb-6 border-b dark:border-darkBorder pb-6 whitespace-pre-line text-gray-800 dark:text-gray-200">${DOMPurify.sanitize(marked.parse(post.msg))}</div>
+            <div class="space-y-4">${replies.map(r => `<div class="flex gap-3"><img src="${r.photoURL}" class="w-8 h-8 rounded-lg"><div class="flex-1 bg-gray-100 dark:bg-darkCard p-3 rounded-xl border dark:border-darkBorder text-xs text-gray-700 dark:text-gray-300">${r.msg}</div></div>`).join('')}</div></div>`;
     }
 
     function setupRealtimeBookmarks(uid) {
