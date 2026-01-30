@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>আলোচনা ফোরাম - User Profiles</title>
+    <title>আলোচনা ফোরাম - Notifications</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.2/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
@@ -37,6 +37,11 @@
         .filter-active { background-color: rgba(52, 152, 219, 0.1); color: #3498db; }
         .reply-node { margin-left: 2rem; border-left: 2px solid #3498db44; padding-left: 0.75rem; }
         .user-link:hover { text-decoration: underline; cursor: pointer; color: #3498db; }
+        
+        /* Notification Dropdown */
+        #notification-dropdown { display: none; transform-origin: top right; transition: all 0.2s; }
+        #notification-dropdown.active { display: block; animation: scaleIn 0.2s ease-out; }
+        @keyframes scaleIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-900 dark:bg-darkBg dark:text-gray-100">
@@ -48,16 +53,39 @@
             <span id="admin-badge" class="hidden px-2 py-0.5 bg-red-500 text-white text-[10px] font-bold rounded uppercase">Admin</span>
         </div>
         
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 relative">
+            <!-- Search -->
             <div id="search-box" class="hidden flex items-center bg-gray-100 dark:bg-darkCard rounded-xl px-2">
                 <input id="search-input" type="text" placeholder="খুঁজুন..." class="bg-transparent border-none outline-none text-xs p-2 w-32 md:w-48">
             </div>
-            <button id="search-trigger" onclick="toggleSearch(true)" class="p-2 rounded-xl bg-gray-100 dark:bg-darkCard hover:ring-2 ring-accent transition-all">
+            <button onclick="toggleSearch(true)" class="p-2 rounded-xl bg-gray-100 dark:bg-darkCard hover:ring-2 ring-accent transition-all">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
             </button>
+
+            <!-- Notification Trigger -->
+            <div class="relative">
+                <button id="noti-trigger" onclick="toggleNotifications()" class="p-2 rounded-xl bg-gray-100 dark:bg-darkCard hover:ring-2 ring-accent transition-all relative">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                    <span id="noti-badge" class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-darkCard hidden"></span>
+                </button>
+                
+                <!-- Notification Dropdown -->
+                <div id="notification-dropdown" class="absolute right-0 mt-2 w-72 bg-white dark:bg-darkCard border dark:border-darkBorder rounded-2xl shadow-2xl z-[100] overflow-hidden">
+                    <div class="p-3 border-b dark:border-darkBorder flex items-center justify-between">
+                        <span class="text-xs font-black uppercase">নোটিফিকেশন</span>
+                        <button onclick="clearAllNotifications()" class="text-[10px] text-accent font-bold hover:underline">সব মুছুন</button>
+                    </div>
+                    <div id="noti-list" class="max-h-80 overflow-y-auto">
+                        <div class="p-8 text-center text-gray-400 text-[10px]">কোনো নোটিফিকেশন নেই</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Theme Toggle -->
             <button id="theme-toggle" class="p-2 rounded-xl bg-gray-100 dark:bg-darkCard hover:ring-2 ring-accent transition-all">
                 <svg id="theme-icon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"></svg>
             </button>
+
             <div id="auth-section">
                 <button id="login-ui" onclick="googleLogin()" class="bg-accent text-white px-4 py-1.5 rounded-lg text-xs font-bold shadow-lg shadow-accent/20">Login</button>
                 <img id="user-avatar" class="w-8 h-8 rounded-lg border-2 border-accent cursor-pointer hidden">
@@ -105,7 +133,7 @@
     </section>
 </main>
 
-<!-- Details View Overlay -->
+<!-- Details View -->
 <div id="details-view" class="view-overlay" onclick="if(event.target.id === 'details-view') closeView()">
     <div class="view-body" onclick="event.stopPropagation()">
         <div class="p-3 border-b dark:border-darkBorder flex items-center justify-between sticky top-0 bg-white dark:bg-darkBg z-10">
@@ -131,7 +159,7 @@
     </div>
 </div>
 
-<!-- Profile View Overlay -->
+<!-- Profile View -->
 <div id="profile-view" class="view-overlay" onclick="if(event.target.id === 'profile-view') closeProfile()">
     <div class="view-body" onclick="event.stopPropagation()">
         <div class="p-3 border-b dark:border-darkBorder flex items-center justify-between sticky top-0 bg-white dark:bg-darkBg z-10">
@@ -164,7 +192,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-    import { getFirestore, collection, addDoc, doc, setDoc, updateDoc, deleteDoc, increment, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, doc, setDoc, updateDoc, deleteDoc, increment, onSnapshot, serverTimestamp, query, where, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
 
     const firebaseConfig = {
@@ -183,6 +211,7 @@
     
     const BASE_PATH = 'blog_comments/pages/forum_v2_voted';
     const BOOKMARKS_PATH = 'blog_comments/pages/bookmarks';
+    const NOTI_PATH = 'blog_comments/pages/notifications';
     const ADMIN_EMAIL = "phys.arif@gmail.com";
 
     window.currentUser = null;
@@ -191,9 +220,11 @@
     let activeThreadId = null;
     let currentFilter = 'latest';
     let userBookmarks = [];
+    let userNotis = [];
     let replyingToId = null;
     let replyingToName = null;
 
+    // Main snapshot for data
     onSnapshot(collection(db, BASE_PATH), (snapshot) => {
         allData = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
         render();
@@ -210,9 +241,17 @@
         if (user) {
             document.getElementById('user-avatar').src = user.photoURL;
             document.getElementById('user-avatar').onclick = () => openProfile(user.uid);
+            
+            // Bookmarks snapshot
             onSnapshot(doc(db, BOOKMARKS_PATH, user.uid), (docSnap) => {
                 userBookmarks = docSnap.exists() ? (docSnap.data().postIds || []) : [];
                 updateBookmarkIcon();
+            });
+
+            // Notifications snapshot
+            onSnapshot(collection(db, NOTI_PATH, user.uid, 'items'), (snap) => {
+                userNotis = snap.docs.map(d => ({id: d.id, ...d.data()})).sort((a,b) => (b.at?.seconds || 0) - (a.at?.seconds || 0));
+                renderNotifications();
             });
         }
         render();
@@ -220,6 +259,7 @@
 
     window.googleLogin = async () => { try { await signInWithPopup(auth, provider); } catch(e){} };
 
+    // Set Filter
     window.setFilter = (filter) => {
         currentFilter = filter;
         document.querySelectorAll('aside button').forEach(btn => btn.classList.remove('filter-active'));
@@ -227,17 +267,77 @@
         render();
     };
 
+    // Notification Logic
+    window.toggleNotifications = () => {
+        const drop = document.getElementById('notification-dropdown');
+        drop.classList.toggle('active');
+        if(drop.classList.contains('active')) {
+            markNotisAsRead();
+        }
+    };
+
+    async function markNotisAsRead() {
+        if(!currentUser) return;
+        document.getElementById('noti-badge').classList.add('hidden');
+        userNotis.forEach(async (n) => {
+            if(!n.read) await updateDoc(doc(db, NOTI_PATH, currentUser.uid, 'items', n.id), { read: true });
+        });
+    }
+
+    async function addNotification(targetUserId, senderName, senderPhoto, postId, postText, type) {
+        if(!targetUserId || targetUserId === currentUser.uid) return;
+        await addDoc(collection(db, NOTI_PATH, targetUserId, 'items'), {
+            senderName, senderPhoto, postId, postSnippet: postText.substring(0, 30) + '...',
+            type, read: false, at: serverTimestamp()
+        });
+    }
+
+    function renderNotifications() {
+        const list = document.getElementById('noti-list');
+        const badge = document.getElementById('noti-badge');
+        const unreadCount = userNotis.filter(n => !n.read).length;
+        
+        badge.classList.toggle('hidden', unreadCount === 0);
+
+        if(userNotis.length === 0) {
+            list.innerHTML = `<div class="p-8 text-center text-gray-400 text-[10px]">কোনো নোটিফিকেশন নেই</div>`;
+            return;
+        }
+
+        list.innerHTML = userNotis.map(n => `
+            <div onclick="openFromNoti('${n.postId}')" class="p-3 flex gap-3 hover:bg-gray-50 dark:hover:bg-darkBg border-b dark:border-darkBorder cursor-pointer transition-colors ${!n.read ? 'bg-blue-50/30 dark:bg-blue-900/10' : ''}">
+                <img src="${n.senderPhoto}" class="w-8 h-8 rounded-lg">
+                <div class="flex-1">
+                    <p class="text-[11px] leading-snug">
+                        <span class="font-bold">${n.senderName}</span> 
+                        ${n.type === 'reply' ? 'আপনার কমেন্টে উত্তর দিয়েছেন' : 'আপনার পোস্টে কমেন্ট করেছেন'}
+                    </p>
+                    <p class="text-[9px] text-gray-400 mt-1 line-clamp-1 italic">"${n.postSnippet}"</p>
+                    <p class="text-[8px] text-accent font-bold mt-1">${formatTime(n.at)}</p>
+                </div>
+                ${!n.read ? '<div class="w-2 h-2 bg-accent rounded-full mt-2"></div>' : ''}
+            </div>
+        `).join('');
+    }
+
+    window.openFromNoti = (postId) => {
+        document.getElementById('notification-dropdown').classList.remove('active');
+        openDetails(postId);
+    };
+
+    window.clearAllNotifications = async () => {
+        if(!currentUser || !confirm('সব নোটিফিকেশন মুছে ফেলবেন?')) return;
+        userNotis.forEach(async (n) => {
+            await deleteDoc(doc(db, NOTI_PATH, currentUser.uid, 'items', n.id));
+        });
+    };
+
+    // Badges Update
     function updateBadges() {
         const pCount = allData.filter(p => !p.parentId && p.status === 'pending').length;
         const pBadge = document.getElementById('pending-badge');
         pBadge.innerText = toBN(pCount); pBadge.classList.toggle('hidden', !isAdmin || pCount === 0);
     }
-
-    window.toggleFeatured = async (id, currentStatus) => {
-        if(!isAdmin) return;
-        await updateDoc(doc(db, BASE_PATH, id), { isFeatured: !currentStatus });
-        showToast(currentStatus ? 'Unfeatured করা হয়েছে' : 'Featured করা হয়েছে');
-    };
 
     window.submitPost = async () => {
         const msg = document.getElementById('user-comment').value.trim();
@@ -251,45 +351,37 @@
         togglePostModal(false);
     };
 
-    window.prepareReply = (id, userName) => {
-        replyingToId = id;
-        replyingToName = userName;
-        const tagUi = document.getElementById('reply-tag-ui');
-        const tagText = document.getElementById('replying-to-text');
-        const input = document.getElementById('reply-input');
-        tagText.innerText = `${userName} কে উত্তর দিচ্ছেন`;
-        tagUi.classList.remove('hidden');
-        input.focus();
-    };
-
-    window.cancelReplyTag = () => {
-        replyingToId = null;
-        replyingToName = null;
-        document.getElementById('reply-tag-ui').classList.add('hidden');
-    };
-
     window.postReply = async () => {
         const rawMsg = document.getElementById('reply-input').value.trim();
         if(!rawMsg || !currentUser || !activeThreadId) return;
-        await addDoc(collection(db, BASE_PATH), {
-            name: currentUser.displayName, 
-            msg: rawMsg, 
-            parentId: activeThreadId,
-            replyToId: replyingToId || null,
+        
+        const parentPost = allData.find(d => d.id === activeThreadId);
+        
+        const replyDoc = await addDoc(collection(db, BASE_PATH), {
+            name: currentUser.displayName, msg: rawMsg, 
+            parentId: activeThreadId, replyToId: replyingToId || null,
             replyToName: replyingToName || null,
-            photoURL: currentUser.photoURL, 
-            userId: currentUser.uid, 
-            at: serverTimestamp()
+            photoURL: currentUser.photoURL, userId: currentUser.uid, at: serverTimestamp()
         });
+
+        // Add Notifications
+        if(replyingToId) {
+            // It's a reply to a specific comment
+            const targetComment = allData.find(d => d.id === replyingToId);
+            if(targetComment) addNotification(targetComment.userId, currentUser.displayName, currentUser.photoURL, activeThreadId, rawMsg, 'reply');
+        } else {
+            // It's a direct comment on a post
+            addNotification(parentPost.userId, currentUser.displayName, currentUser.photoURL, activeThreadId, rawMsg, 'comment');
+        }
+
         document.getElementById('reply-input').value = '';
         cancelReplyTag();
     };
 
+    // UI Renders & Handlers (Profiles, Details, etc.)
     window.openProfile = (uid) => {
         const userDocs = allData.filter(d => d.userId === uid);
-        if (userDocs.length === 0) return;
-        
-        const user = userDocs[0];
+        const user = userDocs.length > 0 ? userDocs[0] : { name: 'ইউজার', photoURL: 'https://cdn-icons-png.flaticon.com/512/149/149071.png' };
         const userPosts = userDocs.filter(d => !d.parentId);
         const userComments = userDocs.filter(d => d.parentId);
         const totalVotes = userPosts.reduce((acc, curr) => acc + (curr.votes || 0), 0);
@@ -300,7 +392,6 @@
                 <h2 class="text-xl font-black">${user.name}</h2>
                 <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">${uid === ADMIN_EMAIL ? 'Admin' : 'Member'}</p>
             </div>
-            
             <div class="grid grid-cols-3 gap-3 mb-8">
                 <div class="bg-gray-50 dark:bg-darkCard p-4 rounded-xl text-center border dark:border-darkBorder">
                     <div class="text-lg font-black text-accent">${toBN(userPosts.length)}</div>
@@ -315,15 +406,9 @@
                     <div class="text-[9px] text-gray-400 font-bold uppercase">ভোট</div>
                 </div>
             </div>
-
             <h3 class="font-bold text-xs uppercase text-gray-400 mb-4 px-1">সাম্প্রতিক আলোচনা</h3>
             <div class="space-y-3">
-                ${userPosts.slice(0, 10).map(p => `
-                    <div onclick="closeProfile(); openDetails('${p.id}')" class="p-3 bg-white dark:bg-darkCard border dark:border-darkBorder rounded-xl cursor-pointer hover:border-accent">
-                        <p class="text-xs font-semibold line-clamp-2">${p.msg}</p>
-                        <span class="text-[9px] text-gray-400 font-bold">${formatTime(p.at)}</span>
-                    </div>
-                `).join('') || '<p class="text-center text-gray-400 text-xs py-10">কোনো আলোচনা নেই</p>'}
+                ${userPosts.slice(0, 10).map(p => `<div onclick="closeProfile(); openDetails('${p.id}')" class="p-3 bg-white dark:bg-darkCard border dark:border-darkBorder rounded-xl cursor-pointer hover:border-accent"><p class="text-xs font-semibold line-clamp-2">${p.msg}</p><span class="text-[9px] text-gray-400 font-bold">${formatTime(p.at)}</span></div>`).join('') || '<p class="text-center text-gray-400 text-xs py-10">কোনো আলোচনা নেই</p>'}
             </div>
         `;
         document.getElementById('profile-view').style.display = 'block';
@@ -334,38 +419,21 @@
     function render(searchTerm = '') {
         const container = document.getElementById('posts-container');
         let posts = allData.filter(c => !c.parentId);
-
-        if(currentFilter === 'pending') {
-            posts = posts.filter(p => p.status === 'pending' && (isAdmin || p.userId === currentUser?.uid));
-        } else if(currentFilter === 'featured') {
-            posts = posts.filter(p => p.status === 'approved' && p.isFeatured === true);
-        } else {
-            posts = posts.filter(p => p.status === 'approved');
-        }
+        if(currentFilter === 'pending') posts = posts.filter(p => p.status === 'pending' && (isAdmin || p.userId === currentUser?.uid));
+        else if(currentFilter === 'featured') posts = posts.filter(p => p.status === 'approved' && p.isFeatured === true);
+        else posts = posts.filter(p => p.status === 'approved');
 
         if(searchTerm) posts = posts.filter(p => p.msg.toLowerCase().includes(searchTerm));
-        
-        if(currentFilter === 'popular') {
-            posts.sort((a, b) => (b.votes || 0) - (a.votes || 0));
-        } else if(currentFilter === 'bookmarks') {
-            posts = posts.filter(p => userBookmarks.includes(p.id));
-            posts.sort((a,b) => (b.at?.seconds || 0) - (a.at?.seconds || 0));
-        } else {
-            posts.sort((a, b) => (b.at?.seconds || 0) - (a.at?.seconds || 0));
-        }
+        if(currentFilter === 'popular') posts.sort((a, b) => (b.votes || 0) - (a.votes || 0));
+        else if(currentFilter === 'bookmarks') posts = posts.filter(p => userBookmarks.includes(p.id)).sort((a,b) => (b.at?.seconds || 0) - (a.at?.seconds || 0));
+        else posts.sort((a, b) => (b.at?.seconds || 0) - (a.at?.seconds || 0));
 
-        if(posts.length === 0) { 
-            container.innerHTML = `<div class="p-20 text-center text-gray-400 text-sm">কিছু পাওয়া যায়নি</div>`; 
-            return; 
-        }
+        if(posts.length === 0) { container.innerHTML = `<div class="p-20 text-center text-gray-400 text-sm">কিছু পাওয়া যায়নি</div>`; return; }
 
         container.innerHTML = posts.map(c => {
             const repliesCount = allData.filter(r => r.parentId === c.id).length;
-            const isOwner = currentUser && c.userId === currentUser.uid;
-
             return `
             <div class="forum-card bg-white dark:bg-darkCard p-4 rounded-xl border ${c.isFeatured ? 'featured-card border-featured' : 'dark:border-darkBorder'} relative">
-                ${c.isFeatured ? '<div class="absolute -top-2 left-4 bg-featured text-black text-[9px] font-black px-2 py-0.5 rounded shadow-sm flex items-center gap-1"><svg class="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> FEATURED</div>' : ''}
                 <div class="flex gap-4">
                     <div class="flex flex-col items-center gap-1 bg-gray-50 dark:bg-darkBg p-1.5 rounded-lg min-w-[42px] h-fit">
                         <button onclick="handleVote('${c.id}', 1)" class="text-gray-400 hover:text-accent"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12.781 2.375c-.381-.475-1.181-.475-1.562 0l-8 10A1.001 1.001 0 004 14h4v7a1 1 0 001 1h6a1 1 0 001-1v-7h4a1.001 1.001 0 00.781-1.625l-8-10z"/></svg></button>
@@ -379,15 +447,6 @@
                                 <span class="user-link" onclick="openProfile('${c.userId}')">${c.name}</span>
                                 <span> • ${formatTime(c.at)}</span>
                             </div>
-                            <div class="flex items-center gap-1">
-                                ${isAdmin ? `
-                                    <button onclick="toggleFeatured('${c.id}', ${c.isFeatured})" class="p-1 ${c.isFeatured ? 'text-featured' : 'text-gray-400'} hover:text-featured">
-                                        <svg class="w-3.5 h-3.5" fill="${c.isFeatured ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24"><path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.382-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" stroke-width="2"></path></svg>
-                                    </button>
-                                    ${c.status === 'pending' ? `<button onclick="approvePost('${c.id}')" class="bg-green-500 text-white px-2 py-0.5 rounded text-[9px] font-bold hover:bg-green-600">APPROVE</button>` : ''}
-                                ` : ''}
-                                ${isOwner || isAdmin ? `<button onclick="deletePost('${c.id}')" class="p-1 text-gray-400 hover:text-red-500"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-width="2"></path></svg></button>` : ''}
-                            </div>
                         </div>
                         <div class="cursor-pointer" onclick="openDetails('${c.id}')">
                             <h2 class="text-sm font-semibold mb-2 line-clamp-3 text-gray-800 dark:text-gray-200">${c.msg}</h2>
@@ -398,17 +457,15 @@
                         </div>
                     </div>
                 </div>
-            </div>
-        `}).join('');
+            </div>`;
+        }).join('');
     }
 
     function updateDetails() {
         const post = allData.find(c => c.id === activeThreadId);
         if(!post) return;
-        
         const allReplies = allData.filter(r => r.parentId === activeThreadId).sort((a,b) => (a.at?.seconds || 0) - (b.at?.seconds || 0));
         const rootComments = allReplies.filter(r => !r.replyToId);
-        
         const renderComment = (comment, isReply = false) => {
             const nestedReplies = allReplies.filter(r => r.replyToId === comment.id);
             return `
@@ -427,10 +484,8 @@
                         </div>
                     </div>
                     ${nestedReplies.map(nr => renderComment(nr, true)).join('')}
-                </div>
-            `;
+                </div>`;
         };
-
         document.getElementById('details-content').innerHTML = `
             <div class="mb-6">
                 <div class="flex items-center gap-3 mb-4">
@@ -441,44 +496,26 @@
                     </div>
                 </div>
                 <div class="text-base mb-6 border-b dark:border-darkBorder pb-6 whitespace-pre-line text-gray-800 dark:text-gray-200">${DOMPurify.sanitize(marked.parse(post.msg))}</div>
-                <div class="space-y-4">
-                    ${rootComments.map(rc => renderComment(rc)).join('')}
-                </div>
+                <div class="space-y-4">${rootComments.map(rc => renderComment(rc)).join('')}</div>
             </div>`;
     }
 
+    // Global Window Helpers
+    window.prepareReply = (id, userName) => { replyingToId = id; replyingToName = userName; const tagUi = document.getElementById('reply-tag-ui'); const tagText = document.getElementById('replying-to-text'); const input = document.getElementById('reply-input'); tagText.innerText = `${userName} কে উত্তর দিচ্ছেন`; tagUi.classList.remove('hidden'); input.focus(); };
+    window.cancelReplyTag = () => { replyingToId = null; replyingToName = null; document.getElementById('reply-tag-ui').classList.add('hidden'); };
     window.handleVote = async (id, val) => { if(!currentUser) return googleLogin(); await updateDoc(doc(db, BASE_PATH, id), { votes: increment(val) }); };
     window.openDetails = (id) => { activeThreadId = id; cancelReplyTag(); document.getElementById('details-view').style.display = 'block'; updateDetails(); updateBookmarkIcon(); };
     window.closeView = () => { document.getElementById('details-view').style.display = 'none'; activeThreadId = null; cancelReplyTag(); };
-    window.deletePost = async (id) => { if(confirm('মুছতে চান?')) await deleteDoc(doc(db, BASE_PATH, id)); };
-    window.approvePost = async (id) => { if(!isAdmin) return; await updateDoc(doc(db, BASE_PATH, id), { status: 'approved' }); showToast('অনুমোদিত হয়েছে'); };
     window.togglePostModal = (show) => { document.getElementById('post-modal-overlay').style.display = show ? 'flex' : 'none'; };
     window.showToast = (msg) => { const t = document.getElementById('toast'); t.innerText = msg; t.style.opacity = '1'; setTimeout(() => t.style.opacity = '0', 3000); };
     window.toggleSearch = (show) => { document.getElementById('search-box').classList.toggle('hidden', !show); if(show) document.getElementById('search-input').focus(); };
     document.getElementById('search-input').oninput = (e) => render(e.target.value.toLowerCase());
+    window.toggleBookmark = async () => { if (!currentUser) return googleLogin(); const newList = userBookmarks.includes(activeThreadId) ? userBookmarks.filter(id => id !== activeThreadId) : [...userBookmarks, activeThreadId]; await setDoc(doc(db, BOOKMARKS_PATH, currentUser.uid), { postIds: newList }, { merge: true }); };
+    function updateBookmarkIcon() { const icon = document.getElementById('bookmark-icon'); if(!icon) return; icon.style.fill = userBookmarks.includes(activeThreadId) ? '#3498db' : 'none'; icon.style.stroke = userBookmarks.includes(activeThreadId) ? '#3498db' : 'currentColor'; }
+    const toBN = (n) => n.toString().replace(/\d/g, d => "০১২৩৪৫৬৭८৯"[d]);
+    function formatTime(ts) { if(!ts) return 'এখন'; const s = Math.floor((new Date() - new Date(ts.seconds * 1000))/1000); if(s < 60) return 'এইমাত্র'; if(s < 3600) return toBN(Math.floor(s/60)) + 'মি আগে'; if(s < 86400) return toBN(Math.floor(s/3600)) + 'ঘন্টা আগে'; return new Date(ts.seconds*1000).toLocaleDateString('bn-BD', {day:'numeric', month:'short'}); }
 
-    window.toggleBookmark = async () => {
-        if (!currentUser) return googleLogin();
-        const newList = userBookmarks.includes(activeThreadId) ? userBookmarks.filter(id => id !== activeThreadId) : [...userBookmarks, activeThreadId];
-        await setDoc(doc(db, BOOKMARKS_PATH, currentUser.uid), { postIds: newList }, { merge: true });
-    };
-    function updateBookmarkIcon() {
-        const icon = document.getElementById('bookmark-icon');
-        if(!icon) return;
-        icon.style.fill = userBookmarks.includes(activeThreadId) ? '#3498db' : 'none';
-        icon.style.stroke = userBookmarks.includes(activeThreadId) ? '#3498db' : 'currentColor';
-    }
-
-    const toBN = (n) => n.toString().replace(/\d/g, d => "০১২৩৪৫৬৭৮৯"[d]);
-    function formatTime(ts) {
-        if(!ts) return 'এখন';
-        const s = Math.floor((new Date() - new Date(ts.seconds * 1000))/1000);
-        if(s < 60) return 'এইমাত্র';
-        if(s < 3600) return toBN(Math.floor(s/60)) + 'মি আগে';
-        if(s < 86400) return toBN(Math.floor(s/3600)) + 'ঘন্টা আগে';
-        return new Date(ts.seconds*1000).toLocaleDateString('bn-BD', {day:'numeric', month:'short'});
-    }
-
+    // Theme Switcher
     const setDarkMode = (dark) => {
         document.documentElement.classList.toggle('dark', dark);
         localStorage.theme = dark ? 'dark' : 'light';
@@ -486,6 +523,13 @@
     };
     setDarkMode(localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches));
     document.getElementById('theme-toggle').onclick = () => setDarkMode(!document.documentElement.classList.contains('dark'));
+
+    // Close dropdown on click outside
+    window.addEventListener('click', (e) => {
+        if(!document.getElementById('noti-trigger').contains(e.target) && !document.getElementById('notification-dropdown').contains(e.target)) {
+            document.getElementById('notification-dropdown').classList.remove('active');
+        }
+    });
 </script>
 </body>
 </html>
