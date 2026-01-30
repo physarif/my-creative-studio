@@ -94,24 +94,24 @@
     <aside class="w-full lg:w-56">
         <div class="sticky top-20 space-y-4">
             <div class="flex lg:flex-col gap-1 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0">
-                <button id="filter-latest" onclick="setFilter('latest')" class="filter-active flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-left w-full">
+                <button id="filter-latest" onclick="setFilter('latest')" class="filter-active flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-left w-full whitespace-nowrap">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     সর্বশেষ
                 </button>
-                <button id="filter-popular" onclick="setFilter('popular')" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-left w-full">
+                <button id="filter-popular" onclick="setFilter('popular')" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-left w-full whitespace-nowrap">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                     জনপ্রিয়
                 </button>
-                <button id="filter-featured" onclick="setFilter('featured')" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-left w-full">
+                <button id="filter-featured" onclick="setFilter('featured')" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-left w-full whitespace-nowrap">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-7.714 2.143L11 21l-2.286-6.857L1 12l7.714-2.143L11 3z"></path></svg>
                     ফিচার
                 </button>
-                <button id="filter-bookmarks" onclick="setFilter('bookmarks')" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-left w-full">
+                <button id="filter-bookmarks" onclick="setFilter('bookmarks')" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-left w-full whitespace-nowrap">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg>
                     বুকমার্কস
                 </button>
-                <!-- Admin Only Filter -->
-                <button id="filter-reports" onclick="setFilter('reports')" class="hidden flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-left w-full text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 border-t dark:border-darkBorder pt-4 mt-2">
+                <!-- Admin Only Filter - Now styled exactly like others -->
+                <button id="filter-reports" onclick="setFilter('reports')" class="hidden flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-left w-full whitespace-nowrap">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
                     রিপোর্ট লিস্ট
                 </button>
@@ -207,14 +207,12 @@
     const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
     
-    // Firestore Paths
     const POSTS_PATH = 'blog_comments/pages/forum_v2_voted';
     const REPORTS_PATH = 'blog_comments/pages/reports';
     const BOOKMARKS_PATH = 'blog_comments/pages/bookmarks';
     
     const commentsCol = collection(db, POSTS_PATH);
     const reportsCol = collection(db, REPORTS_PATH);
-    const bookmarksCol = collection(db, BOOKMARKS_PATH);
     
     const ADMIN_EMAIL = "phys.arif@gmail.com";
 
@@ -231,14 +229,12 @@
     let currentReplyTo = null;
     let userBookmarks = [];
 
-    // Real-time listener for posts
     onSnapshot(commentsCol, (snapshot) => {
         allData = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
         render();
         if(activeThreadId) updateDetails();
     });
 
-    // Auth State Change
     onAuthStateChanged(auth, (user) => {
         window.currentUser = user;
         window.isAdmin = user?.email === ADMIN_EMAIL;
@@ -264,30 +260,21 @@
 
     window.googleLogin = async () => { try { await signInWithPopup(auth, provider); } catch(e){} };
 
-    // Real-time Bookmarks Listener
     function setupRealtimeBookmarks(uid) {
         if(bookmarksUnsubscribe) bookmarksUnsubscribe();
         const userBookmarkDoc = doc(db, BOOKMARKS_PATH, uid);
-        
         bookmarksUnsubscribe = onSnapshot(userBookmarkDoc, (docSnap) => {
-            if (docSnap.exists()) {
-                userBookmarks = docSnap.data().postIds || [];
-            } else {
-                userBookmarks = [];
-            }
+            userBookmarks = docSnap.exists() ? (docSnap.data().postIds || []) : [];
             updateBookmarkIcon();
             if(currentFilter === 'bookmarks') render();
         });
     }
 
-    // Toggle Cloud Bookmark
     window.toggleBookmark = async () => {
         if (!currentUser) return googleLogin();
         if (!activeThreadId) return;
-        
         const userBookmarkRef = doc(db, BOOKMARKS_PATH, currentUser.uid);
         let newList = [...userBookmarks];
-        
         if (newList.includes(activeThreadId)) {
             newList = newList.filter(id => id !== activeThreadId);
             showToast('বুকমার্ক থেকে সরানো হয়েছে');
@@ -295,12 +282,7 @@
             newList.push(activeThreadId);
             showToast('বুকমার্ক করা হয়েছে');
         }
-        
-        try {
-            await setDoc(userBookmarkRef, { postIds: newList, updatedAt: serverTimestamp() }, { merge: true });
-        } catch(e) {
-            showToast('সেভ করতে সমস্যা হয়েছে');
-        }
+        await setDoc(userBookmarkRef, { postIds: newList, updatedAt: serverTimestamp() }, { merge: true });
     };
 
     function updateBookmarkIcon() {
@@ -311,48 +293,27 @@
         icon.classList.toggle('text-accent', isBookmarked);
     }
 
-    // Search
     window.toggleSearch = (show) => {
         document.getElementById('search-box').classList.toggle('hidden', !show);
         document.getElementById('search-trigger').classList.toggle('hidden', show);
         if(show) document.getElementById('search-input').focus();
-        else {
-            document.getElementById('search-input').value = '';
-            render();
-        }
     };
 
-    document.getElementById('search-input').oninput = (e) => {
-        render(e.target.value.toLowerCase());
-    };
+    document.getElementById('search-input').oninput = (e) => render(e.target.value.toLowerCase());
 
-    // Reports
     window.reportContent = async (id, msg) => {
         if(!currentUser) return googleLogin();
-        if(!confirm('আপনি কি এই কন্টেন্টটি রিপোর্ট করতে চান?')) return;
-        
+        if(!confirm('রিপোর্ট করতে চান?')) return;
         try {
-            await addDoc(reportsCol, {
-                postId: id,
-                reportedBy: currentUser.uid,
-                reporterName: currentUser.displayName,
-                contentPreview: msg.substring(0, 100),
-                at: serverTimestamp()
-            });
-            showToast('রিপোর্ট জমা দেওয়া হয়েছে');
-        } catch(e) {
-            showToast('কিছু ভুল হয়েছে');
-        }
+            await addDoc(reportsCol, { postId: id, reportedBy: currentUser.uid, reporterName: currentUser.displayName, contentPreview: msg.substring(0, 100), at: serverTimestamp() });
+            showToast('রিপোর্ট জমা হয়েছে');
+        } catch(e) {}
     };
 
     window.toggleFeatured = async (id, currentStatus) => {
         if(!isAdmin) return;
-        try {
-            await updateDoc(doc(db, POSTS_PATH, id), { featured: !currentStatus });
-            showToast(!currentStatus ? 'ফিচার করা হয়েছে' : 'ফিচার থেকে সরানো হয়েছে');
-        } catch(e) {
-            showToast('সমস্যা হয়েছে');
-        }
+        await updateDoc(doc(db, POSTS_PATH, id), { featured: !currentStatus });
+        showToast(!currentStatus ? 'ফিচার করা হয়েছে' : 'সরানো হয়েছে');
     };
 
     function showToast(msg) {
@@ -370,14 +331,10 @@
                 if (change.type === "added") {
                     const newReply = { id: change.doc.id, ...change.doc.data() };
                     const myPost = allData.find(p => p.id === newReply.parentId && p.userId === uid);
-                    const isFromOthers = newReply.userId !== uid;
-                    const isRecent = newReply.at && (Date.now() - (newReply.at.seconds * 1000) < 600000); 
-                    if (myPost && isFromOthers && isRecent) {
-                        if(!notifications.find(n => n.id === newReply.id)) {
-                            notifications.unshift(newReply);
-                            document.getElementById('notif-badge').classList.remove('hidden');
-                            renderNotifications();
-                        }
+                    if (myPost && newReply.userId !== uid) {
+                        notifications.unshift(newReply);
+                        document.getElementById('notif-badge').classList.remove('hidden');
+                        renderNotifications();
                     }
                 }
             });
@@ -386,40 +343,16 @@
 
     function renderNotifications() {
         const list = document.getElementById('notif-list');
-        if(notifications.length === 0) {
-            list.innerHTML = `<div class="p-8 text-center text-gray-400 text-xs italic">কোনো নতুন বার্তা নেই</div>`;
-            return;
-        }
-        list.innerHTML = notifications.map(n => `
-            <div onclick="openNotif('${n.parentId}')" class="p-3 border-b dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkBg cursor-pointer flex gap-3">
-                <img src="${n.photoURL}" class="w-8 h-8 rounded-lg">
-                <div class="flex-1">
-                    <p class="text-[11px] leading-tight font-bold"><span class="text-accent">${n.name}</span> মন্তব্য করেছেন</p>
-                    <p class="text-[9px] text-gray-400 mt-1 uppercase font-black">${formatTime(n.at)}</p>
-                </div>
-            </div>
-        `).join('');
+        if(notifications.length === 0) { list.innerHTML = `<div class="p-8 text-center text-gray-400 text-xs italic">বার্তা নেই</div>`; return; }
+        list.innerHTML = notifications.map(n => `<div onclick="openNotif('${n.parentId}')" class="p-3 border-b dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkBg cursor-pointer flex gap-3"><img src="${n.photoURL}" class="w-8 h-8 rounded-lg"><div class="flex-1"><p class="text-[11px] font-bold"><span class="text-accent">${n.name}</span> মন্তব্য করেছেন</p></div></div>`).join('');
     }
-
-    window.openNotif = (parentId) => { openDetails(parentId); document.getElementById('notif-dropdown').classList.add('hidden'); };
-    window.clearNotifs = () => { notifications = []; renderNotifications(); document.getElementById('notif-badge').classList.add('hidden'); };
-    
-    document.getElementById('notif-btn').onclick = (e) => {
-        e.stopPropagation();
-        const drop = document.getElementById('notif-dropdown');
-        drop.classList.toggle('hidden');
-        if(!drop.classList.contains('hidden')) document.getElementById('notif-badge').classList.add('hidden');
-    };
 
     window.setFilter = async (filter) => {
         currentFilter = filter;
         document.querySelectorAll('aside button').forEach(btn => btn.classList.remove('filter-active'));
         document.getElementById(`filter-${filter}`).classList.add('filter-active');
-        
         if(filter === 'reports' && isAdmin) {
-            const container = document.getElementById('posts-container');
-            container.innerHTML = '<div class="flex justify-center py-20"><div class="animate-spin rounded-full h-6 w-6 border-b-2 border-accent"></div></div>';
-            const snap = await getDocs(query(reportsCol));
+            const snap = await getDocs(reportsCol);
             reportedPosts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         }
         render();
@@ -428,79 +361,40 @@
     function render(searchTerm = '') {
         const container = document.getElementById('posts-container');
         let posts = allData.filter(c => !c.parentId);
-        
-        if(searchTerm) {
-            posts = posts.filter(p => p.msg.toLowerCase().includes(searchTerm));
-        }
-
+        if(searchTerm) posts = posts.filter(p => p.msg.toLowerCase().includes(searchTerm));
         if(currentFilter === 'latest') posts.sort((a,b) => (b.at?.seconds || 0) - (a.at?.seconds || 0));
         else if(currentFilter === 'popular') posts.sort((a,b) => (b.votes || 0) - (a.votes || 0));
-        else if(currentFilter === 'featured') {
-            posts = posts.filter(p => p.featured === true);
-            posts.sort((a,b) => (b.at?.seconds || 0) - (a.at?.seconds || 0));
-        }
-        else if(currentFilter === 'bookmarks') {
-            posts = posts.filter(p => userBookmarks.includes(p.id));
-        }
+        else if(currentFilter === 'featured') posts = posts.filter(p => p.featured === true);
+        else if(currentFilter === 'bookmarks') posts = posts.filter(p => userBookmarks.includes(p.id));
         else if(currentFilter === 'reports') {
             const reportedIds = [...new Set(reportedPosts.map(r => r.postId))];
             posts = posts.filter(p => reportedIds.includes(p.id));
         }
         
-        if(posts.length === 0) {
-            let msg = 'কিছু পাওয়া যায়নি';
-            if(currentFilter === 'bookmarks') msg = 'বুকমার্ক করা কোনো পোস্ট নেই';
-            if(currentFilter === 'reports') msg = 'কোনো রিপোর্ট নেই';
-            container.innerHTML = `<div class="p-20 text-center text-gray-400 text-sm italic">${msg}</div>`;
-            return;
-        }
+        if(posts.length === 0) { container.innerHTML = `<div class="p-20 text-center text-gray-400 text-sm">কিছু পাওয়া যায়নি</div>`; return; }
 
         container.innerHTML = posts.map(c => {
             const repliesCount = allData.filter(r => r.parentId === c.id).length;
             const isOwner = currentUser && c.userId === currentUser.uid;
-            const reportsCount = reportedPosts.filter(r => r.postId === c.id).length;
-            
             return `
-            <div class="forum-card bg-white dark:bg-darkCard p-4 rounded-xl border dark:border-darkBorder ${currentFilter === 'reports' ? 'ring-1 ring-red-500/30 bg-red-50/10' : ''}">
+            <div class="forum-card bg-white dark:bg-darkCard p-4 rounded-xl border dark:border-darkBorder">
                 <div class="flex gap-4">
                     <div class="flex flex-col items-center gap-1 bg-gray-50 dark:bg-darkBg p-1.5 rounded-lg min-w-[42px] h-fit">
                         <button onclick="handleVote('${c.id}', 1)" class="text-gray-400 hover:text-accent"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12.781 2.375c-.381-.475-1.181-.475-1.562 0l-8 10A1.001 1.001 0 004 14h4v7a1 1 0 001 1h6a1 1 0 001-1v-7h4a1.001 1.001 0 00.781-1.625l-8-10z"/></svg></button>
                         <span class="font-bold text-xs text-accent">${toBN(c.votes || 0)}</span>
                         <button onclick="handleVote('${c.id}', -1)" class="text-gray-400 hover:text-red-500"><svg class="w-5 h-5 rotate-180" fill="currentColor" viewBox="0 0 24 24"><path d="M12.781 2.375c-.381-.475-1.181-.475-1.562 0l-8 10A1.001 1.001 0 004 14h4v7a1 1 0 001 1h6a1 1 0 001-1v-7h4a1.001 1.001 0 00.781-1.625l-8-10z"/></svg></button>
                     </div>
-
                     <div class="flex-1">
-                        <div class="flex items-center justify-between mb-1.5">
-                            <div class="flex items-center gap-2">
-                                <img src="${c.photoURL}" class="w-4 h-4 rounded-full cursor-pointer" onclick="openProfile('${c.userId}')">
-                                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-tight cursor-pointer hover:text-accent" onclick="openProfile('${c.userId}')">${c.name} • ${formatTime(c.at)}</span>
-                            </div>
+                        <div class="flex items-center justify-between mb-1.5 text-[10px] font-bold text-gray-400 uppercase">
+                            <div class="flex items-center gap-2"><img src="${c.photoURL}" class="w-4 h-4 rounded-full"><span>${c.name} • ${formatTime(c.at)}</span></div>
                             <div class="flex items-center gap-1">
-                                ${isAdmin && currentFilter === 'reports' ? `<span class="bg-red-500 text-white text-[8px] px-1.5 py-0.5 rounded-full font-bold mr-2">${toBN(reportsCount)} Reports</span>` : ''}
-                                
-                                ${isAdmin ? `
-                                    <button onclick="event.stopPropagation(); toggleFeatured('${c.id}', ${c.featured})" class="p-1 ${c.featured ? 'text-yellow-500' : 'text-gray-400'} hover:scale-110" title="Feature Post">
-                                        <svg class="w-4 h-4" fill="${c.featured ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-7.714 2.143L11 21l-2.286-6.857L1 12l7.714-2.143L11 3z"></path></svg>
-                                    </button>
-                                ` : ''}
-
-                                ${c.featured ? '<span class="px-1.5 py-0.5 bg-yellow-500/10 text-yellow-500 text-[9px] font-black uppercase rounded mr-1">Featured</span>' : ''}
-                                ${isOwner || isAdmin ? `
-                                    <button onclick="event.stopPropagation(); initEdit('${c.id}')" class="text-gray-400 hover:text-accent p-1"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></button>
-                                    <button onclick="event.stopPropagation(); deletePost('${c.id}')" class="text-gray-400 hover:text-red-500 p-1"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
-                                ` : ''}
-                                <button onclick="event.stopPropagation(); reportContent('${c.id}', '${c.msg}')" class="text-gray-400 hover:text-orange-500 p-1"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-7h.01M9 16h.01"></path></svg></button>
+                                ${isAdmin ? `<button onclick="toggleFeatured('${c.id}', ${c.featured})" class="p-1 ${c.featured ? 'text-yellow-500' : 'text-gray-400'}"><svg class="w-3.5 h-3.5" fill="${c.featured ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-7.714 2.143L11 21l-2.286-6.857L1 12l7.714-2.143L11 3z"></path></svg></button>` : ''}
+                                ${isOwner || isAdmin ? `<button onclick="initEdit('${c.id}')" class="p-1"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></button><button onclick="deletePost('${c.id}')" class="p-1"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>` : ''}
                             </div>
                         </div>
                         <div class="cursor-pointer" onclick="openDetails('${c.id}')">
-                            <h2 class="text-sm font-semibold mb-2 leading-normal line-clamp-3">${c.msg}</h2>
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-2 text-gray-400 text-[10px] font-bold">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
-                                    <span>${toBN(repliesCount)} মন্তব্য</span>
-                                </div>
-                                ${userBookmarks.includes(c.id) ? '<svg class="w-3 h-3 text-accent" fill="currentColor" viewBox="0 0 24 24"><path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg>' : ''}
-                            </div>
+                            <h2 class="text-sm font-semibold mb-2 line-clamp-3">${c.msg}</h2>
+                            <div class="flex items-center gap-2 text-gray-400 text-[10px] font-bold"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg><span>${toBN(repliesCount)} মন্তব্য</span></div>
                         </div>
                     </div>
                 </div>
@@ -508,166 +402,48 @@
         `}).join('');
     }
 
-    window.deletePost = async (id) => {
-        const p = allData.find(x => x.id === id);
-        if(!p || !currentUser) return;
-        if(p.userId !== currentUser.uid && !isAdmin) return;
-        if(!confirm('মুছে ফেলতে চান?')) return;
-        
-        // If it's a parent post, we might want to clean up reports too
-        await deleteDoc(doc(db, POSTS_PATH, id));
-        showToast('পোস্ট মুছে ফেলা হয়েছে');
-    };
-
-    window.initEdit = (id) => {
-        const p = allData.find(x => x.id === id);
-        if(!p || !currentUser) return;
-        if(p.userId !== currentUser.uid && !isAdmin) return;
-        editModeId = id;
-        document.getElementById('modal-title').innerText = "পোস্ট এডিট করুন";
-        document.getElementById('submit-btn').innerText = "আপডেট";
-        document.getElementById('user-comment').value = p.msg;
-        togglePostModal(true);
-    };
-
-    window.togglePostModal = (show) => {
-        document.getElementById('post-modal-overlay').style.display = show ? 'flex' : 'none';
-        if(!show) {
-            editModeId = null;
-            document.getElementById('modal-title').innerText = "নতুন আলোচনা";
-            document.getElementById('submit-btn').innerText = "পাবলিশ";
-            document.getElementById('user-comment').value = '';
-        }
-    };
-
+    window.deletePost = async (id) => { if(confirm('মুছতে চান?')) await deleteDoc(doc(db, POSTS_PATH, id)); };
+    window.initEdit = (id) => { editModeId = id; document.getElementById('user-comment').value = allData.find(x => x.id === id).msg; togglePostModal(true); };
+    window.togglePostModal = (show) => { document.getElementById('post-modal-overlay').style.display = show ? 'flex' : 'none'; };
     window.submitPost = async () => {
         const msg = document.getElementById('user-comment').value.trim();
-        const btn = document.getElementById('submit-btn');
-        if(!msg || !currentUser) return;
-        
-        btn.classList.add('btn-loading');
-        try {
-            if(editModeId) {
-                await updateDoc(doc(db, POSTS_PATH, editModeId), { msg, edited: true, updatedAt: serverTimestamp() });
-            } else {
-                await addDoc(commentsCol, { name: currentUser.displayName, msg, parentId: null, votes: 0, featured: false, photoURL: currentUser.photoURL, userId: currentUser.uid, at: serverTimestamp() });
-            }
-            togglePostModal(false);
-        } finally {
-            btn.classList.remove('btn-loading');
-        }
+        if(editModeId) await updateDoc(doc(db, POSTS_PATH, editModeId), { msg, updatedAt: serverTimestamp() });
+        else await addDoc(commentsCol, { name: currentUser.displayName, msg, parentId: null, votes: 0, photoURL: currentUser.photoURL, userId: currentUser.uid, at: serverTimestamp() });
+        togglePostModal(false);
     };
 
     window.postReply = async () => {
         const input = document.getElementById('reply-input');
-        const btn = document.getElementById('reply-btn');
-        if(!input.value.trim() || !currentUser || !activeThreadId) return;
-        
-        btn.classList.add('btn-loading');
-        try {
-            await addDoc(commentsCol, { name: currentUser.displayName, msg: input.value, parentId: activeThreadId, photoURL: currentUser.photoURL, userId: currentUser.uid, replyTo: currentReplyTo ? currentReplyTo.name : null, at: serverTimestamp() });
-            input.value = '';
-            cancelReplyTo();
-        } finally {
-            btn.classList.remove('btn-loading');
-        }
-    };
-
-    window.handleReplyTo = (name) => {
-        currentReplyTo = { name };
-        document.getElementById('reply-to-name').innerText = `${name} কে রিপ্লাই দেয়া হচ্ছে`;
-        document.getElementById('reply-to-info').classList.remove('hidden');
-        document.getElementById('reply-input').value = `@${name} `;
-        document.getElementById('reply-input').focus();
-    };
-
-    window.cancelReplyTo = () => {
-        currentReplyTo = null;
-        document.getElementById('reply-to-info').classList.add('hidden');
-        document.getElementById('reply-input').value = '';
+        await addDoc(commentsCol, { name: currentUser.displayName, msg: input.value, parentId: activeThreadId, photoURL: currentUser.photoURL, userId: currentUser.uid, at: serverTimestamp() });
+        input.value = '';
     };
 
     window.handleVote = async (id, val) => { if(!currentUser) return googleLogin(); await updateDoc(doc(db, POSTS_PATH, id), { votes: increment(val) }); };
-
-    window.openProfile = (userId) => {
-        const posts = allData.filter(p => p.userId === userId && !p.parentId).sort((a,b) => (b.at?.seconds || 0) - (a.at?.seconds || 0));
-        const info = posts[0] || allData.find(p => p.userId === userId);
-        if(!info) return;
-        document.getElementById('profile-view').style.display = 'block';
-        document.getElementById('profile-content').innerHTML = `
-            <div class="p-5 text-center">
-                <img src="${info.photoURL}" class="w-20 h-20 rounded-2xl mx-auto mb-3 border-4 border-accent shadow-xl">
-                <h2 class="text-xl font-black">${info.name}</h2>
-                <p class="text-[10px] text-gray-400 font-bold uppercase mb-6 tracking-widest">মেম্বার • ${toBN(posts.length)} পোস্ট</p>
-                <div class="space-y-3 text-left">
-                    ${posts.map(p => `<div class="p-4 bg-gray-50 dark:bg-darkCard rounded-xl border dark:border-darkBorder cursor-pointer" onclick="closeProfile(); openDetails('${p.id}')"><div class="text-[8px] text-gray-400 uppercase font-bold mb-1">${formatTime(p.at)}</div><div class="text-sm font-semibold line-clamp-2">${p.msg}</div></div>`).join('')}
-                </div>
-            </div>
-        `;
-    };
-    window.closeProfile = () => { document.getElementById('profile-view').style.display = 'none'; };
-    
-    window.openDetails = (id) => { 
-        activeThreadId = id; 
-        document.getElementById('details-view').style.display = 'block'; 
-        updateDetails(); 
-        updateBookmarkIcon(); 
-    };
-    
-    window.closeView = () => { document.getElementById('details-view').style.display = 'none'; activeThreadId = null; cancelReplyTo(); };
+    window.openDetails = (id) => { activeThreadId = id; document.getElementById('details-view').style.display = 'block'; updateDetails(); updateBookmarkIcon(); };
+    window.closeView = () => { document.getElementById('details-view').style.display = 'none'; activeThreadId = null; };
 
     function updateDetails() {
         const post = allData.find(c => c.id === activeThreadId);
         if(!post) return;
-        const replies = allData.filter(r => r.parentId === activeThreadId).sort((a,b) => (a.at?.seconds || 0) - (a.at?.seconds || 0));
-        
+        const replies = allData.filter(r => r.parentId === activeThreadId);
         document.getElementById('details-content').innerHTML = `
-            <div class="mb-6">
-                <div class="flex items-center gap-3 mb-4">
-                    <img src="${post.photoURL}" class="w-10 h-10 rounded-lg">
-                    <div class="flex-1"><div class="font-black text-sm">${post.name}</div><div class="text-[10px] text-gray-400 uppercase font-bold">${formatTime(post.at)}</div></div>
-                </div>
-                <div class="prose dark:prose-invert max-w-none text-base mb-6 border-b dark:border-darkBorder pb-6 whitespace-pre-line">${DOMPurify.sanitize(marked.parse(post.msg))}</div>
-                <div class="space-y-4">
-                    ${replies.map(r => `
-                        <div class="flex gap-3">
-                            <img src="${r.photoURL}" class="w-8 h-8 rounded-lg cursor-pointer" onclick="openProfile('${r.userId}')">
-                            <div class="flex-1">
-                                <div class="bg-gray-100 dark:bg-darkCard p-3 rounded-xl border dark:border-darkBorder relative group">
-                                    <div class="flex justify-between items-center mb-1">
-                                        <span class="text-[10px] font-bold text-accent uppercase">${r.name}</span>
-                                        <div class="flex gap-2">
-                                            <button onclick="handleReplyTo('${r.name}')" class="text-[9px] font-bold text-gray-400 hover:text-accent uppercase">Reply</button>
-                                            <button onclick="reportContent('${r.id}', '${r.msg}')" class="text-[9px] font-bold text-gray-400 hover:text-orange-500 uppercase">Report</button>
-                                            ${(currentUser && r.userId === currentUser.uid || isAdmin) ? `<button onclick="deletePost('${r.id}')" class="text-[9px] font-bold text-gray-400 hover:text-red-500 uppercase">Delete</button>` : ''}
-                                        </div>
-                                    </div>
-                                    <div class="text-xs leading-relaxed">${r.msg}</div>
-                                </div>
-                                <div class="text-[8px] font-bold text-gray-400 mt-1 uppercase text-right px-1">${formatTime(r.at)}</div>
-                            </div>
-                        </div>`).join('')}
-                </div>
-            </div>
-        `;
+            <div class="mb-6"><div class="flex items-center gap-3 mb-4"><img src="${post.photoURL}" class="w-10 h-10 rounded-lg"><div><div class="font-black text-sm">${post.name}</div><div class="text-[10px] text-gray-400 uppercase">${formatTime(post.at)}</div></div></div>
+            <div class="text-base mb-6 border-b dark:border-darkBorder pb-6 whitespace-pre-line">${DOMPurify.sanitize(marked.parse(post.msg))}</div>
+            <div class="space-y-4">${replies.map(r => `<div class="flex gap-3"><img src="${r.photoURL}" class="w-8 h-8 rounded-lg"><div class="flex-1 bg-gray-100 dark:bg-darkCard p-3 rounded-xl border dark:border-darkBorder text-xs">${r.msg}</div></div>`).join('')}</div></div>`;
     }
 
     const toBN = (n) => n.toString().replace(/\d/g, d => "০১২৩৪৫৬৭৮৯"[d]);
     function formatTime(ts) {
         if(!ts) return 'এখন';
         const s = Math.floor((new Date() - new Date(ts.seconds * 1000))/1000);
-        if(s < 60) return 'এখন';
         if(s < 3600) return toBN(Math.floor(s/60)) + 'মি আগে';
-        if(s < 86400) return toBN(Math.floor(s/3600)) + 'ঘ আগে';
         return new Date(ts.seconds*1000).toLocaleDateString('bn-BD', {day:'numeric', month:'short'});
     }
 
     const setDarkMode = (dark) => {
         document.documentElement.classList.toggle('dark', dark);
         localStorage.theme = dark ? 'dark' : 'light';
-        document.getElementById('theme-icon').innerHTML = dark 
-            ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 9H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>'
-            : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>';
+        document.getElementById('theme-icon').innerHTML = dark ? '<path d="M12 3v1m0 16v1m9-9h-1M4 9H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>' : '<path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>';
     };
     setDarkMode(localStorage.theme === 'dark' || window.matchMedia('(prefers-color-scheme: dark)').matches);
     document.getElementById('theme-toggle').onclick = () => setDarkMode(!document.documentElement.classList.contains('dark'));
