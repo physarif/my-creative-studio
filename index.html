@@ -58,9 +58,6 @@
         }
         .fab-post:hover { transform: scale(1.1) rotate(90deg); background-color: #2980b9; }
         
-        .category-pill { cursor: pointer; transition: all 0.2s; }
-        .category-pill.active { background-color: rgba(52, 152, 219, 0.1); color: #3498db; }
-        
         /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
@@ -88,32 +85,24 @@
 </nav>
 
 <main class="max-w-6xl mx-auto px-4 py-8 flex flex-col lg:flex-row gap-8">
-    <!-- Static Sidebar Categories -->
+    <!-- Static Sidebar -->
     <aside class="w-full lg:w-64 space-y-6">
         <div class="sticky top-24">
-            <h3 class="text-xs font-black uppercase tracking-widest text-gray-400 mb-4 px-2">অন্বেষণ</h3>
-            <div id="category-list" class="flex lg:flex-col gap-1 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0">
-                <div class="category-pill active flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold" onclick="filterCategory('All')">
+            <h3 class="text-xs font-black uppercase tracking-widest text-gray-400 mb-4 px-2">মেনু</h3>
+            <div class="flex lg:flex-col gap-1 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0">
+                <div class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold bg-accent/10 text-accent cursor-pointer">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
                     সব আলোচনা
                 </div>
-                <div class="category-pill flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold" onclick="filterCategory('প্রযুক্তি')">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
-                    প্রযুক্তি
-                </div>
-                <div class="category-pill flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold" onclick="filterCategory('শিক্ষা')">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
-                    শিক্ষা
-                </div>
-                <div class="category-pill flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold" onclick="filterCategory('লাইফস্টাইল')">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
-                    লাইফস্টাইল
+                <div class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold hover:bg-gray-200 dark:hover:bg-darkCard cursor-pointer transition-colors" onclick="location.reload()">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    জনপ্রিয়
                 </div>
             </div>
             
-            <div class="mt-8 p-4 bg-accent/5 rounded-2xl border border-accent/10 hidden lg:block">
+            <div class="mt-8 p-5 bg-accent/5 rounded-3xl border border-accent/10 hidden lg:block">
                 <h4 class="text-sm font-bold text-accent mb-2">কমিউনিটি গাইডলাইন</h4>
-                <p class="text-xs text-gray-500 leading-relaxed">সৌহার্দ্য বজায় রাখুন এবং গঠনমূলক আলোচনা করুন।</p>
+                <p class="text-xs text-gray-500 leading-relaxed italic">"সৌহার্দ্য বজায় রাখুন এবং গঠনমূলক আলোচনা করুন। আপনার সুচিন্তিত মতামত অন্যদের অনুপ্রাণিত করবে।"</p>
             </div>
         </div>
     </aside>
@@ -141,13 +130,13 @@
             <button onclick="closeView()" class="p-2 hover:bg-gray-100 dark:hover:bg-darkCard rounded-xl transition-colors">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
             </button>
-            <span class="font-bold">বিস্তারিত আলোচনা</span>
+            <span class="font-bold">আলোচনা ডিটেইলস</span>
             <div class="w-10"></div>
         </div>
         <div id="details-content" class="flex-1 overflow-y-auto p-6"></div>
         <div class="p-4 border-t dark:border-darkBorder bg-gray-50 dark:bg-darkCard">
             <div class="flex gap-2">
-                <input id="reply-input" type="text" placeholder="মন্তব্য লিখুন..." class="flex-1 bg-white dark:bg-darkBg border dark:border-darkBorder rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 ring-accent">
+                <input id="reply-input" type="text" placeholder="আপনার মতামত লিখুন..." class="flex-1 bg-white dark:bg-darkBg border dark:border-darkBorder rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 ring-accent">
                 <button onclick="postReply()" class="bg-accent text-white px-6 py-3 rounded-xl text-sm font-bold hover:bg-accent/90 transition-all">পাঠান</button>
             </div>
         </div>
@@ -158,17 +147,11 @@
 <div id="post-modal-overlay" class="fixed inset-0 bg-black/70 z-[200] hidden items-center justify-center p-4 backdrop-blur-sm">
     <div class="bg-white dark:bg-darkCard w-full max-w-xl rounded-3xl p-6 shadow-2xl overflow-hidden animate-in zoom-in duration-300">
         <div class="flex justify-between items-center mb-6">
-            <h2 class="text-xl font-black">নতুন কিছু লিখুন</h2>
+            <h2 class="text-xl font-black">নতুন আলোচনা শুরু করুন</h2>
             <button onclick="togglePostModal(false)" class="text-gray-400 hover:text-red-500 transition-colors"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
         </div>
         <div class="space-y-4">
-            <div class="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
-                <button onclick="setModalCat('প্রযুক্তি')" class="modal-cat-btn px-4 py-2 rounded-full border dark:border-darkBorder text-xs font-bold whitespace-nowrap">প্রযুক্তি</button>
-                <button onclick="setModalCat('শিক্ষা')" class="modal-cat-btn px-4 py-2 rounded-full border dark:border-darkBorder text-xs font-bold whitespace-nowrap">শিক্ষা</button>
-                <button onclick="setModalCat('লাইফস্টাইল')" class="modal-cat-btn px-4 py-2 rounded-full border dark:border-darkBorder text-xs font-bold whitespace-nowrap">লাইফস্টাইল</button>
-                <button onclick="setModalCat('সাধারণ')" class="modal-cat-btn active px-4 py-2 rounded-full border border-accent bg-accent/10 text-accent text-xs font-bold whitespace-nowrap">সাধারণ</button>
-            </div>
-            <textarea id="user-comment" placeholder="আপনার কথাগুলো এখানে লিখুন... (Markdown সাপোর্ট করে)" class="w-full bg-gray-50 dark:bg-darkBg border dark:border-darkBorder rounded-2xl px-5 py-4 h-56 outline-none focus:ring-2 ring-accent resize-none text-lg"></textarea>
+            <textarea id="user-comment" placeholder="আপনার কথাগুলো এখানে লিখুন... (Markdown সাপোর্ট করে)" class="w-full bg-gray-50 dark:bg-darkBg border dark:border-darkBorder rounded-2xl px-5 py-4 h-64 outline-none focus:ring-2 ring-accent resize-none text-lg"></textarea>
             <div class="flex justify-end pt-2">
                 <button onclick="postData()" class="bg-accent text-white px-10 py-3.5 rounded-full font-black shadow-lg shadow-accent/30 active:scale-95 transition-all">পাবলিশ করুন</button>
             </div>
@@ -195,13 +178,11 @@
     const db = getFirestore(app);
     const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
-    const commentsCol = collection(db, 'blog_comments', 'pages', 'forum_v1');
+    const commentsCol = collection(db, 'blog_comments', 'pages', 'forum_final_v1');
 
     window.currentUser = null;
     let allData = [];
     let activeThreadId = null;
-    let selectedCat = 'All';
-    let currentModalCat = 'সাধারণ';
 
     onAuthStateChanged(auth, (user) => {
         window.currentUser = user;
@@ -224,50 +205,25 @@
         } catch(e) {}
     }
 
-    window.filterCategory = (cat) => {
-        selectedCat = cat;
-        document.querySelectorAll('.category-pill').forEach(el => {
-            const isMatch = el.innerText.includes(cat === 'All' ? 'সব আলোচনা' : cat);
-            el.classList.toggle('active', isMatch);
-        });
-        render();
-    };
-
-    window.setModalCat = (cat) => {
-        currentModalCat = cat;
-        document.querySelectorAll('.modal-cat-btn').forEach(btn => {
-            const active = btn.innerText === cat;
-            btn.classList.toggle('active', active);
-            btn.classList.toggle('border-accent', active);
-            btn.classList.toggle('bg-accent/10', active);
-            btn.classList.toggle('text-accent', active);
-        });
-    };
-
     function render() {
         const container = document.getElementById('posts-container');
         let roots = allData.filter(c => !c.parentId);
         
-        if(selectedCat !== 'All') {
-            roots = roots.filter(r => r.category === selectedCat);
-        }
-
         roots.sort((a,b) => (b.at?.seconds || 0) - (a.at?.seconds || 0));
         
         container.innerHTML = roots.map(c => `
             <div class="forum-card bg-white dark:bg-darkCard p-5 rounded-2xl border dark:border-darkBorder cursor-pointer" onclick="openDetails('${c.id}')">
                 <div class="flex items-center gap-2 mb-3">
-                    <img src="${c.photoURL}" class="w-5 h-5 rounded-full">
+                    <img src="${c.photoURL}" class="w-5 h-5 rounded-full border dark:border-darkBorder">
                     <span class="text-xs font-bold text-gray-500">${c.name}</span>
                     <span class="text-[10px] text-gray-400 font-bold uppercase">• ${formatTime(c.at)}</span>
-                    <span class="ml-auto px-2 py-0.5 bg-accent/10 text-accent text-[10px] font-black rounded uppercase">${c.category || 'সাধারণ'}</span>
                 </div>
-                <h2 class="text-lg font-bold mb-2 leading-snug">${c.msg.substring(0, 120)}${c.msg.length > 120 ? '...' : ''}</h2>
+                <h2 class="text-lg font-bold mb-2 leading-snug">${c.msg.substring(0, 150)}${c.msg.length > 150 ? '...' : ''}</h2>
                 <div class="flex items-center gap-4 text-gray-400 text-xs font-bold mt-4">
                     <span class="flex items-center gap-1.5"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg> ${toBN(allData.filter(r => r.parentId === c.id).length)} মন্তব্য</span>
                 </div>
             </div>
-        `).join('') || '<div class="text-center py-20 text-gray-400">এই বিভাগে কোনো আলোচনা নেই। প্রথমটি শুরু করুন!</div>';
+        `).join('') || '<div class="text-center py-20 text-gray-400">এখনো কোনো আলোচনা শুরু হয়নি।</div>';
     }
 
     window.openDetails = (id) => {
@@ -294,7 +250,7 @@
                     <img src="${post.photoURL}" class="w-12 h-12 rounded-xl border-2 border-accent/20">
                     <div>
                         <div class="font-black text-lg leading-tight">${post.name}</div>
-                        <div class="text-[11px] text-gray-400 font-bold uppercase tracking-wider">${formatTime(post.at)} • ${post.category || 'সাধারণ'}</div>
+                        <div class="text-[11px] text-gray-400 font-bold uppercase tracking-wider">${formatTime(post.at)}</div>
                     </div>
                 </div>
                 <div class="prose dark:prose-invert max-w-none text-lg leading-relaxed mb-10 text-gray-800 dark:text-gray-200">
@@ -302,7 +258,7 @@
                 </div>
                 <div class="h-[1px] bg-gray-100 dark:bg-darkBorder mb-8"></div>
                 <h3 class="font-black text-xs uppercase tracking-widest text-gray-400 mb-6 flex items-center gap-2">
-                    <span class="w-2 h-2 bg-accent rounded-full"></span> মন্তব্য (${toBN(replies.length)})
+                    <span class="w-2 h-2 bg-accent rounded-full"></span> সব মন্তব্য (${toBN(replies.length)})
                 </h3>
                 <div class="space-y-6">
                     ${replies.map(r => `
@@ -316,7 +272,7 @@
                                 <div class="mt-1.5 ml-1 text-[10px] text-gray-400 font-bold uppercase">${formatTime(r.at)}</div>
                             </div>
                         </div>
-                    `).join('') || '<div class="text-center py-10 text-gray-400 text-sm">এখনো কেউ কিছু বলেনি। আপনিই প্রথম হোন!</div>'}
+                    `).join('') || '<div class="text-center py-10 text-gray-400 text-sm">কোনো মন্তব্য নেই।</div>'}
                 </div>
             </div>
         `;
@@ -332,7 +288,7 @@
         if (!msg || !currentUser) return;
         
         await addDoc(commentsCol, {
-            name: currentUser.displayName, msg, category: currentModalCat,
+            name: currentUser.displayName, msg,
             parentId: null,
             photoURL: currentUser.photoURL, userId: currentUser.uid, at: serverTimestamp()
         });
