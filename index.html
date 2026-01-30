@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>আলোচনা ফোরাম - Advanced</title>
+    <title>আলোচনা ফোরাম - Cloud Sync</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.2/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
@@ -51,7 +51,6 @@
         </div>
         
         <div class="flex items-center gap-2">
-            <!-- Search Interface -->
             <div id="search-box" class="hidden flex items-center bg-gray-100 dark:bg-darkCard rounded-xl px-2">
                 <input id="search-input" type="text" placeholder="খুঁজুন..." class="bg-transparent border-none outline-none text-xs p-2 w-32 md:w-48">
                 <button onclick="toggleSearch(false)" class="p-1 text-gray-400 hover:text-red-500">
@@ -182,12 +181,11 @@
     </div>
 </div>
 
-<!-- Notification Message Toast -->
 <div id="toast" class="fixed top-16 left-1/2 -translate-x-1/2 z-[300] bg-darkCard text-white px-4 py-2 rounded-full text-xs font-bold shadow-2xl opacity-0 transition-opacity pointer-events-none"></div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-    import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, increment, query, serverTimestamp, onSnapshot, where } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, doc, setDoc, getDoc, updateDoc, deleteDoc, increment, query, serverTimestamp, onSnapshot, where } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
 
     const firebaseConfig = {
@@ -203,10 +201,16 @@
     const db = getFirestore(app);
     const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
+    
+    // Firestore Paths
     const POSTS_PATH = 'blog_comments/pages/forum_v2_voted';
     const REPORTS_PATH = 'blog_comments/pages/reports';
+    const BOOKMARKS_PATH = 'blog_comments/pages/bookmarks'; // New path for cloud bookmarks
+    
     const commentsCol = collection(db, POSTS_PATH);
     const reportsCol = collection(db, REPORTS_PATH);
+    const bookmarksCol = collection(db, BOOKMARKS_PATH);
+    
     const ADMIN_EMAIL = "phys.arif@gmail.com";
 
     window.currentUser = null;
@@ -217,34 +221,90 @@
     let editModeId = null;
     let notifications = [];
     let notificationUnsubscribe = null;
+    let bookmarksUnsubscribe = null;
     let currentReplyTo = null;
-    let bookmarks = JSON.parse(localStorage.getItem('forum_bookmarks') || '[]');
+    let userBookmarks = []; // Will hold post IDs
 
+    // Real-time listener for posts
     onSnapshot(commentsCol, (snapshot) => {
         allData = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
         render();
         if(activeThreadId) updateDetails();
     });
 
+    // Auth State Change
     onAuthStateChanged(auth, (user) => {
         window.currentUser = user;
         window.isAdmin = user?.email === ADMIN_EMAIL;
+        
         document.getElementById('user-avatar').classList.toggle('hidden', !user);
         document.getElementById('login-ui').classList.toggle('hidden', !!user);
         document.getElementById('admin-badge').classList.toggle('hidden', !isAdmin);
+        
         if (user) {
             document.getElementById('user-avatar').src = user.photoURL;
             setupRealtimeNotifications(user.uid);
+            setupRealtimeBookmarks(user.uid); // Fetch cloud bookmarks
         } else {
             if(notificationUnsubscribe) notificationUnsubscribe();
+            if(bookmarksUnsubscribe) bookmarksUnsubscribe();
             notifications = [];
+            userBookmarks = [];
             renderNotifications();
+            render();
         }
     });
 
     window.googleLogin = async () => { try { await signInWithPopup(auth, provider); } catch(e){} };
 
-    // Search Toggle
+    // Real-time Bookmarks Listener
+    function setupRealtimeBookmarks(uid) {
+        if(bookmarksUnsubscribe) bookmarksUnsubscribe();
+        const userBookmarkDoc = doc(db, BOOKMARKS_PATH, uid);
+        
+        bookmarksUnsubscribe = onSnapshot(userBookmarkDoc, (docSnap) => {
+            if (docSnap.exists()) {
+                userBookmarks = docSnap.data().postIds || [];
+            } else {
+                userBookmarks = [];
+            }
+            updateBookmarkIcon();
+            if(currentFilter === 'bookmarks') render();
+        });
+    }
+
+    // Toggle Cloud Bookmark
+    window.toggleBookmark = async () => {
+        if (!currentUser) return googleLogin();
+        if (!activeThreadId) return;
+        
+        const userBookmarkRef = doc(db, BOOKMARKS_PATH, currentUser.uid);
+        let newList = [...userBookmarks];
+        
+        if (newList.includes(activeThreadId)) {
+            newList = newList.filter(id => id !== activeThreadId);
+            showToast('বুকমার্ক থেকে সরানো হয়েছে');
+        } else {
+            newList.push(activeThreadId);
+            showToast('বুকমার্ক করা হয়েছে');
+        }
+        
+        try {
+            await setDoc(userBookmarkRef, { postIds: newList, updatedAt: serverTimestamp() }, { merge: true });
+        } catch(e) {
+            showToast('সেভ করতে সমস্যা হয়েছে');
+        }
+    };
+
+    function updateBookmarkIcon() {
+        const icon = document.getElementById('bookmark-icon');
+        if (!icon) return;
+        const isBookmarked = userBookmarks.includes(activeThreadId);
+        icon.style.fill = isBookmarked ? '#3498db' : 'none';
+        icon.classList.toggle('text-accent', isBookmarked);
+    }
+
+    // Search
     window.toggleSearch = (show) => {
         document.getElementById('search-box').classList.toggle('hidden', !show);
         document.getElementById('search-trigger').classList.toggle('hidden', show);
@@ -259,29 +319,7 @@
         render(e.target.value.toLowerCase());
     };
 
-    // Bookmark Logic
-    window.toggleBookmark = () => {
-        if(!activeThreadId) return;
-        if(bookmarks.includes(activeThreadId)) {
-            bookmarks = bookmarks.filter(id => id !== activeThreadId);
-            showToast('বুকমার্ক থেকে সরানো হয়েছে');
-        } else {
-            bookmarks.push(activeThreadId);
-            showToast('বুকমার্ক করা হয়েছে');
-        }
-        localStorage.setItem('forum_bookmarks', JSON.stringify(bookmarks));
-        updateBookmarkIcon();
-        if(currentFilter === 'bookmarks') render();
-    };
-
-    function updateBookmarkIcon() {
-        const icon = document.getElementById('bookmark-icon');
-        const isBookmarked = bookmarks.includes(activeThreadId);
-        icon.style.fill = isBookmarked ? '#3498db' : 'none';
-        icon.classList.toggle('text-accent', isBookmarked);
-    }
-
-    // Report Logic
+    // Reports
     window.reportContent = async (id, msg) => {
         if(!currentUser) return googleLogin();
         if(!confirm('আপনি কি এই কন্টেন্টটি রিপোর্ট করতে চান?')) return;
@@ -355,7 +393,6 @@
         drop.classList.toggle('hidden');
         if(!drop.classList.contains('hidden')) document.getElementById('notif-badge').classList.add('hidden');
     };
-    window.onclick = () => { document.getElementById('notif-dropdown').classList.add('hidden'); };
 
     window.setFilter = (filter) => {
         currentFilter = filter;
@@ -379,11 +416,11 @@
             posts.sort((a,b) => (b.at?.seconds || 0) - (a.at?.seconds || 0));
         }
         else if(currentFilter === 'bookmarks') {
-            posts = posts.filter(p => bookmarks.includes(p.id));
+            posts = posts.filter(p => userBookmarks.includes(p.id));
         }
         
         if(posts.length === 0) {
-            container.innerHTML = `<div class="p-20 text-center text-gray-400 text-sm italic">কিছু পাওয়া যায়নি</div>`;
+            container.innerHTML = `<div class="p-20 text-center text-gray-400 text-sm italic">${currentFilter === 'bookmarks' ? 'বুকমার্ক করা কোনো পোস্ট নেই' : 'কিছু পাওয়া যায়নি'}</div>`;
             return;
         }
 
@@ -422,7 +459,7 @@
                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
                                     <span>${toBN(repliesCount)} মন্তব্য</span>
                                 </div>
-                                ${bookmarks.includes(c.id) ? '<svg class="w-3 h-3 text-accent" fill="currentColor" viewBox="0 0 24 24"><path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg>' : ''}
+                                ${userBookmarks.includes(c.id) ? '<svg class="w-3 h-3 text-accent" fill="currentColor" viewBox="0 0 24 24"><path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg>' : ''}
                             </div>
                         </div>
                     </div>
@@ -431,13 +468,11 @@
         `}).join('');
     }
 
-    window.toggleFeature = async (id, status) => { if(isAdmin) await updateDoc(doc(db, POSTS_PATH, id), { featured: status }); };
-    
     window.deletePost = async (id) => {
         const p = allData.find(x => x.id === id);
         if(!p || !currentUser) return;
-        const isOwner = p.userId === currentUser.uid;
-        if(!(isOwner || isAdmin) || !confirm('মুছে ফেলতে চান?')) return;
+        if(p.userId !== currentUser.uid && !isAdmin) return;
+        if(!confirm('মুছে ফেলতে চান?')) return;
         await deleteDoc(doc(db, POSTS_PATH, id));
     };
 
@@ -470,22 +505,9 @@
         btn.classList.add('btn-loading');
         try {
             if(editModeId) {
-                await updateDoc(doc(db, POSTS_PATH, editModeId), { 
-                    msg, 
-                    edited: true,
-                    updatedAt: serverTimestamp() 
-                });
+                await updateDoc(doc(db, POSTS_PATH, editModeId), { msg, edited: true, updatedAt: serverTimestamp() });
             } else {
-                await addDoc(commentsCol, { 
-                    name: currentUser.displayName, 
-                    msg, 
-                    parentId: null, 
-                    votes: 0, 
-                    featured: false, 
-                    photoURL: currentUser.photoURL, 
-                    userId: currentUser.uid, 
-                    at: serverTimestamp() 
-                });
+                await addDoc(commentsCol, { name: currentUser.displayName, msg, parentId: null, votes: 0, featured: false, photoURL: currentUser.photoURL, userId: currentUser.uid, at: serverTimestamp() });
             }
             togglePostModal(false);
         } finally {
@@ -500,15 +522,7 @@
         
         btn.classList.add('btn-loading');
         try {
-            await addDoc(commentsCol, { 
-                name: currentUser.displayName, 
-                msg: input.value, 
-                parentId: activeThreadId, 
-                photoURL: currentUser.photoURL, 
-                userId: currentUser.uid, 
-                replyTo: currentReplyTo ? currentReplyTo.name : null,
-                at: serverTimestamp() 
-            });
+            await addDoc(commentsCol, { name: currentUser.displayName, msg: input.value, parentId: activeThreadId, photoURL: currentUser.photoURL, userId: currentUser.uid, replyTo: currentReplyTo ? currentReplyTo.name : null, at: serverTimestamp() });
             input.value = '';
             cancelReplyTo();
         } finally {
@@ -518,12 +532,10 @@
 
     window.handleReplyTo = (name) => {
         currentReplyTo = { name };
-        const info = document.getElementById('reply-to-info');
-        const input = document.getElementById('reply-input');
         document.getElementById('reply-to-name').innerText = `${name} কে রিপ্লাই দেয়া হচ্ছে`;
-        info.classList.remove('hidden');
-        input.value = `@${name} `;
-        input.focus();
+        document.getElementById('reply-to-info').classList.remove('hidden');
+        document.getElementById('reply-input').value = `@${name} `;
+        document.getElementById('reply-input').focus();
     };
 
     window.cancelReplyTo = () => {
@@ -551,7 +563,14 @@
         `;
     };
     window.closeProfile = () => { document.getElementById('profile-view').style.display = 'none'; };
-    window.openDetails = (id) => { activeThreadId = id; document.getElementById('details-view').style.display = 'block'; updateDetails(); updateBookmarkIcon(); };
+    
+    window.openDetails = (id) => { 
+        activeThreadId = id; 
+        document.getElementById('details-view').style.display = 'block'; 
+        updateDetails(); 
+        updateBookmarkIcon(); 
+    };
+    
     window.closeView = () => { document.getElementById('details-view').style.display = 'none'; activeThreadId = null; cancelReplyTo(); };
 
     function updateDetails() {
