@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>আলোচনা ফোরাম - Notifications & Privacy</title>
+    <title>আলোচনা ফোরাম - Bookmarks Fixed</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.2/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
@@ -59,7 +59,6 @@
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
             </button>
 
-            <!-- Notifications (Hidden for guest) -->
             <div id="noti-wrapper" class="relative hidden">
                 <button id="noti-trigger" onclick="toggleNotifications()" class="p-2 rounded-xl bg-gray-100 dark:bg-darkCard hover:ring-2 ring-accent transition-all relative">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
@@ -105,7 +104,6 @@
                     ফিচারড
                 </button>
 
-                <!-- Auth Required Filters -->
                 <div id="auth-filters" class="hidden flex lg:flex-col gap-1 w-full">
                     <button id="filter-bookmarks" onclick="setFilter('bookmarks')" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-left w-full whitespace-nowrap">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg>
@@ -134,14 +132,18 @@
 <div id="details-view" class="view-overlay" onclick="if(event.target.id === 'details-view') closeView()">
     <div class="view-body" onclick="event.stopPropagation()">
         <div class="p-3 border-b dark:border-darkBorder flex items-center justify-between sticky top-0 bg-white dark:bg-darkBg z-10">
-            <button onclick="closeView()" class="p-2 hover:bg-gray-100 dark:hover:bg-darkCard rounded-lg">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            <div class="flex items-center gap-1">
+                <button onclick="closeView()" class="p-2 hover:bg-gray-100 dark:hover:bg-darkCard rounded-lg">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+                <span class="font-bold text-sm">বিস্তারিত আলোচনা</span>
+            </div>
+            
+            <button id="bookmark-btn" onclick="toggleBookmark()" class="p-2 hover:bg-gray-100 dark:hover:bg-darkCard rounded-lg text-gray-400 hidden group">
+                <svg id="bookmark-icon" class="w-6 h-6 transition-all duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
+                </svg>
             </button>
-            <span class="font-bold text-sm">বিস্তারিত আলোচনা</span>
-            <button id="bookmark-btn" onclick="toggleBookmark()" class="p-2 hover:bg-gray-100 dark:hover:bg-darkCard rounded-lg text-gray-400 hidden">
-                <svg id="bookmark-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg>
-            </button>
-            <div id="bookmark-placeholder" class="w-9 h-9"></div>
         </div>
         <div id="details-content" class="flex-1 overflow-y-auto p-5 pb-24"></div>
         <div id="reply-input-section" class="absolute bottom-0 left-0 right-0 p-4 bg-white dark:bg-darkCard border-t dark:border-darkBorder hidden">
@@ -157,7 +159,6 @@
     </div>
 </div>
 
-<!-- Profile View -->
 <div id="profile-view" class="view-overlay" onclick="if(event.target.id === 'profile-view') closeProfile()">
     <div class="view-body" onclick="event.stopPropagation()">
         <div class="p-3 border-b dark:border-darkBorder flex items-center justify-between sticky top-0 bg-white dark:bg-darkBg z-10">
@@ -233,7 +234,6 @@
         window.currentUser = user;
         window.isAdmin = user?.email === ADMIN_EMAIL;
         
-        // UI Privacy Controls
         const isUser = !!user;
         document.getElementById('user-avatar').classList.toggle('hidden', !isUser);
         document.getElementById('login-ui').classList.toggle('hidden', isUser);
@@ -246,17 +246,16 @@
 
         if (isUser) {
             document.getElementById('user-avatar').src = user.photoURL;
-            document.getElementById('user-avatar').onclick = () => openProfile(user.uid);
             onSnapshot(doc(db, BOOKMARKS_PATH, user.uid), (docSnap) => {
                 userBookmarks = docSnap.exists() ? (docSnap.data().postIds || []) : [];
                 updateBookmarkIcon();
+                if(currentFilter === 'bookmarks') render();
             });
             onSnapshot(collection(db, NOTI_PATH, user.uid, 'items'), (snap) => {
                 userNotis = snap.docs.map(d => ({id: d.id, ...d.data()})).sort((a,b) => (b.at?.seconds || 0) - (a.at?.seconds || 0));
                 renderNotifications();
             });
         } else {
-            // Reset filters if logged out while on a private filter
             if(['bookmarks', 'pending'].includes(currentFilter)) setFilter('latest');
         }
         render();
@@ -405,6 +404,7 @@
     function render(searchTerm = '') {
         const container = document.getElementById('posts-container');
         let posts = allData.filter(c => !c.parentId);
+        
         if(currentFilter === 'pending') posts = posts.filter(p => p.status === 'pending' && (isAdmin || p.userId === currentUser?.uid));
         else if(currentFilter === 'featured') posts = posts.filter(p => p.status === 'approved' && p.isFeatured === true);
         else if(currentFilter === 'bookmarks') posts = posts.filter(p => userBookmarks.includes(p.id));
@@ -414,7 +414,10 @@
         if(currentFilter === 'popular') posts.sort((a, b) => (b.votes || 0) - (a.votes || 0));
         else posts.sort((a, b) => (b.at?.seconds || 0) - (a.at?.seconds || 0));
 
-        if(posts.length === 0) { container.innerHTML = `<div class="p-20 text-center text-gray-400 text-sm">কিছু পাওয়া যায়নি</div>`; return; }
+        if(posts.length === 0) { 
+            container.innerHTML = `<div class="p-20 text-center text-gray-400 text-sm">কিছু পাওয়া যায়নি</div>`; 
+            return; 
+        }
 
         container.innerHTML = posts.map(c => {
             const repliesCount = allData.filter(r => r.parentId === c.id).length;
@@ -489,14 +492,48 @@
     window.prepareReply = (id, userName) => { replyingToId = id; replyingToName = userName; const tagUi = document.getElementById('reply-tag-ui'); const tagText = document.getElementById('replying-to-text'); const input = document.getElementById('reply-input'); tagText.innerText = `${userName} কে উত্তর দিচ্ছেন`; tagUi.classList.remove('hidden'); input.focus(); };
     window.cancelReplyTag = () => { replyingToId = null; replyingToName = null; document.getElementById('reply-tag-ui').classList.add('hidden'); };
     window.handleVote = async (id, val) => { if(!currentUser) return googleLogin(); await updateDoc(doc(db, BASE_PATH, id), { votes: increment(val) }); };
-    window.openDetails = (id) => { activeThreadId = id; cancelReplyTag(); document.getElementById('details-view').style.display = 'block'; updateDetails(); updateBookmarkIcon(); };
-    window.closeView = () => { document.getElementById('details-view').style.display = 'none'; activeThreadId = null; cancelReplyTag(); };
+    
+    window.openDetails = (id) => { 
+        activeThreadId = id; 
+        cancelReplyTag(); 
+        document.getElementById('details-view').style.display = 'block'; 
+        updateDetails(); 
+        updateBookmarkIcon(); 
+    };
+
+    window.closeView = () => { 
+        document.getElementById('details-view').style.display = 'none'; 
+        activeThreadId = null; 
+        cancelReplyTag(); 
+    };
+
     window.togglePostModal = (show) => { document.getElementById('post-modal-overlay').style.display = show ? 'flex' : 'none'; };
     window.showToast = (msg) => { const t = document.getElementById('toast'); t.innerText = msg; t.style.opacity = '1'; setTimeout(() => t.style.opacity = '0', 3000); };
     window.toggleSearch = (show) => { document.getElementById('search-box').classList.toggle('hidden', !show); if(show) document.getElementById('search-input').focus(); };
     document.getElementById('search-input').oninput = (e) => render(e.target.value.toLowerCase());
-    window.toggleBookmark = async () => { if (!currentUser) return; const newList = userBookmarks.includes(activeThreadId) ? userBookmarks.filter(id => id !== activeThreadId) : [...userBookmarks, activeThreadId]; await setDoc(doc(db, BOOKMARKS_PATH, currentUser.uid), { postIds: newList }, { merge: true }); };
-    function updateBookmarkIcon() { const icon = document.getElementById('bookmark-icon'); if(!icon) return; icon.style.fill = userBookmarks.includes(activeThreadId) ? '#3498db' : 'none'; icon.style.stroke = userBookmarks.includes(activeThreadId) ? '#3498db' : 'currentColor'; }
+
+    window.toggleBookmark = async () => { 
+        if (!currentUser || !activeThreadId) return;
+        const isCurrentlyBookmarked = userBookmarks.includes(activeThreadId);
+        const newList = isCurrentlyBookmarked 
+            ? userBookmarks.filter(id => id !== activeThreadId) 
+            : [...userBookmarks, activeThreadId];
+        
+        await setDoc(doc(db, BOOKMARKS_PATH, currentUser.uid), { postIds: newList }, { merge: true });
+        showToast(isCurrentlyBookmarked ? 'বুকমার্ক সরানো হয়েছে' : 'বুকমার্ক করা হয়েছে');
+    };
+
+    function updateBookmarkIcon() { 
+        const icon = document.getElementById('bookmark-icon'); 
+        const btn = document.getElementById('bookmark-btn');
+        if(!icon || !activeThreadId) return; 
+
+        const isBookmarked = userBookmarks.includes(activeThreadId);
+        icon.setAttribute('fill', isBookmarked ? 'currentColor' : 'none');
+        btn.classList.toggle('text-accent', isBookmarked);
+        btn.classList.toggle('text-gray-400', !isBookmarked);
+    }
+
     const toBN = (n) => n.toString().replace(/\d/g, d => "০১২৩৪৫৬৭৮৯"[d]);
     function formatTime(ts) { if(!ts) return 'এখন'; const s = Math.floor((new Date() - new Date(ts.seconds * 1000))/1000); if(s < 60) return 'এইমাত্র'; if(s < 3600) return toBN(Math.floor(s/60)) + 'মি আগে'; if(s < 86400) return toBN(Math.floor(s/3600)) + 'ঘন্টা আগে'; return new Date(ts.seconds*1000).toLocaleDateString('bn-BD', {day:'numeric', month:'short'}); }
 
