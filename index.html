@@ -32,6 +32,8 @@
         .dark .post-modal-content { background: #000000; border: 1px solid #2f3336; }
         .google-btn { display: flex; align-items: center; background-color: white; border: 1px solid #dadce0; border-radius: 4px; padding: 0 12px; height: 36px; cursor: pointer; font-weight: 600; font-size: 14px; gap: 8px; }
         .dark .google-btn { background-color: #16181c; border-color: #2f3336; color: white; }
+        .vote-btn { transition: all 0.2s ease; }
+        .vote-btn:active { transform: scale(0.9); }
     </style>
 </head>
 <body class="p-4 md:p-8 bg-white text-gray-900 dark:bg-darkBg dark:text-gray-100 pb-24">
@@ -129,7 +131,7 @@
     let currentSort = 'top'; 
     let visibleCount = 10;
     let allData = [];
-    let activeThreadId = null; // null মানে মেইন পেজ, আইডি মানে থ্রেড পেজ
+    let activeThreadId = null;
 
     // --- Authentication ---
     onAuthStateChanged(auth, (user) => {
@@ -161,7 +163,7 @@
     window.handleLogout = () => signOut(auth);
 
     // --- Data Loading ---
-    async function loadComments(force = false) {
+    async function loadComments() {
         try {
             const snap = await getDocs(query(commentsCol));
             allData = [];
@@ -178,7 +180,6 @@
         const threadTitle = document.getElementById('thread-title');
 
         if (activeThreadId) {
-            // থ্রেড ভিউ
             backBtn.classList.remove('hidden');
             threadTitle.classList.remove('hidden');
             mainControls.classList.add('hidden');
@@ -188,16 +189,15 @@
             if (parentData) parentContainer.innerHTML = renderCommentUI(parentData, true);
 
             const replies = allData.filter(c => c.parentId === activeThreadId);
-            replies.sort((a,b) => (b.at?.seconds || 0) - (a.at?.seconds || 0)); // রিপ্লাই সবসময় লেটেস্ট আগে
+            replies.sort((a,b) => (b.at?.seconds || 0) - (a.at?.seconds || 0));
             
             container.innerHTML = replies.length > 0 ? 
                 `<h3 class="text-xs font-bold text-gray-400 mb-4 uppercase tracking-wider">রিপ্লাই (${toBN(replies.length)})</h3>` + replies.map(c => renderCommentUI(c)).join('') 
-                : `<p class="text-center text-gray-400 py-10 italic">এখনো কোনো রিপ্লাই নেই। প্রথম রিপ্লাইটি আপনি করুন!</p>`;
+                : `<p class="text-center text-gray-400 py-10 italic">এখনো কোনো রিপ্লাই নেই।</p>`;
             
             document.getElementById('load-more-container').classList.add('hidden');
             document.getElementById('submit-post-btn').innerText = "রিপ্লাই দিন";
         } else {
-            // মেইন ভিউ
             backBtn.classList.add('hidden');
             threadTitle.classList.add('hidden');
             mainControls.classList.remove('hidden');
@@ -220,6 +220,10 @@
         const date = c.at ? formatTime(c.at) : 'এখন';
         const msgHtml = DOMPurify.sanitize(marked.parse(c.msg));
         const replyCount = allData.filter(r => r.parentId === c.id).length;
+        const score = c.votes || 0;
+        
+        // চেক করা ইউজার আগে ভোট দিয়েছে কিনা
+        const userVote = localStorage.getItem(`voted_${c.id}`);
 
         return `
         <div id="comment-${c.id}" class="${isParent ? 'bg-blue-50/50 dark:bg-blue-900/10 border-blue-100 dark:border-blue-900' : 'bg-gray-50 dark:bg-darkCard/30 border-gray-100 dark:border-darkBorder'} border rounded-2xl p-4 transition-all">
@@ -232,9 +236,15 @@
             </div>
             <div class="comment-content text-[15px] dark:text-gray-300 leading-relaxed">${msgHtml}</div>
             <div class="mt-4 flex items-center justify-between border-t dark:border-darkBorder/50 pt-3">
-                <button onclick="vote('${c.id}')" class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white dark:bg-darkCard border dark:border-darkBorder hover:bg-blue-50 dark:hover:bg-blue-900/20 text-xs font-bold transition-all">
-                    <span class="text-blue-500">▲</span> ${toBN(c.votes || 0)}
-                </button>
+                <div class="flex items-center gap-1 bg-white dark:bg-darkCard border dark:border-darkBorder rounded-full p-0.5">
+                    <button onclick="handleVote('${c.id}', 1)" class="vote-btn p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 ${userVote === 'up' ? 'text-orange-500' : 'text-gray-400'}">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd" /></svg>
+                    </button>
+                    <span class="text-xs font-bold min-w-[1.5rem] text-center ${score > 0 ? 'text-orange-500' : score < 0 ? 'text-blue-500' : ''}">${toBN(score)}</span>
+                    <button onclick="handleVote('${c.id}', -1)" class="vote-btn p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 ${userVote === 'down' ? 'text-blue-500' : 'text-gray-400'}">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                    </button>
+                </div>
                 ${!isParent ? `
                 <button onclick="openThread('${c.id}')" class="text-[11px] font-bold text-gray-500 hover:text-blue-500 flex items-center gap-1">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
@@ -245,6 +255,33 @@
     }
 
     // --- Actions ---
+    window.handleVote = async (id, delta) => {
+        const voteKey = `voted_${id}`;
+        const existingVote = localStorage.getItem(voteKey);
+        
+        // যদি অলরেডি একই ভোট দেওয়া থাকে, তবে সেটি ক্যানসেল হবে
+        if ((delta === 1 && existingVote === 'up') || (delta === -1 && existingVote === 'down')) {
+            try {
+                await updateDoc(doc(db, 'blog_comments', 'pages', pageId, id), { votes: increment(-delta) });
+                localStorage.removeItem(voteKey);
+                loadComments();
+            } catch(e) {}
+            return;
+        }
+
+        // যদি আগে অন্য ভোট দেওয়া থাকে (যেমন আপভোট দেওয়া ছিল এখন ডাউনভোট দিচ্ছে)
+        let finalDelta = delta;
+        if (existingVote) {
+            finalDelta = delta * 2; // আগের ভোট মুছতে ১ আর নতুন যোগ করতে ১ = ২
+        }
+
+        try {
+            await updateDoc(doc(db, 'blog_comments', 'pages', pageId, id), { votes: increment(finalDelta) });
+            localStorage.setItem(voteKey, delta === 1 ? 'up' : 'down');
+            loadComments();
+        } catch(e) {}
+    };
+
     window.openThread = (id) => {
         activeThreadId = id;
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -274,18 +311,8 @@
             });
             input.value = '';
             togglePostModal();
-            loadComments(true);
+            loadComments();
         } catch(e) { console.error(e); }
-    };
-
-    window.vote = async (id) => {
-        const voteKey = `voted_${id}`;
-        if(localStorage.getItem(voteKey)) return;
-        try {
-            await updateDoc(doc(db, 'blog_comments', 'pages', pageId, id), { votes: increment(1) });
-            localStorage.setItem(voteKey, 'true');
-            loadComments(true);
-        } catch(e) {}
     };
 
     window.toggleSort = () => {
@@ -305,9 +332,14 @@
     window.loadMore = () => { visibleCount += 10; renderDisplay(); };
 
     // --- Utilities ---
-    const toBN = (n) => n.toString().replace(/\d/g, d => "০১২৩৪৫৬৭৮৯"[d]);
+    const toBN = (n) => {
+        const sign = n < 0 ? '-' : '';
+        const absN = Math.abs(n);
+        return sign + absN.toString().replace(/\d/g, d => "০১২৩৪৫৬৭৮৯"[d]);
+    };
     const esc = (t) => { let d = document.createElement('div'); d.textContent = t; return d.innerHTML; };
     function formatTime(ts) {
+        if (!ts) return 'এখন';
         const s = Math.floor((new Date() - new Date(ts.seconds * 1000))/1000);
         if(s < 60) return 'এখন';
         if(s < 3600) return toBN(Math.floor(s/60)) + 'মি আগে';
