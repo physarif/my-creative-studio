@@ -38,7 +38,6 @@
         .dark .view-body { background: #0b0e11; border-left: 1px solid #2d333b; }
         @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
 
-        /* X-style Floating Action Button */
         .fab-post {
             position: fixed;
             bottom: 24px;
@@ -58,10 +57,12 @@
         }
         .fab-post:hover { transform: scale(1.1) rotate(90deg); background-color: #2980b9; }
         
-        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #2d333b; border-radius: 10px; }
+
+        .vote-btn { transition: all 0.2s ease; }
+        .vote-btn:active { transform: scale(1.2); }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-900 dark:bg-darkBg dark:text-gray-100">
@@ -85,7 +86,6 @@
 </nav>
 
 <main class="max-w-6xl mx-auto px-4 py-8 flex flex-col lg:flex-row gap-8">
-    <!-- Static Sidebar -->
     <aside class="w-full lg:w-64 space-y-6">
         <div class="sticky top-24">
             <h3 class="text-xs font-black uppercase tracking-widest text-gray-400 mb-4 px-2">মেনু</h3>
@@ -102,25 +102,20 @@
             
             <div class="mt-8 p-5 bg-accent/5 rounded-3xl border border-accent/10 hidden lg:block">
                 <h4 class="text-sm font-bold text-accent mb-2">কমিউনিটি গাইডলাইন</h4>
-                <p class="text-xs text-gray-500 leading-relaxed italic">"সৌহার্দ্য বজায় রাখুন এবং গঠনমূলক আলোচনা করুন। আপনার সুচিন্তিত মতামত অন্যদের অনুপ্রাণিত করবে।"</p>
+                <p class="text-xs text-gray-500 leading-relaxed italic">"সৌহার্দ্য বজায় রাখুন এবং গঠনমূলক আলোচনা করুন।"</p>
             </div>
         </div>
     </aside>
 
-    <!-- Content Area -->
     <section class="flex-1 space-y-4">
         <div id="posts-container" class="space-y-4">
-            <!-- Loader -->
             <div class="flex justify-center py-20"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div></div>
         </div>
     </section>
 </main>
 
-<!-- Floating Plus Button (X style) -->
 <div id="fab-trigger" class="fab-post" onclick="togglePostModal(true)">
-    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"></path>
-    </svg>
+    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"></path></svg>
 </div>
 
 <!-- Details Sidebar View -->
@@ -137,7 +132,7 @@
         <div class="p-4 border-t dark:border-darkBorder bg-gray-50 dark:bg-darkCard">
             <div class="flex gap-2">
                 <input id="reply-input" type="text" placeholder="আপনার মতামত লিখুন..." class="flex-1 bg-white dark:bg-darkBg border dark:border-darkBorder rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 ring-accent">
-                <button onclick="postReply()" class="bg-accent text-white px-6 py-3 rounded-xl text-sm font-bold hover:bg-accent/90 transition-all">পাঠান</button>
+                <button onclick="postReply()" class="bg-accent text-white px-6 py-3 rounded-xl text-sm font-bold">পাঠান</button>
             </div>
         </div>
     </div>
@@ -148,23 +143,20 @@
     <div class="bg-white dark:bg-darkCard w-full max-w-xl rounded-3xl p-6 shadow-2xl overflow-hidden animate-in zoom-in duration-300">
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-xl font-black">নতুন আলোচনা শুরু করুন</h2>
-            <button onclick="togglePostModal(false)" class="text-gray-400 hover:text-red-500 transition-colors"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+            <button onclick="togglePostModal(false)" class="text-gray-400 hover:text-red-500"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
         </div>
-        <div class="space-y-4">
-            <textarea id="user-comment" placeholder="আপনার কথাগুলো এখানে লিখুন... (Markdown সাপোর্ট করে)" class="w-full bg-gray-50 dark:bg-darkBg border dark:border-darkBorder rounded-2xl px-5 py-4 h-64 outline-none focus:ring-2 ring-accent resize-none text-lg"></textarea>
-            <div class="flex justify-end pt-2">
-                <button onclick="postData()" class="bg-accent text-white px-10 py-3.5 rounded-full font-black shadow-lg shadow-accent/30 active:scale-95 transition-all">পাবলিশ করুন</button>
-            </div>
+        <textarea id="user-comment" placeholder="আপনার কথাগুলো এখানে লিখুন..." class="w-full bg-gray-50 dark:bg-darkBg border dark:border-darkBorder rounded-2xl px-5 py-4 h-64 outline-none focus:ring-2 ring-accent resize-none text-lg"></textarea>
+        <div class="flex justify-end pt-4">
+            <button onclick="postData()" class="bg-accent text-white px-10 py-3.5 rounded-full font-black shadow-lg">পাবলিশ করুন</button>
         </div>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, increment, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
 
-    // Firebase Config
     const firebaseConfig = {
         apiKey: "AIzaSyB_xkcJ87-E4jkYIDT2dBxOFJHUQvZxbU8",
         authDomain: "myblogcomments-22808.firebaseapp.com",
@@ -178,7 +170,7 @@
     const db = getFirestore(app);
     const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
-    const commentsCol = collection(db, 'blog_comments', 'pages', 'forum_final_v1');
+    const commentsCol = collection(db, 'blog_comments', 'pages', 'forum_v2_voted');
 
     window.currentUser = null;
     let allData = [];
@@ -188,9 +180,7 @@
         window.currentUser = user;
         document.getElementById('user-avatar').classList.toggle('hidden', !user);
         document.getElementById('login-ui').classList.toggle('hidden', !!user);
-        if (user) {
-            document.getElementById('user-avatar').src = user.photoURL;
-        }
+        if (user) document.getElementById('user-avatar').src = user.photoURL;
         loadComments();
     });
 
@@ -207,24 +197,45 @@
 
     function render() {
         const container = document.getElementById('posts-container');
-        let roots = allData.filter(c => !c.parentId);
-        
-        roots.sort((a,b) => (b.at?.seconds || 0) - (a.at?.seconds || 0));
+        let roots = allData.filter(c => !c.parentId).sort((a,b) => (b.at?.seconds || 0) - (a.at?.seconds || 0));
         
         container.innerHTML = roots.map(c => `
-            <div class="forum-card bg-white dark:bg-darkCard p-5 rounded-2xl border dark:border-darkBorder cursor-pointer" onclick="openDetails('${c.id}')">
-                <div class="flex items-center gap-2 mb-3">
-                    <img src="${c.photoURL}" class="w-5 h-5 rounded-full border dark:border-darkBorder">
-                    <span class="text-xs font-bold text-gray-500">${c.name}</span>
-                    <span class="text-[10px] text-gray-400 font-bold uppercase">• ${formatTime(c.at)}</span>
-                </div>
-                <h2 class="text-lg font-bold mb-2 leading-snug">${c.msg.substring(0, 150)}${c.msg.length > 150 ? '...' : ''}</h2>
-                <div class="flex items-center gap-4 text-gray-400 text-xs font-bold mt-4">
-                    <span class="flex items-center gap-1.5"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg> ${toBN(allData.filter(r => r.parentId === c.id).length)} মন্তব্য</span>
+            <div class="forum-card bg-white dark:bg-darkCard p-5 rounded-2xl border dark:border-darkBorder">
+                <div class="flex gap-4">
+                    <!-- Vote Section -->
+                    <div class="flex flex-col items-center gap-1 bg-gray-50 dark:bg-darkBg p-2 rounded-xl h-fit">
+                        <button onclick="handleVote('${c.id}', 1)" class="vote-btn text-gray-400 hover:text-accent">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12.781 2.375c-.381-.475-1.181-.475-1.562 0l-8 10A1.001 1.001 0 004 14h4v7a1 1 0 001 1h6a1 1 0 001-1v-7h4a1.001 1.001 0 00.781-1.625l-8-10z"/></svg>
+                        </button>
+                        <span class="font-bold text-sm text-accent">${toBN(c.votes || 0)}</span>
+                        <button onclick="handleVote('${c.id}', -1)" class="vote-btn text-gray-400 hover:text-red-500">
+                            <svg class="w-6 h-6 rotate-180" fill="currentColor" viewBox="0 0 24 24"><path d="M12.781 2.375c-.381-.475-1.181-.475-1.562 0l-8 10A1.001 1.001 0 004 14h4v7a1 1 0 001 1h6a1 1 0 001-1v-7h4a1.001 1.001 0 00.781-1.625l-8-10z"/></svg>
+                        </button>
+                    </div>
+
+                    <!-- Main Content -->
+                    <div class="flex-1 cursor-pointer" onclick="openDetails('${c.id}')">
+                        <div class="flex items-center gap-2 mb-2">
+                            <img src="${c.photoURL}" class="w-5 h-5 rounded-full">
+                            <span class="text-xs font-bold text-gray-500">${c.name}</span>
+                            <span class="text-[10px] text-gray-400 font-bold uppercase">• ${formatTime(c.at)}</span>
+                        </div>
+                        <h2 class="text-lg font-bold mb-2 leading-snug">${c.msg.substring(0, 120)}${c.msg.length > 120 ? '...' : ''}</h2>
+                        <div class="flex items-center gap-4 text-gray-400 text-xs font-bold mt-3">
+                            <span class="flex items-center gap-1.5"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg> ${toBN(allData.filter(r => r.parentId === c.id).length)}</span>
+                        </div>
+                    </div>
                 </div>
             </div>
-        `).join('') || '<div class="text-center py-20 text-gray-400">এখনো কোনো আলোচনা শুরু হয়নি।</div>';
+        `).join('') || '<div class="text-center py-20 text-gray-400">এখনো কোনো আলোচনা নেই।</div>';
     }
+
+    window.handleVote = async (id, val) => {
+        if(!currentUser) return googleLogin();
+        const postRef = doc(db, 'blog_comments', 'pages', 'forum_v2_voted', id);
+        await updateDoc(postRef, { votes: increment(val) });
+        loadComments();
+    };
 
     window.openDetails = (id) => {
         activeThreadId = id;
@@ -250,29 +261,31 @@
                     <img src="${post.photoURL}" class="w-12 h-12 rounded-xl border-2 border-accent/20">
                     <div>
                         <div class="font-black text-lg leading-tight">${post.name}</div>
-                        <div class="text-[11px] text-gray-400 font-bold uppercase tracking-wider">${formatTime(post.at)}</div>
+                        <div class="text-[11px] text-gray-400 font-bold uppercase">${formatTime(post.at)}</div>
                     </div>
                 </div>
-                <div class="prose dark:prose-invert max-w-none text-lg leading-relaxed mb-10 text-gray-800 dark:text-gray-200">
+                <div class="prose dark:prose-invert max-w-none text-lg mb-8">
                     ${DOMPurify.sanitize(marked.parse(post.msg))}
                 </div>
-                <div class="h-[1px] bg-gray-100 dark:bg-darkBorder mb-8"></div>
-                <h3 class="font-black text-xs uppercase tracking-widest text-gray-400 mb-6 flex items-center gap-2">
-                    <span class="w-2 h-2 bg-accent rounded-full"></span> সব মন্তব্য (${toBN(replies.length)})
-                </h3>
+                <div class="flex items-center gap-4 bg-gray-50 dark:bg-darkCard w-fit px-4 py-2 rounded-2xl mb-8">
+                    <button onclick="handleVote('${post.id}', 1)" class="vote-btn text-gray-400 hover:text-accent"><svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12.781 2.375c-.381-.475-1.181-.475-1.562 0l-8 10A1.001 1.001 0 004 14h4v7a1 1 0 001 1h6a1 1 0 001-1v-7h4a1.001 1.001 0 00.781-1.625l-8-10z"/></svg></button>
+                    <span class="font-black text-accent">${toBN(post.votes || 0)}</span>
+                    <button onclick="handleVote('${post.id}', -1)" class="vote-btn text-gray-400 hover:text-red-500"><svg class="w-6 h-6 rotate-180" fill="currentColor" viewBox="0 0 24 24"><path d="M12.781 2.375c-.381-.475-1.181-.475-1.562 0l-8 10A1.001 1.001 0 004 14h4v7a1 1 0 001 1h6a1 1 0 001-1v-7h4a1.001 1.001 0 00.781-1.625l-8-10z"/></svg></button>
+                </div>
+                <h3 class="font-black text-xs uppercase tracking-widest text-gray-400 mb-6">মন্তব্য (${toBN(replies.length)})</h3>
                 <div class="space-y-6">
                     ${replies.map(r => `
-                        <div class="flex gap-4 group">
+                        <div class="flex gap-4">
                             <img src="${r.photoURL}" class="w-9 h-9 rounded-xl">
                             <div class="flex-1">
-                                <div class="bg-gray-100 dark:bg-darkCard p-4 rounded-2xl group-hover:bg-gray-200 dark:group-hover:bg-darkBorder/50 transition-colors">
+                                <div class="bg-gray-100 dark:bg-darkCard p-4 rounded-2xl">
                                     <div class="font-bold text-xs text-accent mb-1">${r.name}</div>
-                                    <div class="text-sm leading-relaxed">${r.msg}</div>
+                                    <div class="text-sm">${r.msg}</div>
                                 </div>
                                 <div class="mt-1.5 ml-1 text-[10px] text-gray-400 font-bold uppercase">${formatTime(r.at)}</div>
                             </div>
                         </div>
-                    `).join('') || '<div class="text-center py-10 text-gray-400 text-sm">কোনো মন্তব্য নেই।</div>'}
+                    `).join('')}
                 </div>
             </div>
         `;
@@ -286,11 +299,9 @@
     window.postData = async () => {
         const msg = document.getElementById('user-comment').value.trim();
         if (!msg || !currentUser) return;
-        
         await addDoc(commentsCol, {
-            name: currentUser.displayName, msg,
-            parentId: null,
-            photoURL: currentUser.photoURL, userId: currentUser.uid, at: serverTimestamp()
+            name: currentUser.displayName, msg, parentId: null,
+            votes: 0, photoURL: currentUser.photoURL, userId: currentUser.uid, at: serverTimestamp()
         });
         document.getElementById('user-comment').value = '';
         togglePostModal(false);
@@ -301,10 +312,8 @@
         const input = document.getElementById('reply-input');
         const msg = input.value.trim();
         if (!msg || !currentUser || !activeThreadId) return;
-        
         await addDoc(commentsCol, {
-            name: currentUser.displayName, msg,
-            parentId: activeThreadId,
+            name: currentUser.displayName, msg, parentId: activeThreadId,
             photoURL: currentUser.photoURL, userId: currentUser.uid, at: serverTimestamp()
         });
         input.value = '';
@@ -321,8 +330,6 @@
         return new Date(ts.seconds*1000).toLocaleDateString('bn-BD', {day:'numeric', month:'short'});
     }
 
-    // Theme logic
-    const themeToggle = document.getElementById('theme-toggle');
     const setDarkMode = (dark) => {
         document.documentElement.classList.toggle('dark', dark);
         localStorage.theme = dark ? 'dark' : 'light';
@@ -330,10 +337,8 @@
             ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 9H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>'
             : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>';
     };
-    
-    const isDark = localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
-    setDarkMode(isDark);
-    themeToggle.onclick = () => setDarkMode(!document.documentElement.classList.contains('dark'));
+    setDarkMode(localStorage.theme === 'dark' || window.matchMedia('(prefers-color-scheme: dark)').matches);
+    document.getElementById('theme-toggle').onclick = () => setDarkMode(!document.documentElement.classList.contains('dark'));
 </script>
 </body>
 </html>
