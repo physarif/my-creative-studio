@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>আলোচনা ফোরাম - Final Fix</title>
+    <title>আলোচনা ফোরাম - Nested Replies</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.2/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
@@ -46,9 +46,7 @@
             z-index: 90; transition: all 0.3s;
         }
 
-        .btn-loading {
-            pointer-events: none; opacity: 0.7; position: relative; color: transparent !important;
-        }
+        .btn-loading { pointer-events: none; opacity: 0.7; position: relative; color: transparent !important; }
         .btn-loading::after {
             content: ""; position: absolute; width: 16px; height: 16px; top: 50%; left: 50%;
             margin-top: -8px; margin-left: -8px; border: 2px solid rgba(255,255,255,0.3);
@@ -59,8 +57,6 @@
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-thumb { background: #2d333b; border-radius: 10px; }
         .filter-active { background-color: rgba(52, 152, 219, 0.1); color: #3498db; }
-        
-        #notif-dropdown { display: none; }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-900 dark:bg-darkBg dark:text-gray-100">
@@ -81,7 +77,7 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
                     <span id="notif-badge" class="hidden absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white dark:border-darkBg"></span>
                 </button>
-                <div id="notif-dropdown" class="absolute right-0 mt-3 w-72 bg-white dark:bg-darkCard rounded-2xl shadow-2xl border dark:border-darkBorder overflow-hidden z-[100]">
+                <div id="notif-dropdown" class="hidden absolute right-0 mt-3 w-72 bg-white dark:bg-darkCard rounded-2xl shadow-2xl border dark:border-darkBorder overflow-hidden z-[100]">
                     <div class="p-3 border-b dark:border-darkBorder flex justify-between items-center bg-gray-50 dark:bg-darkBg/50">
                         <span class="text-xs font-black uppercase tracking-widest">নোটিফিকেশন</span>
                         <button onclick="clearNotifs()" class="text-[9px] font-bold text-accent hover:underline">ক্লিয়ার</button>
@@ -133,7 +129,7 @@
 
 <!-- Details Sidebar -->
 <div id="details-view" class="view-overlay" onclick="if(event.target.id === 'details-view') closeView()">
-    <div class="view-body">
+    <div class="view-body" onclick="event.stopPropagation()">
         <div class="p-3 border-b dark:border-darkBorder flex items-center justify-between sticky top-0 bg-white dark:bg-darkBg z-10">
             <button onclick="closeView()" class="p-2 hover:bg-gray-100 dark:hover:bg-darkCard rounded-lg">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
@@ -141,11 +137,17 @@
             <span class="font-bold text-sm">বিস্তারিত আলোচনা</span>
             <div class="w-10"></div>
         </div>
-        <div id="details-content" class="flex-1 overflow-y-auto p-5"></div>
-        <div class="p-3 border-t dark:border-darkBorder bg-gray-50 dark:bg-darkCard">
+        <div id="details-content" class="flex-1 overflow-y-auto p-5 pb-24"></div>
+        
+        <!-- Fixed Input Area -->
+        <div class="absolute bottom-0 left-0 right-0 p-4 bg-white dark:bg-darkCard border-t dark:border-darkBorder">
+            <div id="reply-to-info" class="hidden flex items-center justify-between mb-2 px-3 py-1 bg-accent/10 rounded-lg text-[10px] text-accent font-bold">
+                <span id="reply-to-name">রিপ্লাই করা হচ্ছে...</span>
+                <button onclick="cancelReplyTo()" class="hover:text-red-500">বাতিল</button>
+            </div>
             <div class="flex gap-2">
-                <input id="reply-input" type="text" placeholder="মতামত দিন..." class="flex-1 bg-white dark:bg-darkBg border dark:border-darkBorder rounded-lg px-3 py-2 text-xs outline-none focus:ring-2 ring-accent">
-                <button id="reply-btn" onclick="postReply()" class="bg-accent text-white px-4 py-2 rounded-lg text-xs font-bold relative min-w-[70px]">পাঠান</button>
+                <input id="reply-input" type="text" placeholder="মতামত দিন..." class="flex-1 bg-gray-50 dark:bg-darkBg border dark:border-darkBorder rounded-lg px-3 py-2 text-xs outline-none focus:ring-2 ring-accent">
+                <button id="reply-btn" onclick="postReply()" class="bg-accent text-white px-5 py-2 rounded-lg text-xs font-bold relative min-w-[70px]">পাঠান</button>
             </div>
         </div>
     </div>
@@ -153,7 +155,7 @@
 
 <!-- Profile Sidebar -->
 <div id="profile-view" class="view-overlay" style="z-index: 110;" onclick="if(event.target.id === 'profile-view') closeProfile()">
-    <div class="view-body">
+    <div class="view-body" onclick="event.stopPropagation()">
         <div class="p-3 border-b dark:border-darkBorder flex items-center justify-between sticky top-0 bg-white dark:bg-darkBg z-10">
             <button onclick="closeProfile()" class="p-2 hover:bg-gray-100 dark:hover:bg-darkCard rounded-lg">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
@@ -198,7 +200,6 @@
     const db = getFirestore(app);
     const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
-    // Simplified direct path for all operations
     const POSTS_PATH = 'blog_comments/pages/forum_v2_voted';
     const commentsCol = collection(db, POSTS_PATH);
     const ADMIN_EMAIL = "phys.arif@gmail.com";
@@ -211,6 +212,7 @@
     let editModeId = null;
     let notifications = [];
     let notificationUnsubscribe = null;
+    let currentReplyTo = null; // To track if we are replying to a nested comment
 
     onSnapshot(commentsCol, (snapshot) => {
         allData = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -275,17 +277,16 @@
         `).join('');
     }
 
-    window.openNotif = (parentId) => { openDetails(parentId); document.getElementById('notif-dropdown').style.display = 'none'; };
+    window.openNotif = (parentId) => { openDetails(parentId); document.getElementById('notif-dropdown').classList.add('hidden'); };
     window.clearNotifs = () => { notifications = []; renderNotifications(); document.getElementById('notif-badge').classList.add('hidden'); };
     
     document.getElementById('notif-btn').onclick = (e) => {
         e.stopPropagation();
         const drop = document.getElementById('notif-dropdown');
-        const isCurrentlyVisible = drop.style.display === 'block';
-        drop.style.display = isCurrentlyVisible ? 'none' : 'block';
-        if(!isCurrentlyVisible) document.getElementById('notif-badge').classList.add('hidden');
+        drop.classList.toggle('hidden');
+        if(!drop.classList.contains('hidden')) document.getElementById('notif-badge').classList.add('hidden');
     };
-    window.onclick = () => { document.getElementById('notif-dropdown').style.display = 'none'; };
+    window.onclick = () => { document.getElementById('notif-dropdown').classList.add('hidden'); };
 
     window.setFilter = (filter) => {
         currentFilter = filter;
@@ -326,14 +327,9 @@
                             </div>
                             <div class="flex items-center gap-1">
                                 ${c.featured ? '<span class="px-1.5 py-0.5 bg-yellow-500/10 text-yellow-500 text-[9px] font-black uppercase rounded mr-1">Featured</span>' : ''}
-                                
                                 ${isOwner || isAdmin ? `
                                     <button onclick="event.stopPropagation(); initEdit('${c.id}')" class="text-gray-400 hover:text-accent p-1"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></button>
                                     <button onclick="event.stopPropagation(); deletePost('${c.id}')" class="text-gray-400 hover:text-red-500 p-1"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
-                                ` : ''}
-
-                                ${isAdmin ? `
-                                    <button onclick="event.stopPropagation(); toggleFeature('${c.id}', ${!c.featured})" class="p-1 ${c.featured ? 'text-yellow-500' : 'text-gray-400 hover:text-yellow-500'}"><svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg></button>
                                 ` : ''}
                             </div>
                         </div>
@@ -407,8 +403,6 @@
                 });
             }
             togglePostModal(false);
-        } catch(e) {
-            console.error("Submission Error:", e);
         } finally {
             btn.classList.remove('btn-loading');
         }
@@ -420,19 +414,43 @@
         if(!input.value.trim() || !currentUser || !activeThreadId) return;
         
         btn.classList.add('btn-loading');
+        let finalMsg = input.value;
+        
+        // If it's a nested reply, we append the @mention for data reference (optional)
+        // or just send as a regular reply to the parent thread. 
+        // We'll keep it simple: all replies are linked to activeThreadId
+        
         try {
             await addDoc(commentsCol, { 
                 name: currentUser.displayName, 
-                msg: input.value, 
+                msg: finalMsg, 
                 parentId: activeThreadId, 
                 photoURL: currentUser.photoURL, 
                 userId: currentUser.uid, 
+                replyTo: currentReplyTo ? currentReplyTo.name : null,
                 at: serverTimestamp() 
             });
             input.value = '';
+            cancelReplyTo();
         } finally {
             btn.classList.remove('btn-loading');
         }
+    };
+
+    window.handleReplyTo = (name) => {
+        currentReplyTo = { name };
+        const info = document.getElementById('reply-to-info');
+        const input = document.getElementById('reply-input');
+        document.getElementById('reply-to-name').innerText = `${name} কে রিপ্লাই দেয়া হচ্ছে`;
+        info.classList.remove('hidden');
+        input.value = `@${name} `;
+        input.focus();
+    };
+
+    window.cancelReplyTo = () => {
+        currentReplyTo = null;
+        document.getElementById('reply-to-info').classList.add('hidden');
+        document.getElementById('reply-input').value = '';
     };
 
     window.handleVote = async (id, val) => { if(!currentUser) return googleLogin(); await updateDoc(doc(db, POSTS_PATH, id), { votes: increment(val) }); };
@@ -455,12 +473,13 @@
     };
     window.closeProfile = () => { document.getElementById('profile-view').style.display = 'none'; };
     window.openDetails = (id) => { activeThreadId = id; document.getElementById('details-view').style.display = 'block'; updateDetails(); };
-    window.closeView = () => { document.getElementById('details-view').style.display = 'none'; activeThreadId = null; };
+    window.closeView = () => { document.getElementById('details-view').style.display = 'none'; activeThreadId = null; cancelReplyTo(); };
 
     function updateDetails() {
         const post = allData.find(c => c.id === activeThreadId);
         if(!post) return;
         const replies = allData.filter(r => r.parentId === activeThreadId).sort((a,b) => (a.at?.seconds || 0) - (a.at?.seconds || 0));
+        
         document.getElementById('details-content').innerHTML = `
             <div class="mb-6">
                 <div class="flex items-center gap-3 mb-4">
@@ -468,18 +487,26 @@
                     <div><div class="font-black text-sm">${post.name}</div><div class="text-[10px] text-gray-400 uppercase font-bold">${formatTime(post.at)}</div></div>
                 </div>
                 <div class="prose dark:prose-invert max-w-none text-base mb-6 border-b dark:border-darkBorder pb-6 whitespace-pre-line">${DOMPurify.sanitize(marked.parse(post.msg))}</div>
-                <div class="space-y-4">
-                    ${replies.map(r => `
+                <div class="space-y-5">
+                    ${replies.map(r => {
+                        const isReplyingToSomeone = r.msg.startsWith('@');
+                        return `
                         <div class="flex gap-3">
-                            <img src="${r.photoURL}" class="w-8 h-8 rounded-lg">
+                            <img src="${r.photoURL}" class="w-8 h-8 rounded-lg cursor-pointer" onclick="openProfile('${r.userId}')">
                             <div class="flex-1">
-                                <div class="bg-gray-100 dark:bg-darkCard p-3 rounded-xl border dark:border-darkBorder relative group">
-                                    <div class="text-xs">${r.msg}</div>
-                                    ${(currentUser && r.userId === currentUser.uid || isAdmin) ? `<button onclick="deletePost('${r.id}')" class="absolute -right-2 -top-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100"><svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg></button>` : ''}
+                                <div class="bg-gray-100 dark:bg-darkCard p-3 rounded-2xl border dark:border-darkBorder relative group">
+                                    <div class="flex justify-between items-center mb-1">
+                                        <span class="text-[10px] font-bold text-accent uppercase">${r.name}</span>
+                                        <div class="flex gap-2">
+                                            <button onclick="handleReplyTo('${r.name}')" class="text-[9px] font-bold text-gray-400 hover:text-accent uppercase">Reply</button>
+                                            ${(currentUser && r.userId === currentUser.uid || isAdmin) ? `<button onclick="deletePost('${r.id}')" class="text-[9px] font-bold text-gray-400 hover:text-red-500 uppercase">Delete</button>` : ''}
+                                        </div>
+                                    </div>
+                                    <div class="text-xs leading-relaxed">${r.msg}</div>
                                 </div>
-                                <div class="text-[8px] font-bold text-gray-400 mt-1 uppercase text-right">${formatTime(r.at)}</div>
+                                <div class="text-[8px] font-bold text-gray-400 mt-1 uppercase px-1">${formatTime(r.at)}</div>
                             </div>
-                        </div>`).join('')}
+                        </div>`}).join('')}
                 </div>
             </div>
         `;
