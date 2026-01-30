@@ -3,118 +3,129 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>আলোচনা - ক্লিন লেআউট</title>
+    <title>আলোচনা - নিশ ব্লগিং ও কমিউনিটি</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.2/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        darkBg: '#000000',
-                        darkCard: '#16181c',
-                        darkBorder: '#2f3336',
-                    }
-                }
-            }
-        }
-    </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Hind+Siliguri:wght@400;600;700&display=swap');
-        body { font-family: 'Inter', 'Hind Siliguri', sans-serif; transition: background-color 0.2s, color 0.2s; }
+        @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Hind Siliguri', sans-serif; background-color: #f0f2f5; }
+        .dark { background-color: #18191a; color: #e4e6eb; }
+        .post-card { background: white; border-radius: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); transition: all 0.2s; }
+        .dark .post-card { background: #242526; box-shadow: none; border: 1px solid #3e4042; }
+        .post-card:hover { transform: translateY(-2px); }
+        .nav-glass { backdrop-filter: blur(10px); background: rgba(255,255,255,0.8); }
+        .dark .nav-glass { background: rgba(36,37,38,0.8); }
+        .btn-primary { background-color: #0084ff; color: white; transition: background 0.3s; }
+        .btn-primary:hover { background-color: #0073e6; }
         
-        #thread-modal { 
-            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); 
-            backdrop-filter: blur(4px); display: none; z-index: 100;
-        }
-        .modal-body {
-            position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
-            width: 100%; max-width: 550px; height: 85vh;
-            background: white; border-radius: 20px 20px 0 0;
-            display: flex; flex-direction: column; overflow: hidden;
-            animation: slideUp 0.3s ease-out;
-        }
-        .dark .modal-body { background: #16181c; border: 1px solid #2f3336; }
-        
-        @keyframes slideUp {
-            from { transform: translate(-50%, 100%); }
-            to { transform: translate(-50%, 0); }
-        }
-
-        @media (min-width: 768px) {
-            .modal-body { height: 75vh; bottom: 50%; transform: translate(-50%, 50%); border-radius: 16px; }
-        }
-
-        .comment-bubble {
-            background-color: #f0f2f5;
-            border-radius: 18px;
-            padding: 8px 12px;
-            display: inline-block;
-            max-width: 100%;
-        }
-        .dark .comment-bubble { background-color: #262728; }
-        
-        .fab { position: fixed; bottom: 24px; right: 24px; width: 48px; height: 48px; background-color: #1d9bf0; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(29, 155, 240, 0.4); cursor: pointer; z-index: 40; border: none; }
-        #post-modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.4); display: none; align-items: center; justify-content: center; z-index: 200; padding: 16px; }
+        /* Modal Animation */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+        .modal-content { width: 100%; max-width: 600px; background: white; border-radius: 16px; overflow: hidden; animation: zoomIn 0.3s ease-out; }
+        .dark .modal-content { background: #242526; color: white; }
+        @keyframes zoomIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     </style>
 </head>
-<body class="bg-white text-gray-900 dark:bg-darkBg dark:text-gray-100 pb-20">
+<body class="pb-20">
 
-<div class="max-w-xl mx-auto p-4">
-    <!-- Header -->
-    <div class="flex items-center justify-between mb-6">
-        <h1 class="text-lg font-bold">Comments</h1>
+<!-- Navigation -->
+<nav class="sticky top-0 z-50 nav-glass border-b border-gray-200 dark:border-gray-800">
+    <div class="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
+        <div class="flex items-center gap-4">
+            <h1 class="text-xl font-bold text-blue-600 tracking-tight">আলোচনা.</h1>
+            <div class="hidden md:flex gap-4 text-sm font-medium text-gray-600 dark:text-gray-400">
+                <a href="#" class="hover:text-blue-500">হোম</a>
+                <a href="#" class="hover:text-blue-500">ট্রেন্ডিং</a>
+                <a href="#" class="hover:text-blue-500">ক্যাটাগরি</a>
+            </div>
+        </div>
         <div class="flex items-center gap-3">
-            <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-darkCard">
-                <svg id="sun-icon" class="w-4 h-4 hidden text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" /></svg>
-                <svg id="moon-icon" class="w-4 h-4 hidden text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" /></svg>
+            <button id="theme-btn" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
+                <svg id="moon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
             </button>
-            <div id="auth-section">
-                <div id="user-info-ui" class="hidden"><img id="user-avatar" class="w-8 h-8 rounded-full"></div>
-                <button id="login-ui" onclick="googleLogin()" class="text-xs font-bold border rounded-lg px-3 py-1">Login</button>
+            <div id="auth-ui">
+                <button onclick="login()" class="px-4 py-1.5 text-sm font-bold btn-primary rounded-full">লগইন</button>
             </div>
         </div>
     </div>
+</nav>
 
-    <!-- List -->
-    <div id="comments-container" class="space-y-3">
-        <div class="flex justify-center py-10"><div class="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500"></div></div>
-    </div>
-</div>
-
-<!-- Thread Modal -->
-<div id="thread-modal" onclick="if(event.target.id === 'thread-modal') closeThread()">
-    <div class="modal-body">
-        <div class="p-3 border-b dark:border-darkBorder flex items-center justify-between">
-            <span class="font-bold text-sm">Thread</span>
-            <button onclick="closeThread()" class="p-1"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"></path></svg></button>
+<main class="max-w-5xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <!-- Left Sidebar -->
+    <aside class="hidden lg:block lg:col-span-3 space-y-4">
+        <div class="post-card p-4">
+            <h3 class="font-bold text-sm text-gray-400 uppercase tracking-widest mb-3">টপ ক্যাটাগরি</h3>
+            <div class="space-y-2">
+                <button onclick="filterPosts('All')" class="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 font-medium">সব আলোচনা</button>
+                <button onclick="filterPosts('প্রযুক্তি')" class="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 font-medium">প্রযুক্তি</button>
+                <button onclick="filterPosts('বিজ্ঞান')" class="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 font-medium">বিজ্ঞান</button>
+                <button onclick="filterPosts('সাহিত্য')" class="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 font-medium">সাহিত্য</button>
+            </div>
         </div>
-        <div id="thread-content" class="flex-1 overflow-y-auto p-3 space-y-4"></div>
-        <div class="p-3 border-t dark:border-darkBorder">
-            <button onclick="togglePostModal(true)" class="w-full bg-gray-100 dark:bg-darkCard text-gray-500 text-left py-2 px-4 rounded-full text-xs">রিপ্লাই দিন...</button>
+    </aside>
+
+    <!-- Feed -->
+    <section class="lg:col-span-6 space-y-4">
+        <!-- New Post Prompt -->
+        <div id="create-prompt" class="post-card p-4 flex gap-3 items-center hidden">
+            <img id="user-pfp" class="w-10 h-10 rounded-full bg-gray-200">
+            <button onclick="openModal()" class="flex-1 text-left bg-gray-100 dark:bg-gray-800 px-4 py-2.5 rounded-full text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                নতুন একটি টপিক শুরু করুন...
+            </button>
         </div>
-    </div>
-</div>
 
-<button onclick="togglePostModal(false)" class="fab"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"></path></svg></button>
+        <div id="feed-container" class="space-y-4">
+            <!-- Posts will be loaded here -->
+            <div class="text-center py-20 text-gray-400">লোডিং...</div>
+        </div>
+    </section>
 
-<div id="post-modal-overlay" onclick="if(event.target.id === 'post-modal-overlay') togglePostModal()">
-    <div class="bg-white dark:bg-darkCard w-full max-w-sm rounded-xl p-4">
-        <textarea id="user-comment" placeholder="আপনার মন্তব্য..." class="w-full bg-transparent outline-none h-24 resize-none text-sm"></textarea>
-        <div class="flex justify-end gap-2 mt-2">
-            <button onclick="togglePostModal()" class="text-xs font-bold text-gray-500">বাতিল</button>
-            <button onclick="postData()" id="submit-btn" class="bg-blue-500 text-white px-4 py-1.5 rounded-full text-xs font-bold">পোস্ট</button>
+    <!-- Right Sidebar -->
+    <aside class="hidden lg:block lg:col-span-3">
+        <div class="post-card p-4 sticky top-20">
+            <h3 class="font-bold text-sm text-gray-400 uppercase tracking-widest mb-3">সক্রিয় ইউজার</h3>
+            <div id="active-users" class="space-y-3">
+                <!-- User list -->
+            </div>
+        </div>
+    </aside>
+</main>
+
+<!-- Floating Action Button for Mobile -->
+<button onclick="openModal()" class="lg:hidden fixed bottom-6 right-6 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg flex items-center justify-center z-40">
+    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+</button>
+
+<!-- Post Modal -->
+<div id="post-modal" class="modal-overlay" onclick="if(event.target === this) closeModal()">
+    <div class="modal-content">
+        <div class="p-4 border-b dark:border-gray-800 flex justify-between items-center">
+            <h2 class="font-bold text-lg">নতুন আলোচনা</h2>
+            <button onclick="closeModal()" class="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+        <div class="p-4 space-y-4">
+            <select id="post-category" class="w-full p-2.5 rounded-lg border dark:bg-gray-800 dark:border-gray-700 outline-none focus:ring-2 ring-blue-500">
+                <option value="সাধারণ">ক্যাটাগরি বেছে নিন</option>
+                <option value="প্রযুক্তি">প্রযুক্তি</option>
+                <option value="বিজ্ঞান">বিজ্ঞান</option>
+                <option value="সাহিত্য">সাহিত্য</option>
+            </select>
+            <textarea id="post-msg" placeholder="আপনার আলোচনার বিষয়বস্তু লিখুন..." class="w-full h-40 p-3 rounded-lg border dark:bg-gray-800 dark:border-gray-700 outline-none focus:ring-2 ring-blue-500 resize-none"></textarea>
+            <div class="flex justify-end">
+                <button onclick="savePost()" id="publish-btn" class="px-8 py-2 btn-primary rounded-full font-bold">পাবলিশ করুন</button>
+            </div>
         </div>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
-    import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+    import { getFirestore, collection, addDoc, getDocs, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
 
+    // Firebase configuration (You should ideally use your own keys here)
     const firebaseConfig = {
         apiKey: "AIzaSyB_xkcJ87-E4jkYIDT2dBxOFJHUQvZxbU8",
         authDomain: "myblogcomments-22808.firebaseapp.com",
@@ -128,118 +139,139 @@
     const db = getFirestore(app);
     const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
-    const pageId = 'homepage';
-    const commentsCol = collection(db, 'blog_comments', 'pages', pageId);
+    const forumCol = collection(db, 'blog_comments', 'pages', 'community_v1');
 
     let currentUser = null;
-    let allData = [];
-    let activeThreadId = null;
+    let currentFilter = 'All';
 
+    // Auth State
     onAuthStateChanged(auth, (user) => {
         currentUser = user;
-        document.getElementById('user-info-ui').classList.toggle('hidden', !user);
-        document.getElementById('login-ui').classList.toggle('hidden', !!user);
-        if (user) document.getElementById('user-avatar').src = user.photoURL;
-        loadComments();
+        const authUi = document.getElementById('auth-ui');
+        const prompt = document.getElementById('create-prompt');
+        
+        if (user) {
+            authUi.innerHTML = `<img src="${user.photoURL}" onclick="logout()" class="w-9 h-9 rounded-full border border-blue-500 cursor-pointer" title="Logout">`;
+            prompt.classList.remove('hidden');
+            document.getElementById('user-pfp').src = user.photoURL;
+        } else {
+            authUi.innerHTML = `<button onclick="login()" class="px-4 py-1.5 text-sm font-bold btn-primary rounded-full">লগইন</button>`;
+            prompt.classList.add('hidden');
+        }
     });
 
-    window.googleLogin = async () => { try { await signInWithPopup(auth, provider); } catch(e){} };
+    window.login = () => signInWithPopup(auth, provider);
+    window.logout = () => signOut(auth);
 
-    async function loadComments() {
-        const snap = await getDocs(query(commentsCol));
-        allData = [];
-        snap.forEach(d => allData.push({ id: d.id, ...d.data() }));
-        render();
-    }
-
-    function render() {
-        const container = document.getElementById('comments-container');
-        const roots = allData.filter(c => !c.parentId).sort((a,b) => (b.at?.seconds || 0) - (a.at?.seconds || 0));
-        container.innerHTML = roots.map(c => renderUI(c)).join('') || '<p class="text-center text-xs text-gray-400 py-10">No comments</p>';
-        if (activeThreadId) updateThread();
-    }
-
-    function renderUI(c, isMinimal = false) {
-        const date = c.at ? formatTime(c.at) : 'এখন';
-        const replies = allData.filter(r => r.parentId === c.id).length;
-        return `
-        <div class="flex gap-2 items-start">
-            <img src="${c.photoURL}" class="w-7 h-7 rounded-full mt-1">
-            <div class="flex flex-col items-start">
-                <div class="comment-bubble" onclick="openThread('${c.id}')">
-                    <div class="font-bold text-[11px] leading-tight">${c.name}</div>
-                    <div class="text-[13px] leading-tight mt-0.5">${c.msg}</div>
-                </div>
-                <div class="flex gap-3 ml-2 mt-1 text-[10px] text-gray-500 font-bold">
-                    <span>${date}</span>
-                    <button onclick="openThread('${c.id}')" class="hover:underline">রিপ্লাই (${replies})</button>
-                </div>
-            </div>
-        </div>`;
-    }
-
-    window.openThread = (id) => {
-        activeThreadId = id;
-        document.getElementById('thread-modal').style.display = 'block';
-        updateThread();
-    };
-
-    window.closeThread = () => {
-        activeThreadId = null;
-        document.getElementById('thread-modal').style.display = 'none';
-    };
-
-    function updateThread() {
-        const parent = allData.find(c => c.id === activeThreadId);
-        if (!parent) return;
-        const replies = allData.filter(c => c.parentId === activeThreadId).sort((a,b) => (a.at?.seconds || 0) - (b.at?.seconds || 0));
-        document.getElementById('thread-content').innerHTML = `
-            ${renderUI(parent)}
-            <div class="pl-8 space-y-3 mt-4 border-l dark:border-darkBorder">
-                ${replies.map(r => renderUI(r)).join('')}
-            </div>
-        `;
-    }
-
-    window.togglePostModal = (isReply) => {
-        const modal = document.getElementById('post-modal-overlay');
-        modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
-        document.getElementById('submit-btn').innerText = isReply ? 'রিপ্লাই' : 'পোস্ট';
-    };
-
-    window.postData = async () => {
-        const msg = document.getElementById('user-comment').value.trim();
-        if (!msg || !currentUser) return;
-        await addDoc(commentsCol, {
-            name: currentUser.displayName, msg, parentId: activeThreadId,
-            photoURL: currentUser.photoURL, at: serverTimestamp()
+    // Load Posts
+    const loadPosts = () => {
+        const q = query(forumCol, orderBy('at', 'desc'));
+        onSnapshot(q, (snapshot) => {
+            const data = [];
+            snapshot.forEach(doc => data.push({ id: doc.id, ...doc.data() }));
+            renderPosts(data);
+            renderUsers(data);
         });
-        document.getElementById('user-comment').value = '';
-        togglePostModal();
-        loadComments();
     };
 
+    const renderPosts = (posts) => {
+        const container = document.getElementById('feed-container');
+        let filtered = currentFilter === 'All' ? posts : posts.filter(p => p.cat === currentFilter);
+        
+        container.innerHTML = filtered.map(p => `
+            <div class="post-card p-5">
+                <div class="flex gap-3 mb-4">
+                    <img src="${p.photoURL}" class="w-10 h-10 rounded-full">
+                    <div>
+                        <h4 class="font-bold text-sm leading-tight">${p.name}</h4>
+                        <p class="text-[11px] text-gray-500 font-bold uppercase tracking-wide">${p.cat || 'সাধারণ'} • ${formatTime(p.at)}</p>
+                    </div>
+                </div>
+                <div class="text-[15px] leading-relaxed mb-4">
+                    ${DOMPurify.sanitize(marked.parse(p.msg))}
+                </div>
+                <div class="flex gap-6 border-t dark:border-gray-800 pt-3">
+                    <button class="flex items-center gap-1.5 text-gray-500 hover:text-blue-500 text-xs font-bold transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                        আলোচনা যোগ করুন
+                    </button>
+                    <button class="flex items-center gap-1.5 text-gray-500 hover:text-green-500 text-xs font-bold transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path></svg>
+                        শেয়ার
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    };
+
+    const renderUsers = (posts) => {
+        const userMap = new Map();
+        posts.forEach(p => userMap.set(p.userId, { name: p.name, photo: p.photoURL }));
+        const userList = Array.from(userMap.values()).slice(0, 5);
+        document.getElementById('active-users').innerHTML = userList.map(u => `
+            <div class="flex items-center gap-2">
+                <img src="${u.photo}" class="w-6 h-6 rounded-full">
+                <span class="text-sm font-medium truncate">${u.name}</span>
+            </div>
+        `).join('');
+    };
+
+    window.savePost = async () => {
+        const msg = document.getElementById('post-msg').value.trim();
+        const cat = document.getElementById('post-category').value;
+        if (!msg || !currentUser) return;
+
+        const btn = document.getElementById('publish-btn');
+        btn.disabled = true;
+        btn.innerText = "পাবলিশ হচ্ছে...";
+
+        try {
+            await addDoc(forumCol, {
+                name: currentUser.displayName,
+                msg: msg,
+                cat: cat,
+                photoURL: currentUser.photoURL,
+                userId: currentUser.uid,
+                at: serverTimestamp()
+            });
+            document.getElementById('post-msg').value = '';
+            closeModal();
+        } catch (e) {
+            console.error(e);
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "পাবলিশ করুন";
+        }
+    };
+
+    window.filterPosts = (cat) => {
+        currentFilter = cat;
+        loadPosts();
+    };
+
+    // UI Helpers
+    window.openModal = () => document.getElementById('post-modal').style.display = 'flex';
+    window.closeModal = () => document.getElementById('post-modal').style.display = 'none';
+
+    document.getElementById('theme-btn').onclick = () => {
+        document.body.classList.toggle('dark');
+        const isDark = document.body.classList.contains('dark');
+        document.getElementById('moon').innerHTML = isDark 
+            ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 9H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>'
+            : '<path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>';
+    };
+
+    const toBN = (n) => n.toString().replace(/\d/g, d => "০১২৩৪৫৬৭৮৯"[d]);
     function formatTime(ts) {
+        if(!ts) return 'এখন';
         const s = Math.floor((new Date() - new Date(ts.seconds * 1000))/1000);
-        if(s < 60) return 'এখন';
-        if(s < 3600) return Math.floor(s/60) + 'm';
-        if(s < 86400) return Math.floor(s/3600) + 'h';
+        if(s < 60) return toBN(s) + ' সে. আগে';
+        if(s < 3600) return toBN(Math.floor(s/60)) + ' মি. আগে';
+        if(s < 86400) return toBN(Math.floor(s/3600)) + ' ঘ. আগে';
         return new Date(ts.seconds*1000).toLocaleDateString('bn-BD', {day:'numeric', month:'short'});
     }
 
-    // Theme
-    const updateIcons = (dark) => {
-        document.getElementById('sun-icon').classList.toggle('hidden', !dark);
-        document.getElementById('moon-icon').classList.toggle('hidden', dark);
-    };
-    const isDark = localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
-    document.documentElement.classList.toggle('dark', isDark);
-    updateIcons(isDark);
-    document.getElementById('theme-toggle').onclick = () => {
-        const dark = document.documentElement.classList.toggle('dark');
-        localStorage.theme = dark ? 'dark' : 'light';
-        updateIcons(dark);
-    };
+    loadPosts();
 </script>
 </body>
 </html>
