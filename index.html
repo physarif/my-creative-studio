@@ -23,12 +23,12 @@
         }
     </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap');
         body { font-family: 'Hind Siliguri', sans-serif; transition: all 0.3s; }
         
-        .forum-card { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); border-left: 4px solid transparent; }
-        .forum-card:hover { transform: translateY(-3px); border-left-color: #3498db; box-shadow: 0 10px 20px -10px rgba(0,0,0,0.1); }
-        .dark .forum-card:hover { box-shadow: 0 10px 20px -10px rgba(0,0,0,0.5); }
+        .forum-card { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); border-left: 3px solid transparent; }
+        .forum-card:hover { transform: translateY(-2px); border-left-color: #3498db; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .dark .forum-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
 
         .view-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); display: none; z-index: 100; }
         .view-body { 
@@ -42,8 +42,8 @@
             position: fixed;
             bottom: 24px;
             right: 24px;
-            width: 60px;
-            height: 60px;
+            width: 56px;
+            height: 56px;
             background-color: #3498db;
             color: white;
             border-radius: 50%;
@@ -55,9 +55,9 @@
             z-index: 90;
             transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        .fab-post:hover { transform: scale(1.1) rotate(90deg); background-color: #2980b9; }
+        .fab-post:hover { transform: scale(1.1); background-color: #2980b9; }
         
-        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #2d333b; border-radius: 10px; }
 
@@ -69,93 +69,84 @@
 </head>
 <body class="bg-gray-50 text-gray-900 dark:bg-darkBg dark:text-gray-100">
 
-<!-- Navigation -->
 <nav class="sticky top-0 z-50 bg-white/90 dark:bg-darkBg/90 backdrop-blur-md border-b dark:border-darkBorder">
-    <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+    <div class="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
         <div class="flex items-center gap-4">
-            <h1 class="text-2xl font-black text-accent tracking-tighter cursor-pointer" onclick="location.reload()">আলোচনা.</h1>
+            <h1 class="text-xl font-black text-accent tracking-tighter cursor-pointer" onclick="location.reload()">আলোচনা.</h1>
         </div>
         <div class="flex items-center gap-3">
-            <button id="theme-toggle" class="p-2.5 rounded-xl bg-gray-100 dark:bg-darkCard hover:ring-2 ring-accent transition-all">
-                <svg id="theme-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+            <button id="theme-toggle" class="p-2 rounded-xl bg-gray-100 dark:bg-darkCard hover:ring-2 ring-accent transition-all">
+                <svg id="theme-icon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
             </button>
             <div id="auth-section">
-                <button id="login-ui" onclick="googleLogin()" class="bg-accent text-white px-5 py-2 rounded-xl text-sm font-bold shadow-lg shadow-accent/20">Login</button>
-                <img id="user-avatar" class="w-10 h-10 rounded-xl border-2 border-accent cursor-pointer hidden">
+                <button id="login-ui" onclick="googleLogin()" class="bg-accent text-white px-4 py-1.5 rounded-lg text-xs font-bold shadow-lg shadow-accent/20">Login</button>
+                <img id="user-avatar" class="w-8 h-8 rounded-lg border-2 border-accent cursor-pointer hidden">
             </div>
         </div>
     </div>
 </nav>
 
-<main class="max-w-6xl mx-auto px-4 py-8 flex flex-col lg:flex-row gap-8">
-    <!-- Sidebar Filter Options -->
-    <aside class="w-full lg:w-64 space-y-6">
-        <div class="sticky top-24">
-            <h3 class="text-xs font-black uppercase tracking-widest text-gray-400 mb-4 px-2">এক্সপ্লোর</h3>
+<main class="max-w-6xl mx-auto px-4 py-6 flex flex-col lg:flex-row gap-6">
+    <aside class="w-full lg:w-56">
+        <div class="sticky top-20">
             <div class="flex lg:flex-col gap-1 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0">
-                <button id="filter-latest" onclick="setFilter('latest')" class="filter-active flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold hover:bg-gray-200 dark:hover:bg-darkCard transition-all text-left w-full whitespace-nowrap lg:whitespace-normal">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <button id="filter-latest" onclick="setFilter('latest')" class="filter-active flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold hover:bg-gray-200 dark:hover:bg-darkCard transition-all text-left w-full whitespace-nowrap lg:whitespace-normal">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     সর্বশেষ
                 </button>
-                <button id="filter-popular" onclick="setFilter('popular')" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold hover:bg-gray-200 dark:hover:bg-darkCard transition-all text-left w-full whitespace-nowrap lg:whitespace-normal">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                <button id="filter-popular" onclick="setFilter('popular')" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold hover:bg-gray-200 dark:hover:bg-darkCard transition-all text-left w-full whitespace-nowrap lg:whitespace-normal">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                     জনপ্রিয়
                 </button>
-                <button id="filter-featured" onclick="setFilter('featured')" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold hover:bg-gray-200 dark:hover:bg-darkCard transition-all text-left w-full whitespace-nowrap lg:whitespace-normal">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-7.714 2.143L11 21l-2.286-6.857L1 12l7.714-2.143L11 3z"></path></svg>
+                <button id="filter-featured" onclick="setFilter('featured')" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold hover:bg-gray-200 dark:hover:bg-darkCard transition-all text-left w-full whitespace-nowrap lg:whitespace-normal">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-7.714 2.143L11 21l-2.286-6.857L1 12l7.714-2.143L11 3z"></path></svg>
                     ফিচার
                 </button>
-            </div>
-            
-            <div class="mt-8 p-5 bg-accent/5 rounded-3xl border border-accent/10 hidden lg:block">
-                <h4 class="text-sm font-bold text-accent mb-2">আলোচনা ফোরাম</h4>
-                <p class="text-xs text-gray-500 leading-relaxed">সহজে পোস্ট করুন এবং অন্যদের সাথে গঠনমূলক তর্কে অংশগ্রহণ করুন।</p>
             </div>
         </div>
     </aside>
 
-    <!-- Content Area -->
-    <section class="flex-1 space-y-4">
-        <div id="posts-container" class="space-y-4">
-            <div class="flex justify-center py-20"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div></div>
+    <section class="flex-1 space-y-3">
+        <div id="posts-container" class="space-y-3">
+            <div class="flex justify-center py-20"><div class="animate-spin rounded-full h-6 w-6 border-b-2 border-accent"></div></div>
         </div>
     </section>
 </main>
 
 <div id="fab-trigger" class="fab-post" onclick="togglePostModal(true)">
-    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"></path></svg>
+    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"></path></svg>
 </div>
 
-<!-- Details Sidebar View -->
+<!-- Details Sidebar -->
 <div id="details-view" class="view-overlay" onclick="if(event.target.id === 'details-view') closeView()">
     <div class="view-body">
-        <div class="p-4 border-b dark:border-darkBorder flex items-center justify-between sticky top-0 bg-white dark:bg-darkBg z-10">
-            <button onclick="closeView()" class="p-2 hover:bg-gray-100 dark:hover:bg-darkCard rounded-xl transition-colors">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        <div class="p-3 border-b dark:border-darkBorder flex items-center justify-between sticky top-0 bg-white dark:bg-darkBg z-10">
+            <button onclick="closeView()" class="p-2 hover:bg-gray-100 dark:hover:bg-darkCard rounded-lg transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
             </button>
-            <span class="font-bold">আলোচনা ডিটেইলস</span>
+            <span class="font-bold text-sm">বিস্তারিত আলোচনা</span>
             <div class="w-10"></div>
         </div>
-        <div id="details-content" class="flex-1 overflow-y-auto p-6"></div>
-        <div class="p-4 border-t dark:border-darkBorder bg-gray-50 dark:bg-darkCard">
+        <div id="details-content" class="flex-1 overflow-y-auto p-5"></div>
+        <div class="p-3 border-t dark:border-darkBorder bg-gray-50 dark:bg-darkCard">
             <div class="flex gap-2">
-                <input id="reply-input" type="text" placeholder="আপনার মতামত লিখুন..." class="flex-1 bg-white dark:bg-darkBg border dark:border-darkBorder rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 ring-accent">
-                <button onclick="postReply()" class="bg-accent text-white px-6 py-3 rounded-xl text-sm font-bold">পাঠান</button>
+                <input id="reply-input" type="text" placeholder="মতামত দিন..." class="flex-1 bg-white dark:bg-darkBg border dark:border-darkBorder rounded-lg px-3 py-2 text-xs outline-none focus:ring-2 ring-accent">
+                <button onclick="postReply()" class="bg-accent text-white px-4 py-2 rounded-lg text-xs font-bold">পাঠান</button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Post Creation Modal -->
+<!-- Post Modal -->
 <div id="post-modal-overlay" class="fixed inset-0 bg-black/70 z-[200] hidden items-center justify-center p-4 backdrop-blur-sm">
-    <div class="bg-white dark:bg-darkCard w-full max-w-xl rounded-3xl p-6 shadow-2xl overflow-hidden animate-in zoom-in duration-300">
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-xl font-black">নতুন আলোচনা শুরু করুন</h2>
-            <button onclick="togglePostModal(false)" class="text-gray-400 hover:text-red-500"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+    <div class="bg-white dark:bg-darkCard w-full max-w-lg rounded-2xl p-5 shadow-2xl overflow-hidden animate-in zoom-in duration-300">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-lg font-black">নতুন আলোচনা</h2>
+            <button onclick="togglePostModal(false)" class="text-gray-400 hover:text-red-500"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
         </div>
-        <textarea id="user-comment" placeholder="আপনার কথাগুলো এখানে লিখুন..." class="w-full bg-gray-50 dark:bg-darkBg border dark:border-darkBorder rounded-2xl px-5 py-4 h-64 outline-none focus:ring-2 ring-accent resize-none text-lg"></textarea>
-        <div class="flex justify-end pt-4">
-            <button onclick="postData()" class="bg-accent text-white px-10 py-3.5 rounded-full font-black shadow-lg">পাবলিশ করুন</button>
+        <textarea id="user-comment" placeholder="আপনার মনের কথা গুছিয়ে লিখুন..." class="w-full bg-gray-50 dark:bg-darkBg border dark:border-darkBorder rounded-xl px-4 py-3 h-48 outline-none focus:ring-2 ring-accent resize-none text-base"></textarea>
+        <div class="flex justify-end pt-3">
+            <button onclick="postData()" class="bg-accent text-white px-8 py-2.5 rounded-full font-bold shadow-lg text-sm">পাবলিশ</button>
         </div>
     </div>
 </div>
@@ -215,47 +206,44 @@
         const container = document.getElementById('posts-container');
         let posts = allData.filter(c => !c.parentId);
         
-        // Filter logic
         if(currentFilter === 'latest') {
             posts.sort((a,b) => (b.at?.seconds || 0) - (a.at?.seconds || 0));
         } else if(currentFilter === 'popular') {
             posts.sort((a,b) => (b.votes || 0) - (a.votes || 0));
         } else if(currentFilter === 'featured') {
-            // Logic for featured: High votes + latest
-            posts = posts.filter(p => (p.votes || 0) >= 2);
+            posts = posts.filter(p => p.featured === true);
             posts.sort((a,b) => (b.at?.seconds || 0) - (a.at?.seconds || 0));
         }
         
         container.innerHTML = posts.map(c => `
-            <div class="forum-card bg-white dark:bg-darkCard p-5 rounded-2xl border dark:border-darkBorder">
+            <div class="forum-card bg-white dark:bg-darkCard p-4 rounded-xl border dark:border-darkBorder">
                 <div class="flex gap-4">
-                    <div class="flex flex-col items-center gap-1 bg-gray-50 dark:bg-darkBg p-2 rounded-xl h-fit">
+                    <div class="flex flex-col items-center gap-1 bg-gray-50 dark:bg-darkBg p-1.5 rounded-lg h-fit">
                         <button onclick="handleVote('${c.id}', 1)" class="vote-btn text-gray-400 hover:text-accent">
-                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12.781 2.375c-.381-.475-1.181-.475-1.562 0l-8 10A1.001 1.001 0 004 14h4v7a1 1 0 001 1h6a1 1 0 001-1v-7h4a1.001 1.001 0 00.781-1.625l-8-10z"/></svg>
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12.781 2.375c-.381-.475-1.181-.475-1.562 0l-8 10A1.001 1.001 0 004 14h4v7a1 1 0 001 1h6a1 1 0 001-1v-7h4a1.001 1.001 0 00.781-1.625l-8-10z"/></svg>
                         </button>
-                        <span class="font-bold text-sm text-accent">${toBN(c.votes || 0)}</span>
+                        <span class="font-bold text-xs text-accent">${toBN(c.votes || 0)}</span>
                         <button onclick="handleVote('${c.id}', -1)" class="vote-btn text-gray-400 hover:text-red-500">
-                            <svg class="w-6 h-6 rotate-180" fill="currentColor" viewBox="0 0 24 24"><path d="M12.781 2.375c-.381-.475-1.181-.475-1.562 0l-8 10A1.001 1.001 0 004 14h4v7a1 1 0 001 1h6a1 1 0 001-1v-7h4a1.001 1.001 0 00.781-1.625l-8-10z"/></svg>
+                            <svg class="w-5 h-5 rotate-180" fill="currentColor" viewBox="0 0 24 24"><path d="M12.781 2.375c-.381-.475-1.181-.475-1.562 0l-8 10A1.001 1.001 0 004 14h4v7a1 1 0 001 1h6a1 1 0 001-1v-7h4a1.001 1.001 0 00.781-1.625l-8-10z"/></svg>
                         </button>
                     </div>
 
                     <div class="flex-1 cursor-pointer" onclick="openDetails('${c.id}')">
-                        <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center justify-between mb-1.5">
                             <div class="flex items-center gap-2">
-                                <img src="${c.photoURL}" class="w-5 h-5 rounded-full">
-                                <span class="text-xs font-bold text-gray-500">${c.name}</span>
-                                <span class="text-[10px] text-gray-400 font-bold uppercase">• ${formatTime(c.at)}</span>
+                                <img src="${c.photoURL}" class="w-4 h-4 rounded-full">
+                                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-tight">${c.name} • ${formatTime(c.at)}</span>
                             </div>
-                            ${(c.votes || 0) >= 5 ? '<span class="px-2 py-0.5 bg-yellow-400/10 text-yellow-600 dark:text-yellow-400 text-[10px] font-black uppercase rounded">Trending</span>' : ''}
+                            ${c.featured ? '<span class="px-1.5 py-0.5 bg-accent/10 text-accent text-[9px] font-black uppercase rounded">Featured</span>' : ''}
                         </div>
-                        <h2 class="text-lg font-bold mb-2 leading-snug">${c.msg.substring(0, 150)}${c.msg.length > 150 ? '...' : ''}</h2>
-                        <div class="flex items-center gap-4 text-gray-400 text-xs font-bold mt-3">
-                            <span class="flex items-center gap-1.5"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg> ${toBN(allData.filter(r => r.parentId === c.id).length)} মন্তব্য</span>
+                        <h2 class="text-sm font-semibold mb-1 leading-normal text-gray-800 dark:text-gray-200">${c.msg.substring(0, 140)}${c.msg.length > 140 ? '...' : ''}</h2>
+                        <div class="flex items-center gap-3 text-gray-400 text-[10px] font-bold mt-2">
+                            <span class="flex items-center gap-1.5"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg> ${toBN(allData.filter(r => r.parentId === c.id).length)} মতামত</span>
                         </div>
                     </div>
                 </div>
             </div>
-        `).join('') || '<div class="text-center py-20 text-gray-400">এই বিভাগে কোনো আলোচনা খুঁজে পাওয়া যায়নি।</div>';
+        `).join('') || `<div class="text-center py-20 text-gray-400 text-sm">এই বিভাগে কোনো পোস্ট নেই।</div>`;
     }
 
     window.handleVote = async (id, val) => {
@@ -284,33 +272,33 @@
         const replies = allData.filter(r => r.parentId === activeThreadId).sort((a,b) => (a.at?.seconds || 0) - (b.at?.seconds || 0));
         
         document.getElementById('details-content').innerHTML = `
-            <div class="mb-8">
-                <div class="flex items-center gap-3 mb-5">
-                    <img src="${post.photoURL}" class="w-12 h-12 rounded-xl border-2 border-accent/20">
+            <div class="mb-6">
+                <div class="flex items-center gap-3 mb-4">
+                    <img src="${post.photoURL}" class="w-10 h-10 rounded-lg">
                     <div>
-                        <div class="font-black text-lg leading-tight">${post.name}</div>
-                        <div class="text-[11px] text-gray-400 font-bold uppercase">${formatTime(post.at)}</div>
+                        <div class="font-black text-sm leading-tight">${post.name}</div>
+                        <div class="text-[10px] text-gray-400 font-bold uppercase">${formatTime(post.at)}</div>
                     </div>
                 </div>
-                <div class="prose dark:prose-invert max-w-none text-lg mb-8">
+                <div class="prose dark:prose-invert max-w-none text-base mb-6">
                     ${DOMPurify.sanitize(marked.parse(post.msg))}
                 </div>
-                <div class="flex items-center gap-4 bg-gray-50 dark:bg-darkCard w-fit px-4 py-2 rounded-2xl mb-8">
-                    <button onclick="handleVote('${post.id}', 1)" class="vote-btn text-gray-400 hover:text-accent"><svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12.781 2.375c-.381-.475-1.181-.475-1.562 0l-8 10A1.001 1.001 0 004 14h4v7a1 1 0 001 1h6a1 1 0 001-1v-7h4a1.001 1.001 0 00.781-1.625l-8-10z"/></svg></button>
-                    <span class="font-black text-accent">${toBN(post.votes || 0)}</span>
-                    <button onclick="handleVote('${post.id}', -1)" class="vote-btn text-gray-400 hover:text-red-500"><svg class="w-6 h-6 rotate-180" fill="currentColor" viewBox="0 0 24 24"><path d="M12.781 2.375c-.381-.475-1.181-.475-1.562 0l-8 10A1.001 1.001 0 004 14h4v7a1 1 0 001 1h6a1 1 0 001-1v-7h4a1.001 1.001 0 00.781-1.625l-8-10z"/></svg></button>
+                <div class="flex items-center gap-4 bg-gray-50 dark:bg-darkCard w-fit px-3 py-1.5 rounded-xl mb-6 border dark:border-darkBorder">
+                    <button onclick="handleVote('${post.id}', 1)" class="vote-btn text-gray-400 hover:text-accent"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12.781 2.375c-.381-.475-1.181-.475-1.562 0l-8 10A1.001 1.001 0 004 14h4v7a1 1 0 001 1h6a1 1 0 001-1v-7h4a1.001 1.001 0 00.781-1.625l-8-10z"/></svg></button>
+                    <span class="font-black text-xs text-accent">${toBN(post.votes || 0)}</span>
+                    <button onclick="handleVote('${post.id}', -1)" class="vote-btn text-gray-400 hover:text-red-500"><svg class="w-5 h-5 rotate-180" fill="currentColor" viewBox="0 0 24 24"><path d="M12.781 2.375c-.381-.475-1.181-.475-1.562 0l-8 10A1.001 1.001 0 004 14h4v7a1 1 0 001 1h6a1 1 0 001-1v-7h4a1.001 1.001 0 00.781-1.625l-8-10z"/></svg></button>
                 </div>
-                <h3 class="font-black text-xs uppercase tracking-widest text-gray-400 mb-6">মন্তব্য (${toBN(replies.length)})</h3>
-                <div class="space-y-6">
+                <h3 class="font-black text-[10px] uppercase tracking-widest text-gray-400 mb-4">মতামত (${toBN(replies.length)})</h3>
+                <div class="space-y-4">
                     ${replies.map(r => `
-                        <div class="flex gap-4">
-                            <img src="${r.photoURL}" class="w-9 h-9 rounded-xl">
+                        <div class="flex gap-3">
+                            <img src="${r.photoURL}" class="w-8 h-8 rounded-lg">
                             <div class="flex-1">
-                                <div class="bg-gray-100 dark:bg-darkCard p-4 rounded-2xl">
-                                    <div class="font-bold text-xs text-accent mb-1">${r.name}</div>
-                                    <div class="text-sm">${r.msg}</div>
+                                <div class="bg-gray-100 dark:bg-darkCard p-3 rounded-xl border dark:border-darkBorder">
+                                    <div class="font-bold text-[10px] text-accent mb-1">${r.name}</div>
+                                    <div class="text-xs leading-relaxed">${r.msg}</div>
                                 </div>
-                                <div class="mt-1.5 ml-1 text-[10px] text-gray-400 font-bold uppercase">${formatTime(r.at)}</div>
+                                <div class="mt-1 ml-1 text-[9px] text-gray-400 font-bold uppercase">${formatTime(r.at)}</div>
                             </div>
                         </div>
                     `).join('')}
@@ -329,7 +317,7 @@
         if (!msg || !currentUser) return;
         await addDoc(commentsCol, {
             name: currentUser.displayName, msg, parentId: null,
-            votes: 0, photoURL: currentUser.photoURL, userId: currentUser.uid, at: serverTimestamp()
+            votes: 0, featured: false, photoURL: currentUser.photoURL, userId: currentUser.uid, at: serverTimestamp()
         });
         document.getElementById('user-comment').value = '';
         togglePostModal(false);
