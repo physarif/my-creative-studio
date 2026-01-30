@@ -30,6 +30,9 @@
         .forum-card:hover { transform: translateY(-2px); border-left-color: #3498db; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         .dark .forum-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
 
+        /* Text Justification and Polish */
+        .post-text { text-align: justify; text-justify: inter-word; hyphens: auto; }
+
         .view-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); display: none; z-index: 100; }
         .view-body { 
             position: absolute; right: 0; top: 0; width: 100%; max-width: 650px; height: 100%; 
@@ -215,10 +218,13 @@
             posts.sort((a,b) => (b.at?.seconds || 0) - (a.at?.seconds || 0));
         }
         
-        container.innerHTML = posts.map(c => `
+        container.innerHTML = posts.map(c => {
+            const repliesCount = allData.filter(r => r.parentId === c.id).length;
+            return `
             <div class="forum-card bg-white dark:bg-darkCard p-4 rounded-xl border dark:border-darkBorder">
                 <div class="flex gap-4">
-                    <div class="flex flex-col items-center gap-1 bg-gray-50 dark:bg-darkBg p-1.5 rounded-lg h-fit">
+                    <!-- Left Bar: Votes and Replies -->
+                    <div class="flex flex-col items-center gap-1 bg-gray-50 dark:bg-darkBg p-1.5 rounded-lg h-fit min-w-[40px]">
                         <button onclick="handleVote('${c.id}', 1)" class="vote-btn text-gray-400 hover:text-accent">
                             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12.781 2.375c-.381-.475-1.181-.475-1.562 0l-8 10A1.001 1.001 0 004 14h4v7a1 1 0 001 1h6a1 1 0 001-1v-7h4a1.001 1.001 0 00.781-1.625l-8-10z"/></svg>
                         </button>
@@ -226,8 +232,14 @@
                         <button onclick="handleVote('${c.id}', -1)" class="vote-btn text-gray-400 hover:text-red-500">
                             <svg class="w-5 h-5 rotate-180" fill="currentColor" viewBox="0 0 24 24"><path d="M12.781 2.375c-.381-.475-1.181-.475-1.562 0l-8 10A1.001 1.001 0 004 14h4v7a1 1 0 001 1h6a1 1 0 001-1v-7h4a1.001 1.001 0 00.781-1.625l-8-10z"/></svg>
                         </button>
+                        
+                        <div class="mt-2 pt-2 border-t border-gray-200 dark:border-darkBorder w-full flex flex-col items-center gap-0.5 text-gray-400">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                            <span class="text-[9px] font-black">${toBN(repliesCount)}</span>
+                        </div>
                     </div>
 
+                    <!-- Right Side: Content -->
                     <div class="flex-1 cursor-pointer" onclick="openDetails('${c.id}')">
                         <div class="flex items-center justify-between mb-1.5">
                             <div class="flex items-center gap-2">
@@ -236,14 +248,11 @@
                             </div>
                             ${c.featured ? '<span class="px-1.5 py-0.5 bg-accent/10 text-accent text-[9px] font-black uppercase rounded">Featured</span>' : ''}
                         </div>
-                        <h2 class="text-sm font-semibold mb-1 leading-normal text-gray-800 dark:text-gray-200">${c.msg.substring(0, 140)}${c.msg.length > 140 ? '...' : ''}</h2>
-                        <div class="flex items-center gap-3 text-gray-400 text-[10px] font-bold mt-2">
-                            <span class="flex items-center gap-1.5"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg> ${toBN(allData.filter(r => r.parentId === c.id).length)} মতামত</span>
-                        </div>
+                        <h2 class="text-sm font-semibold mb-1 leading-normal text-gray-800 dark:text-gray-200 post-text">${c.msg.substring(0, 140)}${c.msg.length > 140 ? '...' : ''}</h2>
                     </div>
                 </div>
             </div>
-        `).join('') || `<div class="text-center py-20 text-gray-400 text-sm">এই বিভাগে কোনো পোস্ট নেই।</div>`;
+        `}).join('') || `<div class="text-center py-20 text-gray-400 text-sm">এই বিভাগে কোনো পোস্ট নেই।</div>`;
     }
 
     window.handleVote = async (id, val) => {
@@ -280,7 +289,7 @@
                         <div class="text-[10px] text-gray-400 font-bold uppercase">${formatTime(post.at)}</div>
                     </div>
                 </div>
-                <div class="prose dark:prose-invert max-w-none text-base mb-6">
+                <div class="prose dark:prose-invert max-w-none text-base mb-6 post-text">
                     ${DOMPurify.sanitize(marked.parse(post.msg))}
                 </div>
                 <div class="flex items-center gap-4 bg-gray-50 dark:bg-darkCard w-fit px-3 py-1.5 rounded-xl mb-6 border dark:border-darkBorder">
@@ -296,7 +305,7 @@
                             <div class="flex-1">
                                 <div class="bg-gray-100 dark:bg-darkCard p-3 rounded-xl border dark:border-darkBorder">
                                     <div class="font-bold text-[10px] text-accent mb-1">${r.name}</div>
-                                    <div class="text-xs leading-relaxed">${r.msg}</div>
+                                    <div class="text-xs leading-relaxed post-text">${r.msg}</div>
                                 </div>
                                 <div class="mt-1 ml-1 text-[9px] text-gray-400 font-bold uppercase">${formatTime(r.at)}</div>
                             </div>
