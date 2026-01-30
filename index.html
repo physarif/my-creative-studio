@@ -30,10 +30,7 @@
         #post-modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 100; padding: 16px; }
         .post-modal-content { width: 100%; max-width: 600px; background: white; border-radius: 16px; position: relative; }
         .dark .post-modal-content { background: #000000; border: 1px solid #2f3336; }
-        .dropdown-content { display: none; position: absolute; background-color: white; min-width: 120px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.1); z-index: 50; border-radius: 8px; margin-top: 4px; border: 1px solid #f3f4f6; }
-        .dark .dropdown-content { background-color: #16181c; border-color: #2f3336; }
-        .show { display: block; }
-        .google-btn { display: flex; align-items: center; background-color: white; border: 1px solid #dadce0; border-radius: 4px; padding: 0 8px; height: 34px; cursor: pointer; }
+        .google-btn { display: flex; align-items: center; background-color: white; border: 1px solid #dadce0; border-radius: 4px; padding: 0 12px; height: 36px; cursor: pointer; font-weight: 600; font-size: 14px; gap: 8px; }
         .dark .google-btn { background-color: #16181c; border-color: #2f3336; color: white; }
     </style>
 </head>
@@ -41,50 +38,49 @@
 
 <div class="max-w-2xl mx-auto">
     <!-- Header -->
-    <div class="flex items-center justify-between mb-8 px-2">
-        <div class="flex items-center gap-3">
-            <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-darkCard transition-all">
-                <svg id="sun-icon" class="w-5 h-5 hidden text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" /></svg>
-                <svg id="moon-icon" class="w-5 h-5 hidden text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" /></svg>
+    <div class="flex items-center justify-between mb-6 px-2">
+        <div id="nav-left" class="flex items-center gap-3">
+            <button id="back-btn" onclick="closeThread()" class="hidden p-2 rounded-full hover:bg-gray-100 dark:hover:bg-darkCard">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path></svg>
             </button>
-
-            <div class="relative inline-block">
-                <button onclick="toggleSortDropdown()" id="sort-btn" class="flex items-center gap-1.5 border border-gray-300 dark:border-darkBorder rounded px-2.5 py-1 text-sm font-semibold bg-white dark:bg-darkCard">
-                    <span id="current-sort-label">সেরা</span>
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>
+            <div id="main-controls" class="flex items-center gap-3">
+                <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-darkCard transition-all">
+                    <svg id="sun-icon" class="w-5 h-5 hidden text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" /></svg>
+                    <svg id="moon-icon" class="w-5 h-5 hidden text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" /></svg>
                 </button>
-                <div id="sort-dropdown" class="dropdown-content left-0 mt-1 rounded-xl overflow-hidden shadow-xl border border-gray-100 dark:border-darkBorder">
-                    <button onclick="setSort('top', 'সেরা')" class="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-darkBorder">সেরা</button>
-                    <button onclick="setSort('recent', 'সাম্প্রতিক')" class="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-darkBorder">সাম্প্রতিক</button>
-                </div>
+                <button onclick="toggleSort()" class="border border-gray-300 dark:border-darkBorder rounded-lg px-3 py-1 text-sm font-semibold bg-white dark:bg-darkCard">
+                    <span id="sort-label">সেরা</span>
+                </button>
             </div>
+            <span id="thread-title" class="hidden font-bold text-lg">থ্রেড</span>
         </div>
 
         <div id="auth-section">
-            <div id="user-info-ui" class="hidden flex items-center gap-2">
-                <div class="flex flex-col items-end">
-                    <span id="display-name-nav" class="text-[11px] font-bold"></span>
-                    <button onclick="handleLogout()" class="text-[9px] font-bold text-gray-500 hover:text-red-500">লগআউট</button>
-                </div>
-                <img id="user-avatar" src="" class="w-8 h-8 rounded-full border dark:border-darkBorder">
+            <div id="user-info-ui" class="hidden flex items-center gap-3">
+                <img id="user-avatar" src="" class="w-9 h-9 rounded-full border dark:border-darkBorder">
             </div>
             <div id="login-ui">
-                <button onclick="googleLogin()" class="google-btn text-xs font-bold">লগইন</button>
+                <button onclick="googleLogin()" class="google-btn text-xs">লগইন</button>
             </div>
         </div>
     </div>
 
+    <!-- Active Parent Comment (Only shown in thread view) -->
+    <div id="active-parent-container" class="mb-6 hidden"></div>
+
+    <div class="border-b dark:border-darkBorder mb-6"></div>
+
     <!-- Comments List -->
-    <div id="comments-container" class="space-y-6">
+    <div id="comments-container" class="space-y-4">
         <div class="flex justify-center py-10"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div></div>
     </div>
     
     <div id="load-more-container" class="flex justify-center mt-10 hidden">
-        <button onclick="loadMore()" class="text-sm font-bold text-[#1d9bf0] bg-blue-50 dark:bg-blue-900/20 px-8 py-2.5 rounded-full">আরো লোড করুন</button>
+        <button onclick="loadMore()" class="text-sm font-bold text-[#1d9bf0] bg-blue-50 dark:bg-blue-900/20 px-8 py-2.5 rounded-full hover:bg-blue-100 transition-all">আরো লোড করুন</button>
     </div>
 </div>
 
-<!-- Floating Action Button -->
+<!-- FAB -->
 <button onclick="togglePostModal()" class="fab">
     <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
 </button>
@@ -93,15 +89,15 @@
 <div id="post-modal-overlay" onclick="if(event.target.id === 'post-modal-overlay') togglePostModal()">
     <div class="post-modal-content overflow-hidden">
         <div id="post-header-auth" class="flex items-center justify-between p-4 border-b dark:border-darkBorder hidden">
-            <button onclick="togglePostModal()" class="text-gray-500">বন্ধ করুন</button>
-            <button onclick="postData(null)" class="bg-[#1d9bf0] text-white font-bold py-1.5 px-6 rounded-full text-sm">পোস্ট</button>
+            <button onclick="togglePostModal()" class="text-gray-500 text-sm font-bold">বাতিল</button>
+            <button onclick="postData()" id="submit-post-btn" class="bg-[#1d9bf0] text-white font-bold py-1.5 px-6 rounded-full text-sm">পোস্ট</button>
         </div>
         <div class="p-4">
             <div id="textarea-container" class="hidden">
-                <textarea id="user-comment" placeholder="আপনার কথাগুলো লিখুন (Markdown সমর্থিত)..." class="w-full bg-transparent text-lg outline-none min-h-[150px] dark:text-white resize-none"></textarea>
+                <textarea id="user-comment" placeholder="আপনার কথাগুলো লিখুন..." class="w-full bg-transparent text-lg outline-none min-h-[150px] dark:text-white resize-none"></textarea>
             </div>
             <div id="login-required-prompt" class="py-10 text-center">
-                <p class="text-gray-500 mb-4">পোস্ট করতে লগইন করুন</p>
+                <p class="text-gray-500 mb-6 font-medium">মন্তব্য করতে লগইন করুন</p>
                 <button onclick="googleLogin()" class="google-btn mx-auto">গুগল দিয়ে লগইন</button>
             </div>
         </div>
@@ -110,7 +106,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, query, serverTimestamp, updateDoc, doc, increment } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, query, serverTimestamp, updateDoc, doc, increment, where } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
 
     const firebaseConfig = {
@@ -130,9 +126,10 @@
     const commentsCol = collection(db, 'blog_comments', 'pages', pageId);
 
     let currentUser = null;
-    let currentSort = 'top';
+    let currentSort = 'top'; 
     let visibleCount = 10;
-    let allRootThreads = [];
+    let allData = [];
+    let activeThreadId = null; // null মানে মেইন পেজ, আইডি মানে থ্রেড পেজ
 
     // --- Authentication ---
     onAuthStateChanged(auth, (user) => {
@@ -147,7 +144,6 @@
             userInfoUi.classList.remove('hidden');
             loginUi.classList.add('hidden');
             document.getElementById('user-avatar').src = user.photoURL;
-            document.getElementById('display-name-nav').textContent = user.displayName;
             postHeaderAuth.classList.remove('hidden');
             textareaContainer.classList.remove('hidden');
             loginPrompt.classList.add('hidden');
@@ -161,133 +157,161 @@
         loadComments();
     });
 
-    window.googleLogin = async () => { try { await signInWithPopup(auth, provider); } catch (e) { console.error(e); } };
+    window.googleLogin = async () => { try { await signInWithPopup(auth, provider); } catch (e) {} };
     window.handleLogout = () => signOut(auth);
 
-    // --- Loading Logic (Quota Friendly) ---
+    // --- Data Loading ---
     async function loadComments(force = false) {
-        const cacheKey = `cache_${pageId}`;
-        const cached = sessionStorage.getItem(cacheKey);
-
-        if (cached && !force) {
-            allRootThreads = JSON.parse(cached);
-            renderDisplay();
-            return;
-        }
-
         try {
             const snap = await getDocs(query(commentsCol));
-            let list = [];
-            snap.forEach(d => list.push({ id: d.id, ...d.data() }));
-            
-            allRootThreads = buildTree(list);
-            sortThreads();
-            sessionStorage.setItem(cacheKey, JSON.stringify(allRootThreads));
+            allData = [];
+            snap.forEach(d => allData.push({ id: d.id, ...d.data() }));
             renderDisplay();
-        } catch (e) {
-            console.error("Quota error or network issue:", e);
-        }
-    }
-
-    function buildTree(list) {
-        const map = {}, roots = [];
-        list.forEach(c => map[c.id] = { ...c, replies: [] });
-        list.forEach(c => {
-            if (c.parentId && map[c.parentId]) map[c.parentId].replies.push(map[c.id]);
-            else roots.push(map[c.id]);
-        });
-        return roots;
-    }
-
-    function sortThreads() {
-        allRootThreads.sort((a,b) => {
-            if(currentSort === 'top') return (b.votes || 0) - (a.votes || 0);
-            return (b.at?.seconds || 0) - (a.at?.seconds || 0);
-        });
+        } catch (e) { console.error(e); }
     }
 
     function renderDisplay() {
         const container = document.getElementById('comments-container');
-        const subset = allRootThreads.slice(0, visibleCount);
-        container.innerHTML = subset.length > 0 ? subset.map(c => renderComment(c)).join('') : `<p class="text-center text-gray-400 py-10 italic">কোনো মন্তব্য নেই।</p>`;
-        document.getElementById('load-more-container').classList.toggle('hidden', allRootThreads.length <= visibleCount);
+        const parentContainer = document.getElementById('active-parent-container');
+        const backBtn = document.getElementById('back-btn');
+        const mainControls = document.getElementById('main-controls');
+        const threadTitle = document.getElementById('thread-title');
+
+        if (activeThreadId) {
+            // থ্রেড ভিউ
+            backBtn.classList.remove('hidden');
+            threadTitle.classList.remove('hidden');
+            mainControls.classList.add('hidden');
+            parentContainer.classList.remove('hidden');
+
+            const parentData = allData.find(c => c.id === activeThreadId);
+            if (parentData) parentContainer.innerHTML = renderCommentUI(parentData, true);
+
+            const replies = allData.filter(c => c.parentId === activeThreadId);
+            replies.sort((a,b) => (b.at?.seconds || 0) - (a.at?.seconds || 0)); // রিপ্লাই সবসময় লেটেস্ট আগে
+            
+            container.innerHTML = replies.length > 0 ? 
+                `<h3 class="text-xs font-bold text-gray-400 mb-4 uppercase tracking-wider">রিপ্লাই (${toBN(replies.length)})</h3>` + replies.map(c => renderCommentUI(c)).join('') 
+                : `<p class="text-center text-gray-400 py-10 italic">এখনো কোনো রিপ্লাই নেই। প্রথম রিপ্লাইটি আপনি করুন!</p>`;
+            
+            document.getElementById('load-more-container').classList.add('hidden');
+            document.getElementById('submit-post-btn').innerText = "রিপ্লাই দিন";
+        } else {
+            // মেইন ভিউ
+            backBtn.classList.add('hidden');
+            threadTitle.classList.add('hidden');
+            mainControls.classList.remove('hidden');
+            parentContainer.classList.add('hidden');
+
+            const roots = allData.filter(c => !c.parentId);
+            roots.sort((a,b) => {
+                if(currentSort === 'top') return (b.votes || 0) - (a.votes || 0);
+                return (b.at?.seconds || 0) - (a.at?.seconds || 0);
+            });
+
+            const subset = roots.slice(0, visibleCount);
+            container.innerHTML = subset.length > 0 ? subset.map(c => renderCommentUI(c)).join('') : `<p class="text-center text-gray-400 py-10 italic">কোনো মন্তব্য পাওয়া যায়নি।</p>`;
+            document.getElementById('load-more-container').classList.toggle('hidden', roots.length <= visibleCount);
+            document.getElementById('submit-post-btn').innerText = "পোস্ট";
+        }
     }
 
-    function renderComment(c, depth = 0) {
+    function renderCommentUI(c, isParent = false) {
         const date = c.at ? formatTime(c.at) : 'এখন';
-        const msg = DOMPurify.sanitize(marked.parse(c.msg));
-        const borderClass = depth === 0 ? 'border-b dark:border-darkBorder pb-6' : 'ml-4 pl-4 border-l dark:border-darkBorder';
+        const msgHtml = DOMPurify.sanitize(marked.parse(c.msg));
+        const replyCount = allData.filter(r => r.parentId === c.id).length;
 
         return `
-        <div id="comment-${c.id}" class="${borderClass} mt-4">
-            <div class="flex items-center gap-2 mb-1">
-                <img src="${c.photoURL || 'https://www.gravatar.com/avatar/000?d=mp'}" class="w-5 h-5 rounded-full">
-                <span class="font-bold text-sm">${esc(c.name)}</span>
-                <span class="text-[10px] text-gray-400">${date}</span>
+        <div id="comment-${c.id}" class="${isParent ? 'bg-blue-50/50 dark:bg-blue-900/10 border-blue-100 dark:border-blue-900' : 'bg-gray-50 dark:bg-darkCard/30 border-gray-100 dark:border-darkBorder'} border rounded-2xl p-4 transition-all">
+            <div class="flex items-center gap-3 mb-3">
+                <img src="${c.photoURL || 'https://www.gravatar.com/avatar/000?d=mp'}" class="w-8 h-8 rounded-full">
+                <div>
+                    <div class="font-bold text-sm leading-none mb-1">${esc(c.name)}</div>
+                    <div class="text-[10px] text-gray-400 font-medium">${date}</div>
+                </div>
             </div>
-            <div class="comment-content text-[15px] dark:text-gray-300 ml-7">${msg}</div>
-            <div class="flex items-center gap-4 mt-2 ml-7 text-[11px] font-bold text-gray-500">
-                <button onclick="vote('${c.id}')" class="hover:text-blue-500">▲ ${toBN(c.votes || 0)}</button>
-                <button onclick="toggleReply('${c.id}')">রিপ্লাই</button>
+            <div class="comment-content text-[15px] dark:text-gray-300 leading-relaxed">${msgHtml}</div>
+            <div class="mt-4 flex items-center justify-between border-t dark:border-darkBorder/50 pt-3">
+                <button onclick="vote('${c.id}')" class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white dark:bg-darkCard border dark:border-darkBorder hover:bg-blue-50 dark:hover:bg-blue-900/20 text-xs font-bold transition-all">
+                    <span class="text-blue-500">▲</span> ${toBN(c.votes || 0)}
+                </button>
+                ${!isParent ? `
+                <button onclick="openThread('${c.id}')" class="text-[11px] font-bold text-gray-500 hover:text-blue-500 flex items-center gap-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                    ${replyCount > 0 ? toBN(replyCount) + ' টি উত্তর' : 'উত্তর দিন'}
+                </button>` : ''}
             </div>
-            <div id="reply-form-${c.id}" class="hidden mt-3 ml-7">
-                <textarea id="msg-${c.id}" class="w-full p-2 bg-gray-50 dark:bg-darkBorder/40 rounded-lg text-sm outline-none border dark:border-darkBorder h-20 resize-none"></textarea>
-                <button onclick="postData('${c.id}')" class="bg-blue-500 text-white px-4 py-1 rounded-full mt-2 text-xs">রিপ্লাই দিন</button>
-            </div>
-            <div>${c.replies.map(r => renderComment(r, depth + 1)).join('')}</div>
         </div>`;
     }
 
     // --- Actions ---
-    window.postData = async (pid) => {
+    window.openThread = (id) => {
+        activeThreadId = id;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        renderDisplay();
+    };
+
+    window.closeThread = () => {
+        activeThreadId = null;
+        renderDisplay();
+    };
+
+    window.postData = async () => {
         if (!currentUser) return;
-        const input = pid ? document.getElementById(`msg-${pid}`) : document.getElementById('user-comment');
+        const input = document.getElementById('user-comment');
         const m = input.value.trim();
         if(!m) return;
 
         try {
             await addDoc(commentsCol, {
-                name: currentUser.displayName, msg: m, parentId: pid, votes: 0,
-                photoURL: currentUser.photoURL, userId: currentUser.uid, at: serverTimestamp()
+                name: currentUser.displayName, 
+                msg: m, 
+                votes: 0,
+                parentId: activeThreadId || null,
+                photoURL: currentUser.photoURL, 
+                userId: currentUser.uid, 
+                at: serverTimestamp()
             });
             input.value = '';
-            if(!pid) togglePostModal();
-            loadComments(true); // Force refresh to show new comment
+            togglePostModal();
+            loadComments(true);
         } catch(e) { console.error(e); }
     };
 
     window.vote = async (id) => {
-        if(localStorage.getItem(`voted_${id}`)) return;
+        const voteKey = `voted_${id}`;
+        if(localStorage.getItem(voteKey)) return;
         try {
             await updateDoc(doc(db, 'blog_comments', 'pages', pageId, id), { votes: increment(1) });
-            localStorage.setItem(`voted_${id}`, 'true');
+            localStorage.setItem(voteKey, 'true');
             loadComments(true);
         } catch(e) {}
     };
 
-    // --- Utilities ---
-    window.toggleSortDropdown = () => document.getElementById("sort-dropdown").classList.toggle("show");
-    window.setSort = (type, label) => { 
-        currentSort = type; 
-        document.getElementById('current-sort-label').innerText = label; 
-        loadComments(true); 
+    window.toggleSort = () => {
+        currentSort = currentSort === 'top' ? 'recent' : 'top';
+        document.getElementById('sort-label').innerText = currentSort === 'top' ? 'সেরা' : 'সাম্প্রতিক';
+        renderDisplay();
     };
+
     window.togglePostModal = () => {
         const modal = document.getElementById('post-modal-overlay');
         const isOpen = modal.style.display === 'flex';
         modal.style.display = isOpen ? 'none' : 'flex';
         document.body.style.overflow = isOpen ? '' : 'hidden';
+        if (!isOpen) setTimeout(() => document.getElementById('user-comment').focus(), 100);
     };
-    window.toggleReply = (id) => document.getElementById(`reply-form-${id}`).classList.toggle('hidden');
+
     window.loadMore = () => { visibleCount += 10; renderDisplay(); };
 
+    // --- Utilities ---
     const toBN = (n) => n.toString().replace(/\d/g, d => "০১২৩৪৫৬৭৮৯"[d]);
     const esc = (t) => { let d = document.createElement('div'); d.textContent = t; return d.innerHTML; };
     function formatTime(ts) {
         const s = Math.floor((new Date() - new Date(ts.seconds * 1000))/1000);
         if(s < 60) return 'এখন';
-        if(s < 3600) return toBN(Math.floor(s/60)) + 'মি';
-        if(s < 86400) return toBN(Math.floor(s/3600)) + 'ঘ';
+        if(s < 3600) return toBN(Math.floor(s/60)) + 'মি আগে';
+        if(s < 86400) return toBN(Math.floor(s/3600)) + 'ঘ আগে';
         return toBN(new Date(ts.seconds*1000).getDate()) + ' ' + new Date(ts.seconds*1000).toLocaleDateString('bn-BD', {month:'short'});
     }
 
