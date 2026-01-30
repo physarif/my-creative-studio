@@ -3,157 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>আলোচনা - ক্লাসিক টুইটার ২০১৬</title>
+    <title>আলোচনা - ক্লিন লেআউট</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.2/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkBg: '#000000',
+                        darkCard: '#16181c',
+                        darkBorder: '#2f3336',
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Hind+Siliguri:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Hind+Siliguri:wght@400;600;700&display=swap');
+        body { font-family: 'Inter', 'Hind Siliguri', sans-serif; transition: background-color 0.2s, color 0.2s; }
         
-        body {
-            background-color: #f5f8fa;
-            font-family: 'Roboto', 'Hind Siliguri', sans-serif;
-            color: #14171a;
+        #thread-modal { 
+            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); 
+            backdrop-filter: blur(4px); display: none; z-index: 100;
+        }
+        .modal-body {
+            position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+            width: 100%; max-width: 550px; height: 85vh;
+            background: white; border-radius: 20px 20px 0 0;
+            display: flex; flex-direction: column; overflow: hidden;
+            animation: slideUp 0.3s ease-out;
+        }
+        .dark .modal-body { background: #16181c; border: 1px solid #2f3336; }
+        
+        @keyframes slideUp {
+            from { transform: translate(-50%, 100%); }
+            to { transform: translate(-50%, 0); }
         }
 
-        .twitter-blue { color: #1da1f2; }
-        .bg-twitter-blue { background-color: #1da1f2; }
-        .border-twitter-blue { border-color: #1da1f2; }
-
-        /* ২০১৬ টুইটার কার্ড স্টাইল */
-        .tweet-card {
-            background: #fff;
-            border-bottom: 1px solid #e1e8ed;
-            transition: background 0.2s;
-            cursor: pointer;
-        }
-        .tweet-card:hover {
-            background: #f5f8fa;
+        @media (min-width: 768px) {
+            .modal-body { height: 75vh; bottom: 50%; transform: translate(-50%, 50%); border-radius: 16px; }
         }
 
-        .profile-box {
-            background: #fff;
-            border: 1px solid #e1e8ed;
+        .comment-bubble {
+            background-color: #f0f2f5;
+            border-radius: 18px;
+            padding: 8px 12px;
+            display: inline-block;
+            max-width: 100%;
         }
-
-        .cover-photo {
-            height: 95px;
-            background: #1da1f2;
-        }
-
-        .avatar-under-cover {
-            margin-top: -30px;
-            border: 4px solid #fff;
-            border-radius: 8px;
-        }
-
-        .nav-link-active {
-            border-bottom: 2px solid #1da1f2;
-            color: #1da1f2;
-        }
-
-        textarea {
-            resize: none;
-        }
-
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
-        ::-webkit-scrollbar-thumb { background: #ccd6dd; border-radius: 10px; }
+        .dark .comment-bubble { background-color: #262728; }
+        
+        .fab { position: fixed; bottom: 24px; right: 24px; width: 48px; height: 48px; background-color: #1d9bf0; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(29, 155, 240, 0.4); cursor: pointer; z-index: 40; border: none; }
+        #post-modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.4); display: none; align-items: center; justify-content: center; z-index: 200; padding: 16px; }
     </style>
 </head>
-<body>
+<body class="bg-white text-gray-900 dark:bg-darkBg dark:text-gray-100 pb-20">
 
-<!-- Navbar -->
-<nav class="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
-    <div class="max-w-6xl mx-auto px-4 h-12 flex items-center justify-between">
-        <div class="flex items-center gap-6 h-full text-[13px] font-bold text-gray-500">
-            <a href="#" class="flex items-center gap-2 nav-link-active h-full px-2"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M22.58 7.35L12.435 2.1a1 1 0 00-.87 0L1.42 7.35a1 1 0 00-.42.82v10.73a1 1 0 00.58.91l10 4.35a1 1 0 00.84 0l10-4.35a1 1 0 00.58-.91V8.17a1 1 0 00-.42-.82zM12 4.14l8 4.12-8 3.91-8-3.91 8-4.12zM3 10.05l8 3.91v7.62l-8-3.48V10.05zm10 11.53v-7.62l8-3.91v8.05l-8 3.48z"/></svg> হোম</a>
-            <a href="#" class="flex items-center gap-2 hover:text-twitter-blue h-full px-2"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg> নোটিফিকেশন</a>
-            <a href="#" class="flex items-center gap-2 hover:text-twitter-blue h-full px-2"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg> মেসেজ</a>
-        </div>
-        
-        <div class="flex items-center gap-4">
-            <div class="relative hidden sm:block">
-                <input type="text" placeholder="সার্চ আলোচনা" class="bg-[#f5f8fa] border border-[#e1e8ed] rounded-full px-4 py-1 text-sm w-48 focus:outline-none focus:bg-white focus:border-twitter-blue transition-all">
+<div class="max-w-xl mx-auto p-4">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-6">
+        <h1 class="text-lg font-bold">Comments</h1>
+        <div class="flex items-center gap-3">
+            <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-darkCard">
+                <svg id="sun-icon" class="w-4 h-4 hidden text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" /></svg>
+                <svg id="moon-icon" class="w-4 h-4 hidden text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" /></svg>
+            </button>
+            <div id="auth-section">
+                <div id="user-info-ui" class="hidden"><img id="user-avatar" class="w-8 h-8 rounded-full"></div>
+                <button id="login-ui" onclick="googleLogin()" class="text-xs font-bold border rounded-lg px-3 py-1">Login</button>
             </div>
-            <img id="nav-avatar" class="w-8 h-8 rounded-full hidden cursor-pointer" onclick="openProfile(currentUser.uid)">
-            <button id="tweet-btn-nav" onclick="toggleTweetBox()" class="bg-twitter-blue text-white px-4 py-1.5 rounded-full font-bold text-sm hover:bg-[#1991db]">টুইট</button>
-            <button id="login-ui" onclick="googleLogin()" class="text-twitter-blue font-bold text-sm">লগইন</button>
         </div>
     </div>
-</nav>
 
-<div class="max-w-6xl mx-auto px-4 py-4 grid grid-cols-1 md:grid-cols-4 gap-4">
-    
-    <!-- Left Sidebar: Profile Card -->
-    <aside class="hidden md:block col-span-1">
-        <div id="sidebar-profile" class="profile-box rounded-lg overflow-hidden hidden">
-            <div class="cover-photo"></div>
-            <div class="px-4 pb-4">
-                <img id="side-avatar" class="avatar-under-cover w-16 h-16 bg-white shadow-sm">
-                <div class="mt-2">
-                    <h2 id="side-name" class="font-bold text-lg hover:underline cursor-pointer">ইউজার নেম</h2>
-                    <p id="side-handle" class="text-gray-500 text-sm">@username</p>
-                </div>
-                <div class="flex mt-4 gap-4 text-xs font-bold text-gray-500 uppercase tracking-tight">
-                    <div>টুইট<br><span class="twitter-blue text-lg" id="count-tweets">০</span></div>
-                    <div>ফলোয়িং<br><span class="twitter-blue text-lg" id="count-following">০</span></div>
-                    <div>ফলোয়ার<br><span class="twitter-blue text-lg" id="count-followers">০</span></div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="profile-box rounded-lg mt-4 p-4">
-            <h3 class="font-bold text-lg mb-3">ট্রেন্ডিং</h3>
-            <div class="space-y-3">
-                <div class="text-sm"><a href="#" class="twitter-blue font-bold hover:underline">#Bangladesh</a><br><span class="text-xs text-gray-500">৫.২কে টুইট</span></div>
-                <div class="text-sm"><a href="#" class="twitter-blue font-bold hover:underline">#WebDev</a><br><span class="text-xs text-gray-500">১.৫কে টুইট</span></div>
-                <div class="text-sm"><a href="#" class="twitter-blue font-bold hover:underline">#Programming</a><br><span class="text-xs text-gray-500">১২.৩কে টুইট</span></div>
-            </div>
-        </div>
-    </aside>
-
-    <!-- Center: Feed -->
-    <main class="col-span-1 md:col-span-2 space-y-0.5">
-        <!-- New Tweet Box (Header style) -->
-        <div id="top-tweet-box" class="bg-[#E8F5FD] p-3 border border-[#B2DFFC] rounded-t-lg hidden">
-            <div class="flex gap-3">
-                <img id="tweet-box-avatar" class="w-8 h-8 rounded-md">
-                <div class="flex-1">
-                    <textarea id="tweet-input" placeholder="কি ঘটছে?" class="w-full p-2 border border-[#ccd6dd] rounded-lg focus:outline-none focus:border-twitter-blue" rows="3"></textarea>
-                    <div class="flex justify-end mt-2">
-                        <button onclick="postTweet()" class="bg-twitter-blue text-white px-5 py-1.5 rounded-full font-bold text-sm">টুইট করুন</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="feed-container" class="bg-white border border-[#e1e8ed] rounded-lg overflow-hidden">
-            <div class="flex justify-center py-10"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-twitter-blue"></div></div>
-        </div>
-    </main>
-
-    <!-- Right Sidebar: Who to Follow -->
-    <aside class="hidden lg:block col-span-1">
-        <div class="profile-box rounded-lg p-4">
-            <h3 class="font-bold text-lg mb-4">কাকে ফলো করবেন</h3>
-            <div id="who-to-follow" class="space-y-4">
-                <!-- User Suggestions -->
-            </div>
-            <div class="mt-4 pt-4 border-t border-gray-100">
-                <a href="#" class="twitter-blue text-xs hover:underline">বন্ধুদের খুঁজে পান</a>
-            </div>
-        </div>
-        <div class="text-[11px] text-gray-500 p-4 leading-tight">
-            © ২০১৬ আলোচনা  সহায়তা  শর্তাবলী  প্রাইভেসি  কুকি  বিজ্ঞাপন তথ্য
-        </div>
-    </aside>
+    <!-- List -->
+    <div id="comments-container" class="space-y-3">
+        <div class="flex justify-center py-10"><div class="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500"></div></div>
+    </div>
 </div>
 
-<!-- Scripts -->
+<!-- Thread Modal -->
+<div id="thread-modal" onclick="if(event.target.id === 'thread-modal') closeThread()">
+    <div class="modal-body">
+        <div class="p-3 border-b dark:border-darkBorder flex items-center justify-between">
+            <span class="font-bold text-sm">Thread</span>
+            <button onclick="closeThread()" class="p-1"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"></path></svg></button>
+        </div>
+        <div id="thread-content" class="flex-1 overflow-y-auto p-3 space-y-4"></div>
+        <div class="p-3 border-t dark:border-darkBorder">
+            <button onclick="togglePostModal(true)" class="w-full bg-gray-100 dark:bg-darkCard text-gray-500 text-left py-2 px-4 rounded-full text-xs">রিপ্লাই দিন...</button>
+        </div>
+    </div>
+</div>
+
+<button onclick="togglePostModal(false)" class="fab"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"></path></svg></button>
+
+<div id="post-modal-overlay" onclick="if(event.target.id === 'post-modal-overlay') togglePostModal()">
+    <div class="bg-white dark:bg-darkCard w-full max-w-sm rounded-xl p-4">
+        <textarea id="user-comment" placeholder="আপনার মন্তব্য..." class="w-full bg-transparent outline-none h-24 resize-none text-sm"></textarea>
+        <div class="flex justify-end gap-2 mt-2">
+            <button onclick="togglePostModal()" class="text-xs font-bold text-gray-500">বাতিল</button>
+            <button onclick="postData()" id="submit-btn" class="bg-blue-500 text-white px-4 py-1.5 rounded-full text-xs font-bold">পোস্ট</button>
+        </div>
+    </div>
+</div>
+
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, query, serverTimestamp, orderBy } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
 
     const firebaseConfig = {
@@ -169,148 +128,118 @@
     const db = getFirestore(app);
     const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
-    const forumCol = collection(db, 'blog_comments', 'pages', 'twitter_2016');
+    const pageId = 'homepage';
+    const commentsCol = collection(db, 'blog_comments', 'pages', pageId);
 
-    window.currentUser = null;
-    let tweets = [];
+    let currentUser = null;
+    let allData = [];
+    let activeThreadId = null;
 
     onAuthStateChanged(auth, (user) => {
-        window.currentUser = user;
-        const loginBtn = document.getElementById('login-ui');
-        const navAvatar = document.getElementById('nav-avatar');
-        const sideProfile = document.getElementById('sidebar-profile');
-        const topTweetBox = document.getElementById('top-tweet-box');
-
-        if (user) {
-            loginBtn.classList.add('hidden');
-            navAvatar.classList.remove('hidden');
-            navAvatar.src = user.photoURL;
-            sideProfile.classList.remove('hidden');
-            topTweetBox.classList.remove('hidden');
-            
-            document.getElementById('side-avatar').src = user.photoURL;
-            document.getElementById('side-name').innerText = user.displayName;
-            document.getElementById('side-handle').innerText = '@' + user.uid.substring(0, 8);
-            document.getElementById('tweet-box-avatar').src = user.photoURL;
-            
-            updateStats();
-        } else {
-            loginBtn.classList.remove('hidden');
-            navAvatar.classList.add('hidden');
-            sideProfile.classList.add('hidden');
-            topTweetBox.classList.add('hidden');
-        }
-        loadTweets();
+        currentUser = user;
+        document.getElementById('user-info-ui').classList.toggle('hidden', !user);
+        document.getElementById('login-ui').classList.toggle('hidden', !!user);
+        if (user) document.getElementById('user-avatar').src = user.photoURL;
+        loadComments();
     });
 
     window.googleLogin = async () => { try { await signInWithPopup(auth, provider); } catch(e){} };
 
-    async function loadTweets() {
-        try {
-            const snap = await getDocs(query(forumCol));
-            tweets = [];
-            snap.forEach(doc => tweets.push({ id: doc.id, ...doc.data() }));
-            tweets.sort((a,b) => (b.at?.seconds || 0) - (a.at?.seconds || 0));
-            render();
-            updateSuggestions();
-        } catch(e) {}
+    async function loadComments() {
+        const snap = await getDocs(query(commentsCol));
+        allData = [];
+        snap.forEach(d => allData.push({ id: d.id, ...d.data() }));
+        render();
     }
 
     function render() {
-        const container = document.getElementById('feed-container');
-        container.innerHTML = tweets.map(t => `
-            <div class="tweet-card p-4 flex gap-3">
-                <img src="${t.photoURL}" class="w-12 h-12 rounded-lg cursor-pointer">
-                <div class="flex-1">
-                    <div class="flex items-center gap-1 mb-1">
-                        <span class="font-bold hover:text-twitter-blue cursor-pointer">${t.name}</span>
-                        <span class="text-gray-500 text-sm">@${t.userId?.substring(0, 6)} • ${formatTime(t.at)}</span>
-                    </div>
-                    <div class="text-[15px] leading-tight mb-3">
-                        ${DOMPurify.sanitize(t.msg)}
-                    </div>
-                    <div class="flex justify-between max-w-xs text-gray-500">
-                        <button class="flex items-center gap-2 hover:text-twitter-blue transition-colors">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
-                            <span class="text-xs font-bold">${toBN(Math.floor(Math.random()*10))}</span>
-                        </button>
-                        <button class="flex items-center gap-2 hover:text-green-500 transition-colors">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path></svg>
-                            <span class="text-xs font-bold">${toBN(Math.floor(Math.random()*20))}</span>
-                        </button>
-                        <button class="flex items-center gap-2 hover:text-red-500 transition-colors">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
-                            <span class="text-xs font-bold">${toBN(Math.floor(Math.random()*50))}</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `).join('');
+        const container = document.getElementById('comments-container');
+        const roots = allData.filter(c => !c.parentId).sort((a,b) => (b.at?.seconds || 0) - (a.at?.seconds || 0));
+        container.innerHTML = roots.map(c => renderUI(c)).join('') || '<p class="text-center text-xs text-gray-400 py-10">No comments</p>';
+        if (activeThreadId) updateThread();
     }
 
-    window.postTweet = async () => {
-        const input = document.getElementById('tweet-input');
-        const msg = input.value.trim();
+    function renderUI(c, isMinimal = false) {
+        const date = c.at ? formatTime(c.at) : 'এখন';
+        const replies = allData.filter(r => r.parentId === c.id).length;
+        return `
+        <div class="flex gap-2 items-start">
+            <img src="${c.photoURL}" class="w-7 h-7 rounded-full mt-1">
+            <div class="flex flex-col items-start">
+                <div class="comment-bubble" onclick="openThread('${c.id}')">
+                    <div class="font-bold text-[11px] leading-tight">${c.name}</div>
+                    <div class="text-[13px] leading-tight mt-0.5">${c.msg}</div>
+                </div>
+                <div class="flex gap-3 ml-2 mt-1 text-[10px] text-gray-500 font-bold">
+                    <span>${date}</span>
+                    <button onclick="openThread('${c.id}')" class="hover:underline">রিপ্লাই (${replies})</button>
+                </div>
+            </div>
+        </div>`;
+    }
+
+    window.openThread = (id) => {
+        activeThreadId = id;
+        document.getElementById('thread-modal').style.display = 'block';
+        updateThread();
+    };
+
+    window.closeThread = () => {
+        activeThreadId = null;
+        document.getElementById('thread-modal').style.display = 'none';
+    };
+
+    function updateThread() {
+        const parent = allData.find(c => c.id === activeThreadId);
+        if (!parent) return;
+        const replies = allData.filter(c => c.parentId === activeThreadId).sort((a,b) => (a.at?.seconds || 0) - (b.at?.seconds || 0));
+        document.getElementById('thread-content').innerHTML = `
+            ${renderUI(parent)}
+            <div class="pl-8 space-y-3 mt-4 border-l dark:border-darkBorder">
+                ${replies.map(r => renderUI(r)).join('')}
+            </div>
+        `;
+    }
+
+    window.togglePostModal = (isReply) => {
+        const modal = document.getElementById('post-modal-overlay');
+        modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
+        document.getElementById('submit-btn').innerText = isReply ? 'রিপ্লাই' : 'পোস্ট';
+    };
+
+    window.postData = async () => {
+        const msg = document.getElementById('user-comment').value.trim();
         if (!msg || !currentUser) return;
-
-        try {
-            await addDoc(forumCol, {
-                name: currentUser.displayName,
-                msg: msg,
-                photoURL: currentUser.photoURL,
-                userId: currentUser.uid,
-                at: serverTimestamp()
-            });
-            input.value = '';
-            loadTweets();
-        } catch(e) {}
+        await addDoc(commentsCol, {
+            name: currentUser.displayName, msg, parentId: activeThreadId,
+            photoURL: currentUser.photoURL, at: serverTimestamp()
+        });
+        document.getElementById('user-comment').value = '';
+        togglePostModal();
+        loadComments();
     };
 
-    function updateStats() {
-        if (!currentUser) return;
-        const count = tweets.filter(t => t.userId === currentUser.uid).length;
-        document.getElementById('count-tweets').innerText = toBN(count);
-        document.getElementById('count-following').innerText = toBN(Math.floor(Math.random()*500));
-        document.getElementById('count-followers').innerText = toBN(Math.floor(Math.random()*1000));
-    }
-
-    function updateSuggestions() {
-        const whoToFollow = document.getElementById('who-to-follow');
-        // Get unique users from tweets
-        const uniqueUsers = Array.from(new Set(tweets.map(t => t.userId)))
-            .map(uid => tweets.find(t => t.userId === uid))
-            .filter(u => u.userId !== currentUser?.uid)
-            .slice(0, 3);
-
-        whoToFollow.innerHTML = uniqueUsers.map(u => `
-            <div class="flex items-center justify-between">
-                <div class="flex gap-2">
-                    <img src="${u.photoURL}" class="w-8 h-8 rounded-md">
-                    <div class="leading-tight">
-                        <div class="text-xs font-bold hover:underline cursor-pointer">${u.name}</div>
-                        <div class="text-[11px] text-gray-500">@${u.userId.substring(0,6)}</div>
-                    </div>
-                </div>
-                <button class="border border-twitter-blue text-twitter-blue px-3 py-1 rounded-full text-[11px] font-bold hover:bg-[#e8f5fd]">ফলো</button>
-            </div>
-        `).join('') || '<p class="text-xs text-gray-400 italic">এখনো কেউ নেই</p>';
-    }
-
-    window.toggleTweetBox = () => {
-        const input = document.getElementById('tweet-input');
-        input.focus();
-        input.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    };
-
-    const toBN = (n) => n.toString().replace(/\d/g, d => "০১২৩৪৫৬৭৮৯"[d]);
     function formatTime(ts) {
-        if(!ts) return 'এখন';
         const s = Math.floor((new Date() - new Date(ts.seconds * 1000))/1000);
-        if(s < 60) return toBN(s) + 'সে';
-        if(s < 3600) return toBN(Math.floor(s/60)) + 'মি';
-        if(s < 86400) return toBN(Math.floor(s/3600)) + 'ঘ';
+        if(s < 60) return 'এখন';
+        if(s < 3600) return Math.floor(s/60) + 'm';
+        if(s < 86400) return Math.floor(s/3600) + 'h';
         return new Date(ts.seconds*1000).toLocaleDateString('bn-BD', {day:'numeric', month:'short'});
     }
+
+    // Theme
+    const updateIcons = (dark) => {
+        document.getElementById('sun-icon').classList.toggle('hidden', !dark);
+        document.getElementById('moon-icon').classList.toggle('hidden', dark);
+    };
+    const isDark = localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    document.documentElement.classList.toggle('dark', isDark);
+    updateIcons(isDark);
+    document.getElementById('theme-toggle').onclick = () => {
+        const dark = document.documentElement.classList.toggle('dark');
+        localStorage.theme = dark ? 'dark' : 'light';
+        updateIcons(dark);
+    };
 </script>
 </body>
 </html>
