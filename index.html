@@ -54,6 +54,7 @@
         ::-webkit-scrollbar-thumb { background: #2d333b; border-radius: 10px; }
 
         .filter-active { background-color: rgba(52, 152, 219, 0.1); color: #3498db; }
+        .tab-active { border-bottom: 2px solid #3498db; color: #3498db; }
         .vote-btn { transition: all 0.2s ease; }
         .vote-btn:active { transform: scale(1.2); }
     </style>
@@ -72,7 +73,7 @@
             </button>
             <div id="auth-section">
                 <button id="login-ui" onclick="googleLogin()" class="bg-accent text-white px-4 py-1.5 rounded-lg text-xs font-bold shadow-lg shadow-accent/20">Login</button>
-                <img id="user-avatar" class="w-8 h-8 rounded-lg border-2 border-accent cursor-pointer hidden">
+                <img id="user-avatar" class="w-8 h-8 rounded-lg border-2 border-accent cursor-pointer hidden" onclick="openProfile(currentUser.uid)">
             </div>
         </div>
     </div>
@@ -126,6 +127,20 @@
                 <button onclick="postReply()" class="bg-accent text-white px-4 py-2 rounded-lg text-xs font-bold">পাঠান</button>
             </div>
         </div>
+    </div>
+</div>
+
+<!-- Profile Sidebar -->
+<div id="profile-view" class="view-overlay" style="z-index: 110;" onclick="if(event.target.id === 'profile-view') closeProfile()">
+    <div class="view-body">
+        <div class="p-3 border-b dark:border-darkBorder flex items-center justify-between sticky top-0 bg-white dark:bg-darkBg z-10">
+            <button onclick="closeProfile()" class="p-2 hover:bg-gray-100 dark:hover:bg-darkCard rounded-lg">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            <span class="font-bold text-sm">ইউজার প্রোফাইল</span>
+            <div class="w-10"></div>
+        </div>
+        <div id="profile-content" class="flex-1 overflow-y-auto p-0"></div>
     </div>
 </div>
 
@@ -218,7 +233,6 @@
             return `
             <div class="forum-card bg-white dark:bg-darkCard p-4 rounded-xl border dark:border-darkBorder">
                 <div class="flex gap-4">
-                    <!-- Left Bar: Votes and Replies (Restored) -->
                     <div class="flex flex-col items-center gap-1 bg-gray-50 dark:bg-darkBg p-1.5 rounded-lg h-fit min-w-[42px]">
                         <button onclick="handleVote('${c.id}', 1)" class="vote-btn text-gray-400 hover:text-accent">
                             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12.781 2.375c-.381-.475-1.181-.475-1.562 0l-8 10A1.001 1.001 0 004 14h4v7a1 1 0 001 1h6a1 1 0 001-1v-7h4a1.001 1.001 0 00.781-1.625l-8-10z"/></svg>
@@ -227,19 +241,17 @@
                         <button onclick="handleVote('${c.id}', -1)" class="vote-btn text-gray-400 hover:text-red-500">
                             <svg class="w-5 h-5 rotate-180" fill="currentColor" viewBox="0 0 24 24"><path d="M12.781 2.375c-.381-.475-1.181-.475-1.562 0l-8 10A1.001 1.001 0 004 14h4v7a1 1 0 001 1h6a1 1 0 001-1v-7h4a1.001 1.001 0 00.781-1.625l-8-10z"/></svg>
                         </button>
-                        
                         <div class="mt-2 pt-2 border-t border-gray-200 dark:border-darkBorder w-full flex flex-col items-center gap-0.5 text-gray-400">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
                             <span class="text-[9px] font-black">${toBN(repliesCount)}</span>
                         </div>
                     </div>
 
-                    <!-- Main Content Side -->
                     <div class="flex-1">
                         <div class="flex items-center justify-between mb-1.5">
                             <div class="flex items-center gap-2">
-                                <img src="${c.photoURL}" class="w-4 h-4 rounded-full">
-                                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-tight">${c.name} • ${formatTime(c.at)}</span>
+                                <img src="${c.photoURL}" class="w-4 h-4 rounded-full cursor-pointer" onclick="openProfile('${c.userId}')">
+                                <span onclick="openProfile('${c.userId}')" class="text-[10px] font-bold text-gray-400 hover:text-accent cursor-pointer uppercase tracking-tight">${c.name} • ${formatTime(c.at)}</span>
                                 ${c.edited ? '<span class="text-[9px] text-gray-400 italic">(সম্পাদিত)</span>' : ''}
                             </div>
                             <div class="flex items-center gap-1">
@@ -259,6 +271,96 @@
             </div>
         `}).join('');
     }
+
+    window.openProfile = (userId) => {
+        const userPosts = allData.filter(p => p.userId === userId && !p.parentId).sort((a,b) => (b.at?.seconds || 0) - (a.at?.seconds || 0));
+        const userComments = allData.filter(p => p.userId === userId && p.parentId).sort((a,b) => (b.at?.seconds || 0) - (a.at?.seconds || 0));
+        
+        // If user not in data (should not happen if they clicked), fallback to basic info
+        const userInfo = userPosts.length > 0 ? userPosts[0] : (userComments.length > 0 ? userComments[0] : null);
+        if(!userInfo) return;
+
+        document.getElementById('profile-view').style.display = 'block';
+        document.body.style.overflow = 'hidden';
+        
+        document.getElementById('profile-content').innerHTML = `
+            <div class="p-5">
+                <div class="text-center mb-6 bg-gray-50 dark:bg-darkCard p-6 rounded-2xl border dark:border-darkBorder">
+                    <img src="${userInfo.photoURL}" class="w-20 h-20 rounded-2xl border-4 border-accent mx-auto mb-4 shadow-xl">
+                    <h2 class="text-xl font-black mb-1">${userInfo.name}</h2>
+                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">ফোরাম মেম্বার • ${toBN(userPosts.length)} পোস্ট • ${toBN(userComments.length)} মন্তব্য</p>
+                </div>
+                
+                <div class="flex border-b dark:border-darkBorder mb-4 overflow-hidden">
+                    <button onclick="switchProfileTab('posts')" id="profile-tab-posts" class="flex-1 py-3 text-xs font-bold uppercase tracking-tight tab-active transition-all">সব পোস্ট</button>
+                    <button onclick="switchProfileTab('comments')" id="profile-tab-comments" class="flex-1 py-3 text-xs font-bold uppercase tracking-tight text-gray-400 hover:text-accent transition-all">সর্বশেষ মন্তব্য</button>
+                </div>
+
+                <div id="profile-tab-content" class="space-y-3">
+                    <!-- Default: Posts -->
+                    ${renderProfilePosts(userPosts)}
+                </div>
+            </div>
+        `;
+
+        window.currentProfileData = { posts: userPosts, comments: userComments };
+    };
+
+    window.switchProfileTab = (tab) => {
+        const postsBtn = document.getElementById('profile-tab-posts');
+        const commsBtn = document.getElementById('profile-tab-comments');
+        const content = document.getElementById('profile-tab-content');
+
+        postsBtn.classList.toggle('tab-active', tab === 'posts');
+        postsBtn.classList.toggle('text-gray-400', tab !== 'posts');
+        commsBtn.classList.toggle('tab-active', tab === 'comments');
+        commsBtn.classList.toggle('text-gray-400', tab !== 'comments');
+
+        if(tab === 'posts') {
+            content.innerHTML = renderProfilePosts(window.currentProfileData.posts);
+        } else {
+            content.innerHTML = renderProfileComments(window.currentProfileData.comments);
+        }
+    };
+
+    function renderProfilePosts(posts) {
+        if(posts.length === 0) return `<div class="py-10 text-center text-gray-400 text-xs font-bold italic">কোন পোস্ট পাওয়া যায়নি</div>`;
+        return posts.map(p => `
+            <div class="bg-white dark:bg-darkBg p-4 rounded-xl border dark:border-darkBorder cursor-pointer hover:border-accent transition-all" onclick="closeProfile(); openDetails('${p.id}')">
+                <div class="flex justify-between items-center mb-2">
+                     <span class="text-[9px] font-bold text-gray-400 uppercase">${formatTime(p.at)}</span>
+                     <span class="text-[10px] font-black text-accent flex items-center gap-1">
+                        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12.781 2.375l-8 10A1.001 1.001 0 004 14h4v7a1 1 0 001 1h6a1 1 0 001-1v-7h4a1.001 1.001 0 00.781-1.625l-8-10z"/></svg>
+                        ${toBN(p.votes || 0)}
+                     </span>
+                </div>
+                <div class="text-sm font-semibold text-gray-700 dark:text-gray-300 line-clamp-2">${p.msg}</div>
+            </div>
+        `).join('');
+    }
+
+    function renderProfileComments(comments) {
+        if(comments.length === 0) return `<div class="py-10 text-center text-gray-400 text-xs font-bold italic">কোন মন্তব্য পাওয়া যায়নি</div>`;
+        return comments.map(c => {
+            const parentPost = allData.find(p => p.id === c.parentId);
+            const parentTitle = parentPost ? parentPost.msg.substring(0, 30) + '...' : 'আলোচনা';
+            return `
+                <div class="bg-gray-50 dark:bg-darkCard p-4 rounded-xl border dark:border-darkBorder cursor-pointer hover:border-accent transition-all" onclick="closeProfile(); openDetails('${c.parentId}')">
+                    <div class="flex items-center gap-2 mb-2">
+                        <svg class="w-3 h-3 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                        <span class="text-[9px] font-black text-accent uppercase truncate">${parentTitle}-এ মন্তব্য করেছেন</span>
+                    </div>
+                    <div class="text-[11px] leading-relaxed text-gray-600 dark:text-gray-400 mb-1 italic">"${c.msg}"</div>
+                    <div class="text-[8px] font-bold text-gray-400 uppercase text-right">${formatTime(c.at)}</div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    window.closeProfile = () => {
+        document.getElementById('profile-view').style.display = 'none';
+        if(!activeThreadId) document.body.style.overflow = '';
+    };
 
     window.handleVote = async (id, val) => {
         if(!currentUser) return googleLogin();
@@ -322,13 +424,13 @@
     function updateDetails() {
         const post = allData.find(c => c.id === activeThreadId);
         if(!post) return;
-        const replies = allData.filter(r => r.parentId === activeThreadId).sort((a,b) => (a.at?.seconds || 0) - (b.at?.seconds || 0));
+        const replies = allData.filter(r => r.parentId === activeThreadId).sort((a,b) => (a.at?.seconds || 0) - (a.at?.seconds || 0));
         document.getElementById('details-content').innerHTML = `
             <div class="mb-6">
                 <div class="flex items-center gap-3 mb-4">
-                    <img src="${post.photoURL}" class="w-10 h-10 rounded-lg">
+                    <img src="${post.photoURL}" class="w-10 h-10 rounded-lg cursor-pointer" onclick="openProfile('${post.userId}')">
                     <div>
-                        <div class="font-black text-sm leading-tight">${post.name}</div>
+                        <div class="font-black text-sm leading-tight hover:text-accent cursor-pointer" onclick="openProfile('${post.userId}')">${post.name}</div>
                         <div class="text-[10px] text-gray-400 font-bold uppercase">${formatTime(post.at)} ${post.edited ? '• সম্পাদিত' : ''}</div>
                     </div>
                 </div>
@@ -339,7 +441,7 @@
                 <div class="space-y-4">
                     ${replies.map(r => `
                         <div class="flex gap-3">
-                            <img src="${r.photoURL}" class="w-8 h-8 rounded-lg">
+                            <img src="${r.photoURL}" class="w-8 h-8 rounded-lg cursor-pointer" onclick="openProfile('${r.userId}')">
                             <div class="flex-1">
                                 <div class="bg-gray-100 dark:bg-darkCard p-3 rounded-xl border dark:border-darkBorder">
                                     <div class="text-xs leading-relaxed post-text">${r.msg}</div>
