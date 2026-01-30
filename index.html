@@ -3,152 +3,157 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>আলোচনা ফোরাম - ব্লগিং প্ল্যাটফর্ম</title>
+    <title>আলোচনা - ক্লাসিক টুইটার ২০১৬</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.2/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        darkBg: '#0b0e11',
-                        darkCard: '#15191c',
-                        darkBorder: '#2d333b',
-                        accent: '#3498db',
-                    }
-                }
-            }
-        }
-    </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Hind+Siliguri:wght@400;600;700&display=swap');
-        body { font-family: 'Inter', 'Hind Siliguri', sans-serif; transition: all 0.3s; }
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Hind+Siliguri:wght@400;500;600;700&display=swap');
         
-        .forum-card { transition: transform 0.2s; border-left: 4px solid transparent; }
-        .forum-card:hover { transform: translateY(-2px); border-left-color: #3498db; }
-        
-        .view-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); display: none; z-index: 100; }
-        .view-body { 
-            position: absolute; right: 0; top: 0; width: 100%; max-width: 650px; height: 100%; 
-            background: white; display: flex; flex-direction: column; animation: slideIn 0.3s ease-out;
+        body {
+            background-color: #f5f8fa;
+            font-family: 'Roboto', 'Hind Siliguri', sans-serif;
+            color: #14171a;
         }
-        .dark .view-body { background: #0b0e11; border-left: 1px solid #2d333b; }
-        
-        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
-        
-        .category-pill { cursor: pointer; transition: all 0.2s; white-space: nowrap; }
-        .category-pill.active { background-color: #3498db; color: white; border-color: #3498db; }
+
+        .twitter-blue { color: #1da1f2; }
+        .bg-twitter-blue { background-color: #1da1f2; }
+        .border-twitter-blue { border-color: #1da1f2; }
+
+        /* ২০১৬ টুইটার কার্ড স্টাইল */
+        .tweet-card {
+            background: #fff;
+            border-bottom: 1px solid #e1e8ed;
+            transition: background 0.2s;
+            cursor: pointer;
+        }
+        .tweet-card:hover {
+            background: #f5f8fa;
+        }
+
+        .profile-box {
+            background: #fff;
+            border: 1px solid #e1e8ed;
+        }
+
+        .cover-photo {
+            height: 95px;
+            background: #1da1f2;
+        }
+
+        .avatar-under-cover {
+            margin-top: -30px;
+            border: 4px solid #fff;
+            border-radius: 8px;
+        }
+
+        .nav-link-active {
+            border-bottom: 2px solid #1da1f2;
+            color: #1da1f2;
+        }
+
+        textarea {
+            resize: none;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #ccd6dd; border-radius: 10px; }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-900 dark:bg-darkBg dark:text-gray-100">
+<body>
 
-<!-- Navigation -->
-<nav class="sticky top-0 z-50 bg-white/80 dark:bg-darkBg/80 backdrop-blur-md border-b dark:border-darkBorder">
-    <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-        <div class="flex items-center gap-8">
-            <h1 class="text-2xl font-black text-accent tracking-tighter cursor-pointer" onclick="location.reload()">আলোচনা.</h1>
-            <div class="hidden md:flex items-center gap-6 text-sm font-semibold text-gray-500 dark:text-gray-400">
-                <a href="#" class="hover:text-accent">সব পোস্ট</a>
-                <a href="#" class="hover:text-accent">জনপ্রিয়</a>
-                <a href="#" class="hover:text-accent">বুকমার্ক</a>
-            </div>
+<!-- Navbar -->
+<nav class="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+    <div class="max-w-6xl mx-auto px-4 h-12 flex items-center justify-between">
+        <div class="flex items-center gap-6 h-full text-[13px] font-bold text-gray-500">
+            <a href="#" class="flex items-center gap-2 nav-link-active h-full px-2"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M22.58 7.35L12.435 2.1a1 1 0 00-.87 0L1.42 7.35a1 1 0 00-.42.82v10.73a1 1 0 00.58.91l10 4.35a1 1 0 00.84 0l10-4.35a1 1 0 00.58-.91V8.17a1 1 0 00-.42-.82zM12 4.14l8 4.12-8 3.91-8-3.91 8-4.12zM3 10.05l8 3.91v7.62l-8-3.48V10.05zm10 11.53v-7.62l8-3.91v8.05l-8 3.48z"/></svg> হোম</a>
+            <a href="#" class="flex items-center gap-2 hover:text-twitter-blue h-full px-2"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg> নোটিফিকেশন</a>
+            <a href="#" class="flex items-center gap-2 hover:text-twitter-blue h-full px-2"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg> মেসেজ</a>
         </div>
+        
         <div class="flex items-center gap-4">
-            <button id="theme-toggle" class="p-2 rounded-xl bg-gray-100 dark:bg-darkCard hover:ring-2 ring-accent transition-all">
-                <svg id="theme-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
-            </button>
-            <div id="auth-section">
-                <button id="login-ui" onclick="googleLogin()" class="bg-accent text-white px-5 py-2 rounded-xl text-sm font-bold shadow-lg shadow-accent/20">Login</button>
-                <img id="user-avatar" class="w-10 h-10 rounded-xl border-2 border-accent cursor-pointer hidden" onclick="openProfile(currentUser.uid)">
+            <div class="relative hidden sm:block">
+                <input type="text" placeholder="সার্চ আলোচনা" class="bg-[#f5f8fa] border border-[#e1e8ed] rounded-full px-4 py-1 text-sm w-48 focus:outline-none focus:bg-white focus:border-twitter-blue transition-all">
             </div>
+            <img id="nav-avatar" class="w-8 h-8 rounded-full hidden cursor-pointer" onclick="openProfile(currentUser.uid)">
+            <button id="tweet-btn-nav" onclick="toggleTweetBox()" class="bg-twitter-blue text-white px-4 py-1.5 rounded-full font-bold text-sm hover:bg-[#1991db]">টুইট</button>
+            <button id="login-ui" onclick="googleLogin()" class="text-twitter-blue font-bold text-sm">লগইন</button>
         </div>
     </div>
 </nav>
 
-<main class="max-w-6xl mx-auto px-4 py-8 flex flex-col lg:flex-row gap-8">
-    <!-- Sidebar / Categories -->
-    <aside class="w-full lg:w-64 space-y-6">
-        <div>
-            <h3 class="text-xs font-black uppercase tracking-widest text-gray-400 mb-4">ক্যাটাগরি</h3>
-            <div id="category-list" class="flex lg:flex-col gap-2 overflow-x-auto pb-2 lg:pb-0">
-                <div class="category-pill active px-4 py-2 rounded-xl border dark:border-darkBorder text-sm font-bold" onclick="filterCategory('All')">সব টপিক</div>
-                <div class="category-pill px-4 py-2 rounded-xl border dark:border-darkBorder text-sm font-bold" onclick="filterCategory('প্রযুক্তি')">প্রযুক্তি</div>
-                <div class="category-pill px-4 py-2 rounded-xl border dark:border-darkBorder text-sm font-bold" onclick="filterCategory('শিক্ষা')">শিক্ষা</div>
-                <div class="category-pill px-4 py-2 rounded-xl border dark:border-darkBorder text-sm font-bold" onclick="filterCategory('লাইফস্টাইল')">লাইফস্টাইল</div>
+<div class="max-w-6xl mx-auto px-4 py-4 grid grid-cols-1 md:grid-cols-4 gap-4">
+    
+    <!-- Left Sidebar: Profile Card -->
+    <aside class="hidden md:block col-span-1">
+        <div id="sidebar-profile" class="profile-box rounded-lg overflow-hidden hidden">
+            <div class="cover-photo"></div>
+            <div class="px-4 pb-4">
+                <img id="side-avatar" class="avatar-under-cover w-16 h-16 bg-white shadow-sm">
+                <div class="mt-2">
+                    <h2 id="side-name" class="font-bold text-lg hover:underline cursor-pointer">ইউজার নেম</h2>
+                    <p id="side-handle" class="text-gray-500 text-sm">@username</p>
+                </div>
+                <div class="flex mt-4 gap-4 text-xs font-bold text-gray-500 uppercase tracking-tight">
+                    <div>টুইট<br><span class="twitter-blue text-lg" id="count-tweets">০</span></div>
+                    <div>ফলোয়িং<br><span class="twitter-blue text-lg" id="count-following">০</span></div>
+                    <div>ফলোয়ার<br><span class="twitter-blue text-lg" id="count-followers">০</span></div>
+                </div>
             </div>
         </div>
-        <div class="p-4 bg-accent/5 rounded-2xl border border-accent/10">
-            <h4 class="text-sm font-bold text-accent mb-2">কমিউনিটি গাইডলাইন</h4>
-            <p class="text-xs text-gray-500 leading-relaxed">সৌহার্দ্য বজায় রাখুন এবং গঠনমূলক আলোচনা করুন।</p>
+        
+        <div class="profile-box rounded-lg mt-4 p-4">
+            <h3 class="font-bold text-lg mb-3">ট্রেন্ডিং</h3>
+            <div class="space-y-3">
+                <div class="text-sm"><a href="#" class="twitter-blue font-bold hover:underline">#Bangladesh</a><br><span class="text-xs text-gray-500">৫.২কে টুইট</span></div>
+                <div class="text-sm"><a href="#" class="twitter-blue font-bold hover:underline">#WebDev</a><br><span class="text-xs text-gray-500">১.৫কে টুইট</span></div>
+                <div class="text-sm"><a href="#" class="twitter-blue font-bold hover:underline">#Programming</a><br><span class="text-xs text-gray-500">১২.৩কে টুইট</span></div>
+            </div>
         </div>
     </aside>
 
-    <!-- Main Content Area -->
-    <section class="flex-1 space-y-4">
-        <!-- Create Post Prompt -->
-        <div class="bg-white dark:bg-darkCard p-4 rounded-2xl border dark:border-darkBorder flex gap-4 items-center">
-            <div id="prompt-avatar" class="w-10 h-10 rounded-xl bg-gray-200 dark:bg-darkBorder"></div>
-            <button onclick="togglePostModal(false)" class="flex-1 bg-gray-100 dark:bg-darkBg text-left px-5 py-3 rounded-xl text-gray-500 text-sm hover:bg-gray-200 dark:hover:bg-darkBorder transition-all">
-                আজ আপনার মনে কি আছে? একটি ব্লগ বা প্রশ্ন লিখুন...
-            </button>
-        </div>
-
-        <!-- Posts List -->
-        <div id="posts-container" class="space-y-4">
-            <!-- Loading indicator -->
-            <div class="flex justify-center py-20"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div></div>
-        </div>
-    </section>
-</main>
-
-<!-- Details View Overlay -->
-<div id="details-view" class="view-overlay" onclick="if(event.target.id === 'details-view') closeView('details-view')">
-    <div class="view-body">
-        <div class="p-4 border-b dark:border-darkBorder flex items-center justify-between sticky top-0 bg-white dark:bg-darkBg z-10">
-            <button onclick="closeView('details-view')" class="p-2 hover:bg-gray-100 dark:hover:bg-darkCard rounded-xl">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"></path></svg>
-            </button>
-            <span class="font-bold">পোস্ট ডিটেইলস</span>
-            <button id="bookmark-btn" class="p-2 text-gray-400 hover:text-accent transition-colors"><svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z"></path></svg></button>
-        </div>
-        <div id="details-content" class="flex-1 overflow-y-auto p-6"></div>
-        <div class="p-4 border-t dark:border-darkBorder bg-gray-50 dark:bg-darkCard">
-            <div class="flex gap-2">
-                <input id="reply-input" type="text" placeholder="আপনার মতামত লিখুন..." class="flex-1 bg-white dark:bg-darkBg border dark:border-darkBorder rounded-xl px-4 py-2 text-sm outline-none focus:ring-2 ring-accent">
-                <button onclick="postReply()" class="bg-accent text-white px-6 py-2 rounded-xl text-sm font-bold">পাঠান</button>
+    <!-- Center: Feed -->
+    <main class="col-span-1 md:col-span-2 space-y-0.5">
+        <!-- New Tweet Box (Header style) -->
+        <div id="top-tweet-box" class="bg-[#E8F5FD] p-3 border border-[#B2DFFC] rounded-t-lg hidden">
+            <div class="flex gap-3">
+                <img id="tweet-box-avatar" class="w-8 h-8 rounded-md">
+                <div class="flex-1">
+                    <textarea id="tweet-input" placeholder="কি ঘটছে?" class="w-full p-2 border border-[#ccd6dd] rounded-lg focus:outline-none focus:border-twitter-blue" rows="3"></textarea>
+                    <div class="flex justify-end mt-2">
+                        <button onclick="postTweet()" class="bg-twitter-blue text-white px-5 py-1.5 rounded-full font-bold text-sm">টুইট করুন</button>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-</div>
 
-<!-- Create Modal -->
-<div id="post-modal-overlay" class="fixed inset-0 bg-black/60 z-[200] hidden items-center justify-center p-4">
-    <div class="bg-white dark:bg-darkCard w-full max-w-2xl rounded-3xl p-6 shadow-2xl">
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-xl font-black">নতুন আলোচনা শুরু করুন</h2>
-            <button onclick="togglePostModal()" class="text-gray-400 hover:text-red-500"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"></path></svg></button>
+        <div id="feed-container" class="bg-white border border-[#e1e8ed] rounded-lg overflow-hidden">
+            <div class="flex justify-center py-10"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-twitter-blue"></div></div>
         </div>
-        <div class="space-y-4">
-            <select id="post-category" class="w-full bg-gray-100 dark:bg-darkBg border dark:border-darkBorder rounded-xl px-4 py-3 text-sm font-bold outline-none focus:ring-2 ring-accent">
-                <option value="সাধারণ">ক্যাটাগরি সিলেক্ট করুন</option>
-                <option value="প্রযুক্তি">প্রযুক্তি</option>
-                <option value="শিক্ষা">শিক্ষা</option>
-                <option value="লাইফস্টাইল">লাইফস্টাইল</option>
-            </select>
-            <textarea id="user-comment" placeholder="আপনার ব্লগের বিষয়বস্তু লিখুন (Markdown সাপোর্ট করে)..." class="w-full bg-gray-100 dark:bg-darkBg border dark:border-darkBorder rounded-2xl px-5 py-4 h-64 outline-none focus:ring-2 ring-accent resize-none"></textarea>
-            <div class="flex justify-between items-center">
-                <span class="text-xs text-gray-400 italic">টিপস: আপনি #হ্যাশট্যাগ ব্যবহার করতে পারেন।</span>
-                <button onclick="postData()" class="bg-accent text-white px-10 py-3 rounded-xl font-black shadow-lg shadow-accent/20 transition-transform active:scale-95">পাবলিশ করুন</button>
+    </main>
+
+    <!-- Right Sidebar: Who to Follow -->
+    <aside class="hidden lg:block col-span-1">
+        <div class="profile-box rounded-lg p-4">
+            <h3 class="font-bold text-lg mb-4">কাকে ফলো করবেন</h3>
+            <div id="who-to-follow" class="space-y-4">
+                <!-- User Suggestions -->
+            </div>
+            <div class="mt-4 pt-4 border-t border-gray-100">
+                <a href="#" class="twitter-blue text-xs hover:underline">বন্ধুদের খুঁজে পান</a>
             </div>
         </div>
-    </div>
+        <div class="text-[11px] text-gray-500 p-4 leading-tight">
+            © ২০১৬ আলোচনা  সহায়তা  শর্তাবলী  প্রাইভেসি  কুকি  বিজ্ঞাপন তথ্য
+        </div>
+    </aside>
 </div>
 
+<!-- Scripts -->
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, query, serverTimestamp, orderBy } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
 
     const firebaseConfig = {
@@ -164,183 +169,148 @@
     const db = getFirestore(app);
     const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
-    const pageId = 'forum_v1';
-    const commentsCol = collection(db, 'blog_comments', 'pages', pageId);
+    const forumCol = collection(db, 'blog_comments', 'pages', 'twitter_2016');
 
     window.currentUser = null;
-    let allData = [];
-    let activeThreadId = null;
-    let selectedCat = 'All';
+    let tweets = [];
 
     onAuthStateChanged(auth, (user) => {
         window.currentUser = user;
-        document.getElementById('user-avatar').classList.toggle('hidden', !user);
-        document.getElementById('login-ui').classList.toggle('hidden', !!user);
+        const loginBtn = document.getElementById('login-ui');
+        const navAvatar = document.getElementById('nav-avatar');
+        const sideProfile = document.getElementById('sidebar-profile');
+        const topTweetBox = document.getElementById('top-tweet-box');
+
         if (user) {
-            document.getElementById('user-avatar').src = user.photoURL;
-            document.getElementById('prompt-avatar').innerHTML = `<img src="${user.photoURL}" class="w-full h-full rounded-xl">`;
+            loginBtn.classList.add('hidden');
+            navAvatar.classList.remove('hidden');
+            navAvatar.src = user.photoURL;
+            sideProfile.classList.remove('hidden');
+            topTweetBox.classList.remove('hidden');
+            
+            document.getElementById('side-avatar').src = user.photoURL;
+            document.getElementById('side-name').innerText = user.displayName;
+            document.getElementById('side-handle').innerText = '@' + user.uid.substring(0, 8);
+            document.getElementById('tweet-box-avatar').src = user.photoURL;
+            
+            updateStats();
+        } else {
+            loginBtn.classList.remove('hidden');
+            navAvatar.classList.add('hidden');
+            sideProfile.classList.add('hidden');
+            topTweetBox.classList.add('hidden');
         }
-        loadComments();
+        loadTweets();
     });
 
     window.googleLogin = async () => { try { await signInWithPopup(auth, provider); } catch(e){} };
 
-    async function loadComments() {
+    async function loadTweets() {
         try {
-            const snap = await getDocs(query(commentsCol));
-            allData = [];
-            snap.forEach(d => allData.push({ id: d.id, ...d.data() }));
+            const snap = await getDocs(query(forumCol));
+            tweets = [];
+            snap.forEach(doc => tweets.push({ id: doc.id, ...doc.data() }));
+            tweets.sort((a,b) => (b.at?.seconds || 0) - (a.at?.seconds || 0));
             render();
+            updateSuggestions();
         } catch(e) {}
     }
 
-    window.filterCategory = (cat) => {
-        selectedCat = cat;
-        document.querySelectorAll('.category-pill').forEach(el => {
-            el.classList.toggle('active', el.innerText === (cat === 'All' ? 'সব টপিক' : cat));
-        });
-        render();
-    };
-
     function render() {
-        const container = document.getElementById('posts-container');
-        let roots = allData.filter(c => !c.parentId);
-        
-        if(selectedCat !== 'All') {
-            roots = roots.filter(r => r.category === selectedCat);
-        }
-
-        roots.sort((a,b) => (b.at?.seconds || 0) - (a.at?.seconds || 0));
-        
-        container.innerHTML = roots.map(c => `
-            <div class="forum-card bg-white dark:bg-darkCard p-6 rounded-2xl border dark:border-darkBorder shadow-sm cursor-pointer" onclick="openDetails('${c.id}')">
-                <div class="flex items-center gap-2 mb-3">
-                    <span class="px-2 py-0.5 bg-accent/10 text-accent text-[10px] font-black rounded uppercase">${c.category || 'সাধারণ'}</span>
-                    <span class="text-[10px] text-gray-400 font-bold uppercase">• ${formatTime(c.at)}</span>
-                </div>
-                <h2 class="text-lg font-bold mb-2 line-clamp-2 hover:text-accent transition-colors">${c.msg.substring(0, 100)}...</h2>
-                <div class="flex items-center justify-between mt-4">
-                    <div class="flex items-center gap-2">
-                        <img src="${c.photoURL}" class="w-6 h-6 rounded-full">
-                        <span class="text-xs font-bold text-gray-500">${c.name}</span>
+        const container = document.getElementById('feed-container');
+        container.innerHTML = tweets.map(t => `
+            <div class="tweet-card p-4 flex gap-3">
+                <img src="${t.photoURL}" class="w-12 h-12 rounded-lg cursor-pointer">
+                <div class="flex-1">
+                    <div class="flex items-center gap-1 mb-1">
+                        <span class="font-bold hover:text-twitter-blue cursor-pointer">${t.name}</span>
+                        <span class="text-gray-500 text-sm">@${t.userId?.substring(0, 6)} • ${formatTime(t.at)}</span>
                     </div>
-                    <div class="flex items-center gap-4 text-gray-400 text-xs font-bold">
-                        <span class="flex items-center gap-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg> ${toBN(allData.filter(r => r.parentId === c.id).length)}</span>
+                    <div class="text-[15px] leading-tight mb-3">
+                        ${DOMPurify.sanitize(t.msg)}
+                    </div>
+                    <div class="flex justify-between max-w-xs text-gray-500">
+                        <button class="flex items-center gap-2 hover:text-twitter-blue transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                            <span class="text-xs font-bold">${toBN(Math.floor(Math.random()*10))}</span>
+                        </button>
+                        <button class="flex items-center gap-2 hover:text-green-500 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path></svg>
+                            <span class="text-xs font-bold">${toBN(Math.floor(Math.random()*20))}</span>
+                        </button>
+                        <button class="flex items-center gap-2 hover:text-red-500 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+                            <span class="text-xs font-bold">${toBN(Math.floor(Math.random()*50))}</span>
+                        </button>
                     </div>
                 </div>
             </div>
-        `).join('') || '<div class="text-center py-20 text-gray-400">এই ক্যাটাগরিতে কোনো পোস্ট নেই।</div>';
+        `).join('');
     }
 
-    window.openDetails = (id) => {
-        activeThreadId = id;
-        document.getElementById('details-view').style.display = 'block';
-        document.body.style.overflow = 'hidden';
-        updateDetails();
-    };
-
-    window.closeView = (id) => {
-        document.getElementById(id).style.display = 'none';
-        document.body.style.overflow = '';
-        activeThreadId = null;
-    };
-
-    function updateDetails() {
-        const post = allData.find(c => c.id === activeThreadId);
-        if(!post) return;
-        const replies = allData.filter(r => r.parentId === activeThreadId).sort((a,b) => (a.at?.seconds || 0) - (b.at?.seconds || 0));
-        
-        document.getElementById('details-content').innerHTML = `
-            <div class="mb-8">
-                <div class="flex items-center gap-3 mb-6">
-                    <img src="${post.photoURL}" class="w-12 h-12 rounded-xl border-2 border-accent">
-                    <div>
-                        <div class="font-black text-lg">${post.name}</div>
-                        <div class="text-xs text-gray-400 font-bold uppercase tracking-wider">${formatTime(post.at)} • ${post.category || 'সাধারণ'}</div>
-                    </div>
-                </div>
-                <div class="prose dark:prose-invert max-w-none text-lg leading-relaxed mb-10">
-                    ${DOMPurify.sanitize(marked.parse(post.msg))}
-                </div>
-                <div class="h-px bg-gray-100 dark:bg-darkBorder mb-8"></div>
-                <h3 class="font-black text-sm uppercase tracking-widest text-gray-400 mb-6">মন্তব্যসমূহ (${toBN(replies.length)})</h3>
-                <div class="space-y-6">
-                    ${replies.map(r => `
-                        <div class="flex gap-4">
-                            <img src="${r.photoURL}" class="w-8 h-8 rounded-lg">
-                            <div class="flex-1">
-                                <div class="bg-gray-100 dark:bg-darkCard p-4 rounded-2xl">
-                                    <div class="font-bold text-xs text-accent mb-1">${r.name}</div>
-                                    <div class="text-sm">${r.msg}</div>
-                                </div>
-                                <div class="mt-1 ml-2 text-[10px] text-gray-400 font-bold uppercase">${formatTime(r.at)}</div>
-                            </div>
-                        </div>
-                    `).join('') || '<div class="text-center py-10 text-gray-400 text-sm">কোনো মন্তব্য নেই। আপনিই প্রথম হোন!</div>'}
-                </div>
-            </div>
-        `;
-    }
-
-    window.togglePostModal = (show = true) => {
-        const overlay = document.getElementById('post-modal-overlay');
-        overlay.style.display = (overlay.style.display === 'flex') ? 'none' : 'flex';
-        if(overlay.style.display === 'flex') document.getElementById('user-comment').focus();
-    };
-
-    window.postData = async () => {
-        const msg = document.getElementById('user-comment').value.trim();
-        const category = document.getElementById('post-category').value;
-        if (!msg || !currentUser) return;
-        
-        await addDoc(commentsCol, {
-            name: currentUser.displayName, msg, category,
-            parentId: null,
-            photoURL: currentUser.photoURL, userId: currentUser.uid, at: serverTimestamp()
-        });
-        document.getElementById('user-comment').value = '';
-        togglePostModal();
-        loadComments();
-    };
-
-    window.postReply = async () => {
-        const input = document.getElementById('reply-input');
+    window.postTweet = async () => {
+        const input = document.getElementById('tweet-input');
         const msg = input.value.trim();
-        if (!msg || !currentUser || !activeThreadId) return;
-        
-        await addDoc(commentsCol, {
-            name: currentUser.displayName, msg,
-            parentId: activeThreadId,
-            photoURL: currentUser.photoURL, userId: currentUser.uid, at: serverTimestamp()
-        });
-        input.value = '';
-        loadComments();
+        if (!msg || !currentUser) return;
+
+        try {
+            await addDoc(forumCol, {
+                name: currentUser.displayName,
+                msg: msg,
+                photoURL: currentUser.photoURL,
+                userId: currentUser.uid,
+                at: serverTimestamp()
+            });
+            input.value = '';
+            loadTweets();
+        } catch(e) {}
+    };
+
+    function updateStats() {
+        if (!currentUser) return;
+        const count = tweets.filter(t => t.userId === currentUser.uid).length;
+        document.getElementById('count-tweets').innerText = toBN(count);
+        document.getElementById('count-following').innerText = toBN(Math.floor(Math.random()*500));
+        document.getElementById('count-followers').innerText = toBN(Math.floor(Math.random()*1000));
+    }
+
+    function updateSuggestions() {
+        const whoToFollow = document.getElementById('who-to-follow');
+        // Get unique users from tweets
+        const uniqueUsers = Array.from(new Set(tweets.map(t => t.userId)))
+            .map(uid => tweets.find(t => t.userId === uid))
+            .filter(u => u.userId !== currentUser?.uid)
+            .slice(0, 3);
+
+        whoToFollow.innerHTML = uniqueUsers.map(u => `
+            <div class="flex items-center justify-between">
+                <div class="flex gap-2">
+                    <img src="${u.photoURL}" class="w-8 h-8 rounded-md">
+                    <div class="leading-tight">
+                        <div class="text-xs font-bold hover:underline cursor-pointer">${u.name}</div>
+                        <div class="text-[11px] text-gray-500">@${u.userId.substring(0,6)}</div>
+                    </div>
+                </div>
+                <button class="border border-twitter-blue text-twitter-blue px-3 py-1 rounded-full text-[11px] font-bold hover:bg-[#e8f5fd]">ফলো</button>
+            </div>
+        `).join('') || '<p class="text-xs text-gray-400 italic">এখনো কেউ নেই</p>';
+    }
+
+    window.toggleTweetBox = () => {
+        const input = document.getElementById('tweet-input');
+        input.focus();
+        input.scrollIntoView({ behavior: 'smooth', block: 'center' });
     };
 
     const toBN = (n) => n.toString().replace(/\d/g, d => "০১২৩৪৫৬৭৮৯"[d]);
     function formatTime(ts) {
         if(!ts) return 'এখন';
         const s = Math.floor((new Date() - new Date(ts.seconds * 1000))/1000);
-        if(s < 60) return 'এখন';
-        if(s < 3600) return toBN(Math.floor(s/60)) + 'মি আগে';
-        if(s < 86400) return toBN(Math.floor(s/3600)) + 'ঘ আগে';
+        if(s < 60) return toBN(s) + 'সে';
+        if(s < 3600) return toBN(Math.floor(s/60)) + 'মি';
+        if(s < 86400) return toBN(Math.floor(s/3600)) + 'ঘ';
         return new Date(ts.seconds*1000).toLocaleDateString('bn-BD', {day:'numeric', month:'short'});
     }
-
-    // Dark Mode Toggle
-    const themeToggle = document.getElementById('theme-toggle');
-    const setDarkMode = (dark) => {
-        document.documentElement.classList.toggle('dark', dark);
-        localStorage.theme = dark ? 'dark' : 'light';
-        document.getElementById('theme-icon').innerHTML = dark 
-            ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 9H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>'
-            : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>';
-    };
-    
-    const isDark = localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
-    setDarkMode(isDark);
-    themeToggle.onclick = () => setDarkMode(!document.documentElement.classList.contains('dark'));
-
 </script>
 </body>
 </html>
