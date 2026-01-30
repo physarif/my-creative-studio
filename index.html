@@ -63,6 +63,8 @@
 
         .vote-btn { transition: all 0.2s ease; }
         .vote-btn:active { transform: scale(1.2); }
+
+        .filter-active { background-color: rgba(52, 152, 219, 0.1); color: #3498db; }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-900 dark:bg-darkBg dark:text-gray-100">
@@ -86,27 +88,33 @@
 </nav>
 
 <main class="max-w-6xl mx-auto px-4 py-8 flex flex-col lg:flex-row gap-8">
+    <!-- Sidebar Filter Options -->
     <aside class="w-full lg:w-64 space-y-6">
         <div class="sticky top-24">
-            <h3 class="text-xs font-black uppercase tracking-widest text-gray-400 mb-4 px-2">মেনু</h3>
+            <h3 class="text-xs font-black uppercase tracking-widest text-gray-400 mb-4 px-2">এক্সপ্লোর</h3>
             <div class="flex lg:flex-col gap-1 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0">
-                <div class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold bg-accent/10 text-accent cursor-pointer">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
-                    সব আলোচনা
-                </div>
-                <div class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold hover:bg-gray-200 dark:hover:bg-darkCard cursor-pointer transition-colors" onclick="location.reload()">
+                <button id="filter-latest" onclick="setFilter('latest')" class="filter-active flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold hover:bg-gray-200 dark:hover:bg-darkCard transition-all text-left w-full whitespace-nowrap lg:whitespace-normal">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    সর্বশেষ
+                </button>
+                <button id="filter-popular" onclick="setFilter('popular')" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold hover:bg-gray-200 dark:hover:bg-darkCard transition-all text-left w-full whitespace-nowrap lg:whitespace-normal">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                     জনপ্রিয়
-                </div>
+                </button>
+                <button id="filter-featured" onclick="setFilter('featured')" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold hover:bg-gray-200 dark:hover:bg-darkCard transition-all text-left w-full whitespace-nowrap lg:whitespace-normal">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-7.714 2.143L11 21l-2.286-6.857L1 12l7.714-2.143L11 3z"></path></svg>
+                    ফিচার
+                </button>
             </div>
             
             <div class="mt-8 p-5 bg-accent/5 rounded-3xl border border-accent/10 hidden lg:block">
-                <h4 class="text-sm font-bold text-accent mb-2">কমিউনিটি গাইডলাইন</h4>
-                <p class="text-xs text-gray-500 leading-relaxed italic">"সৌহার্দ্য বজায় রাখুন এবং গঠনমূলক আলোচনা করুন।"</p>
+                <h4 class="text-sm font-bold text-accent mb-2">আলোচনা ফোরাম</h4>
+                <p class="text-xs text-gray-500 leading-relaxed">সহজে পোস্ট করুন এবং অন্যদের সাথে গঠনমূলক তর্কে অংশগ্রহণ করুন।</p>
             </div>
         </div>
     </aside>
 
+    <!-- Content Area -->
     <section class="flex-1 space-y-4">
         <div id="posts-container" class="space-y-4">
             <div class="flex justify-center py-20"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div></div>
@@ -175,6 +183,7 @@
     window.currentUser = null;
     let allData = [];
     let activeThreadId = null;
+    let currentFilter = 'latest';
 
     onAuthStateChanged(auth, (user) => {
         window.currentUser = user;
@@ -195,14 +204,31 @@
         } catch(e) {}
     }
 
+    window.setFilter = (filter) => {
+        currentFilter = filter;
+        document.querySelectorAll('aside button').forEach(btn => btn.classList.remove('filter-active'));
+        document.getElementById(`filter-${filter}`).classList.add('filter-active');
+        render();
+    };
+
     function render() {
         const container = document.getElementById('posts-container');
-        let roots = allData.filter(c => !c.parentId).sort((a,b) => (b.at?.seconds || 0) - (a.at?.seconds || 0));
+        let posts = allData.filter(c => !c.parentId);
         
-        container.innerHTML = roots.map(c => `
+        // Filter logic
+        if(currentFilter === 'latest') {
+            posts.sort((a,b) => (b.at?.seconds || 0) - (a.at?.seconds || 0));
+        } else if(currentFilter === 'popular') {
+            posts.sort((a,b) => (b.votes || 0) - (a.votes || 0));
+        } else if(currentFilter === 'featured') {
+            // Logic for featured: High votes + latest
+            posts = posts.filter(p => (p.votes || 0) >= 2);
+            posts.sort((a,b) => (b.at?.seconds || 0) - (a.at?.seconds || 0));
+        }
+        
+        container.innerHTML = posts.map(c => `
             <div class="forum-card bg-white dark:bg-darkCard p-5 rounded-2xl border dark:border-darkBorder">
                 <div class="flex gap-4">
-                    <!-- Vote Section -->
                     <div class="flex flex-col items-center gap-1 bg-gray-50 dark:bg-darkBg p-2 rounded-xl h-fit">
                         <button onclick="handleVote('${c.id}', 1)" class="vote-btn text-gray-400 hover:text-accent">
                             <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12.781 2.375c-.381-.475-1.181-.475-1.562 0l-8 10A1.001 1.001 0 004 14h4v7a1 1 0 001 1h6a1 1 0 001-1v-7h4a1.001 1.001 0 00.781-1.625l-8-10z"/></svg>
@@ -213,21 +239,23 @@
                         </button>
                     </div>
 
-                    <!-- Main Content -->
                     <div class="flex-1 cursor-pointer" onclick="openDetails('${c.id}')">
-                        <div class="flex items-center gap-2 mb-2">
-                            <img src="${c.photoURL}" class="w-5 h-5 rounded-full">
-                            <span class="text-xs font-bold text-gray-500">${c.name}</span>
-                            <span class="text-[10px] text-gray-400 font-bold uppercase">• ${formatTime(c.at)}</span>
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center gap-2">
+                                <img src="${c.photoURL}" class="w-5 h-5 rounded-full">
+                                <span class="text-xs font-bold text-gray-500">${c.name}</span>
+                                <span class="text-[10px] text-gray-400 font-bold uppercase">• ${formatTime(c.at)}</span>
+                            </div>
+                            ${(c.votes || 0) >= 5 ? '<span class="px-2 py-0.5 bg-yellow-400/10 text-yellow-600 dark:text-yellow-400 text-[10px] font-black uppercase rounded">Trending</span>' : ''}
                         </div>
-                        <h2 class="text-lg font-bold mb-2 leading-snug">${c.msg.substring(0, 120)}${c.msg.length > 120 ? '...' : ''}</h2>
+                        <h2 class="text-lg font-bold mb-2 leading-snug">${c.msg.substring(0, 150)}${c.msg.length > 150 ? '...' : ''}</h2>
                         <div class="flex items-center gap-4 text-gray-400 text-xs font-bold mt-3">
-                            <span class="flex items-center gap-1.5"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg> ${toBN(allData.filter(r => r.parentId === c.id).length)}</span>
+                            <span class="flex items-center gap-1.5"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg> ${toBN(allData.filter(r => r.parentId === c.id).length)} মন্তব্য</span>
                         </div>
                     </div>
                 </div>
             </div>
-        `).join('') || '<div class="text-center py-20 text-gray-400">এখনো কোনো আলোচনা নেই।</div>';
+        `).join('') || '<div class="text-center py-20 text-gray-400">এই বিভাগে কোনো আলোচনা খুঁজে পাওয়া যায়নি।</div>';
     }
 
     window.handleVote = async (id, val) => {
