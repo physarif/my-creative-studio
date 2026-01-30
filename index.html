@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>আলোচনা ফোরাম - Featured Section</title>
+    <title>আলোচনা ফোরাম - Nested Reply System</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.2/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
@@ -35,6 +35,9 @@
         @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
         .fab-post { position: fixed; bottom: 24px; right: 24px; width: 56px; height: 56px; background-color: #3498db; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 16px rgba(52, 152, 219, 0.3); cursor: pointer; z-index: 90; transition: all 0.3s; }
         .filter-active { background-color: rgba(52, 152, 219, 0.1); color: #3498db; }
+        
+        /* Reply Indentation Style */
+        .reply-node { margin-left: 2rem; border-left: 2px solid #3498db44; padding-left: 0.75rem; }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-900 dark:bg-darkBg dark:text-gray-100">
@@ -122,6 +125,10 @@
         </div>
         <div id="details-content" class="flex-1 overflow-y-auto p-5 pb-24"></div>
         <div class="absolute bottom-0 left-0 right-0 p-4 bg-white dark:bg-darkCard border-t dark:border-darkBorder">
+            <div id="reply-tag-ui" class="hidden items-center justify-between px-3 py-1 bg-gray-100 dark:bg-darkBg text-[10px] border-x border-t dark:border-darkBorder rounded-t-lg">
+                <span class="text-accent italic" id="replying-to-text"></span>
+                <button onclick="cancelReplyTag()" class="text-red-500 font-bold">×</button>
+            </div>
             <div class="flex gap-2">
                 <input id="reply-input" type="text" placeholder="মতামত দিন..." class="flex-1 bg-gray-50 dark:bg-darkBg border dark:border-darkBorder rounded-lg px-3 py-2 text-xs outline-none focus:ring-2 ring-accent">
                 <button onclick="postReply()" class="bg-accent text-white px-5 py-2 rounded-lg text-xs font-bold min-w-[70px]">পাঠান</button>
@@ -173,6 +180,8 @@
     let activeThreadId = null;
     let currentFilter = 'latest';
     let userBookmarks = [];
+    let replyingToId = null;
+    let replyingToName = null;
 
     onSnapshot(collection(db, BASE_PATH), (snapshot) => {
         allData = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -230,14 +239,40 @@
         togglePostModal(false);
     };
 
+    window.prepareReply = (id, userName) => {
+        replyingToId = id;
+        replyingToName = userName;
+        const tagUi = document.getElementById('reply-tag-ui');
+        const tagText = document.getElementById('replying-to-text');
+        const input = document.getElementById('reply-input');
+        tagText.innerText = `${userName} কে উত্তর দিচ্ছেন`;
+        tagUi.classList.remove('hidden');
+        input.focus();
+    };
+
+    window.cancelReplyTag = () => {
+        replyingToId = null;
+        replyingToName = null;
+        document.getElementById('reply-tag-ui').classList.add('hidden');
+    };
+
     window.postReply = async () => {
-        const msg = document.getElementById('reply-input').value.trim();
-        if(!msg || !currentUser || !activeThreadId) return;
+        const rawMsg = document.getElementById('reply-input').value.trim();
+        if(!rawMsg || !currentUser || !activeThreadId) return;
+        
+        // Save reply with reference to parent comment if exists
         await addDoc(collection(db, BASE_PATH), {
-            name: currentUser.displayName, msg, parentId: activeThreadId,
-            photoURL: currentUser.photoURL, userId: currentUser.uid, at: serverTimestamp()
+            name: currentUser.displayName, 
+            msg: rawMsg, 
+            parentId: activeThreadId,
+            replyToId: replyingToId || null, // Stores ID of the specific comment being replied to
+            replyToName: replyingToName || null,
+            photoURL: currentUser.photoURL, 
+            userId: currentUser.uid, 
+            at: serverTimestamp()
         });
         document.getElementById('reply-input').value = '';
+        cancelReplyTag();
     };
 
     function render(searchTerm = '') {
@@ -247,24 +282,19 @@
         if(currentFilter === 'pending') {
             posts = posts.filter(p => p.status === 'pending' && (isAdmin || p.userId === currentUser?.uid));
         } else if(currentFilter === 'featured') {
-            // Only show featured posts here
             posts = posts.filter(p => p.status === 'approved' && p.isFeatured === true);
         } else {
-            // Latest or Popular: Show only non-featured approved posts (or both, but typically people want featured separate now)
-            // Let's keep approved posts here but without special sorting pinning
             posts = posts.filter(p => p.status === 'approved');
         }
 
         if(searchTerm) posts = posts.filter(p => p.msg.toLowerCase().includes(searchTerm));
         
-        // Sorting Logic
         if(currentFilter === 'popular') {
             posts.sort((a, b) => (b.votes || 0) - (a.votes || 0));
         } else if(currentFilter === 'bookmarks') {
             posts = posts.filter(p => userBookmarks.includes(p.id));
             posts.sort((a,b) => (b.at?.seconds || 0) - (a.at?.seconds || 0));
         } else {
-            // Latest & Featured filter
             posts.sort((a, b) => (b.at?.seconds || 0) - (a.at?.seconds || 0));
         }
 
@@ -318,7 +348,35 @@
     function updateDetails() {
         const post = allData.find(c => c.id === activeThreadId);
         if(!post) return;
-        const replies = allData.filter(r => r.parentId === activeThreadId).sort((a,b) => (a.at?.seconds || 0) - (b.at?.seconds || 0));
+        
+        // Sorting and filtering replies
+        const allReplies = allData.filter(r => r.parentId === activeThreadId).sort((a,b) => (a.at?.seconds || 0) - (b.at?.seconds || 0));
+        
+        // Main comments (those not replying to another comment)
+        const rootComments = allReplies.filter(r => !r.replyToId);
+        
+        const renderComment = (comment, isReply = false) => {
+            const nestedReplies = allReplies.filter(r => r.replyToId === comment.id);
+            return `
+                <div class="${isReply ? 'reply-node' : 'mb-4'}">
+                    <div class="flex gap-3">
+                        <img src="${comment.photoURL}" class="w-8 h-8 rounded-lg">
+                        <div class="bg-gray-100 dark:bg-darkCard p-3 rounded-xl border dark:border-darkBorder text-xs flex-1">
+                            <div class="flex justify-between items-start mb-1">
+                                <div class="font-bold text-[10px]">${comment.name}</div>
+                                <button onclick="prepareReply('${comment.id}', '${comment.name}')" class="text-accent text-[9px] font-bold hover:underline">উত্তর দিন</button>
+                            </div>
+                            <div class="text-gray-700 dark:text-gray-300 text-[11px] leading-relaxed">
+                                ${comment.replyToName ? `<span class="text-accent font-bold mr-1">@${comment.replyToName}</span>` : ''}
+                                ${DOMPurify.sanitize(marked.parse(comment.msg))}
+                            </div>
+                        </div>
+                    </div>
+                    ${nestedReplies.map(nr => renderComment(nr, true)).join('')}
+                </div>
+            `;
+        };
+
         document.getElementById('details-content').innerHTML = `
             <div class="mb-6">
                 <div class="flex items-center gap-3 mb-4">
@@ -330,21 +388,14 @@
                 </div>
                 <div class="text-base mb-6 border-b dark:border-darkBorder pb-6 whitespace-pre-line text-gray-800 dark:text-gray-200">${DOMPurify.sanitize(marked.parse(post.msg))}</div>
                 <div class="space-y-4">
-                    ${replies.map(r => `
-                        <div class="flex gap-3">
-                            <img src="${r.photoURL}" class="w-8 h-8 rounded-lg">
-                            <div class="bg-gray-100 dark:bg-darkCard p-3 rounded-xl border dark:border-darkBorder text-xs flex-1">
-                                <div class="font-bold text-[10px] mb-1">${r.name}</div>
-                                <div class="text-gray-700 dark:text-gray-300">${r.msg}</div>
-                            </div>
-                        </div>`).join('')}
+                    ${rootComments.map(rc => renderComment(rc)).join('')}
                 </div>
             </div>`;
     }
 
     window.handleVote = async (id, val) => { if(!currentUser) return googleLogin(); await updateDoc(doc(db, BASE_PATH, id), { votes: increment(val) }); };
-    window.openDetails = (id) => { activeThreadId = id; document.getElementById('details-view').style.display = 'block'; updateDetails(); updateBookmarkIcon(); };
-    window.closeView = () => { document.getElementById('details-view').style.display = 'none'; activeThreadId = null; };
+    window.openDetails = (id) => { activeThreadId = id; cancelReplyTag(); document.getElementById('details-view').style.display = 'block'; updateDetails(); updateBookmarkIcon(); };
+    window.closeView = () => { document.getElementById('details-view').style.display = 'none'; activeThreadId = null; cancelReplyTag(); };
     window.deletePost = async (id) => { if(confirm('মুছতে চান?')) await deleteDoc(doc(db, BASE_PATH, id)); };
     window.approvePost = async (id) => { if(!isAdmin) return; await updateDoc(doc(db, BASE_PATH, id), { status: 'approved' }); showToast('অনুমোদিত হয়েছে'); };
     window.togglePostModal = (show) => { document.getElementById('post-modal-overlay').style.display = show ? 'flex' : 'none'; };
