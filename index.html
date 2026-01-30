@@ -110,6 +110,11 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg>
                     বুকমার্কস
                 </button>
+                <!-- Admin Only Filter -->
+                <button id="filter-reports" onclick="setFilter('reports')" class="hidden flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-left w-full text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 border-t dark:border-darkBorder pt-4 mt-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                    রিপোর্ট লিস্ট
+                </button>
             </div>
         </div>
     </aside>
@@ -185,7 +190,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-    import { getFirestore, collection, addDoc, doc, setDoc, getDoc, updateDoc, deleteDoc, increment, query, serverTimestamp, onSnapshot, where } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, doc, setDoc, getDoc, getDocs, updateDoc, deleteDoc, increment, query, serverTimestamp, onSnapshot, where } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
 
     const firebaseConfig = {
@@ -205,7 +210,7 @@
     // Firestore Paths
     const POSTS_PATH = 'blog_comments/pages/forum_v2_voted';
     const REPORTS_PATH = 'blog_comments/pages/reports';
-    const BOOKMARKS_PATH = 'blog_comments/pages/bookmarks'; // New path for cloud bookmarks
+    const BOOKMARKS_PATH = 'blog_comments/pages/bookmarks';
     
     const commentsCol = collection(db, POSTS_PATH);
     const reportsCol = collection(db, REPORTS_PATH);
@@ -216,6 +221,7 @@
     window.currentUser = null;
     window.isAdmin = false;
     let allData = [];
+    let reportedPosts = [];
     let activeThreadId = null;
     let currentFilter = 'latest';
     let editModeId = null;
@@ -223,7 +229,7 @@
     let notificationUnsubscribe = null;
     let bookmarksUnsubscribe = null;
     let currentReplyTo = null;
-    let userBookmarks = []; // Will hold post IDs
+    let userBookmarks = [];
 
     // Real-time listener for posts
     onSnapshot(commentsCol, (snapshot) => {
@@ -240,11 +246,12 @@
         document.getElementById('user-avatar').classList.toggle('hidden', !user);
         document.getElementById('login-ui').classList.toggle('hidden', !!user);
         document.getElementById('admin-badge').classList.toggle('hidden', !isAdmin);
+        document.getElementById('filter-reports').classList.toggle('hidden', !isAdmin);
         
         if (user) {
             document.getElementById('user-avatar').src = user.photoURL;
             setupRealtimeNotifications(user.uid);
-            setupRealtimeBookmarks(user.uid); // Fetch cloud bookmarks
+            setupRealtimeBookmarks(user.uid);
         } else {
             if(notificationUnsubscribe) notificationUnsubscribe();
             if(bookmarksUnsubscribe) bookmarksUnsubscribe();
@@ -329,12 +336,22 @@
                 postId: id,
                 reportedBy: currentUser.uid,
                 reporterName: currentUser.displayName,
-                contentPreview: msg.substring(0, 50),
+                contentPreview: msg.substring(0, 100),
                 at: serverTimestamp()
             });
             showToast('রিপোর্ট জমা দেওয়া হয়েছে');
         } catch(e) {
             showToast('কিছু ভুল হয়েছে');
+        }
+    };
+
+    window.toggleFeatured = async (id, currentStatus) => {
+        if(!isAdmin) return;
+        try {
+            await updateDoc(doc(db, POSTS_PATH, id), { featured: !currentStatus });
+            showToast(!currentStatus ? 'ফিচার করা হয়েছে' : 'ফিচার থেকে সরানো হয়েছে');
+        } catch(e) {
+            showToast('সমস্যা হয়েছে');
         }
     };
 
@@ -394,10 +411,17 @@
         if(!drop.classList.contains('hidden')) document.getElementById('notif-badge').classList.add('hidden');
     };
 
-    window.setFilter = (filter) => {
+    window.setFilter = async (filter) => {
         currentFilter = filter;
         document.querySelectorAll('aside button').forEach(btn => btn.classList.remove('filter-active'));
         document.getElementById(`filter-${filter}`).classList.add('filter-active');
+        
+        if(filter === 'reports' && isAdmin) {
+            const container = document.getElementById('posts-container');
+            container.innerHTML = '<div class="flex justify-center py-20"><div class="animate-spin rounded-full h-6 w-6 border-b-2 border-accent"></div></div>';
+            const snap = await getDocs(query(reportsCol));
+            reportedPosts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        }
         render();
     };
 
@@ -418,18 +442,26 @@
         else if(currentFilter === 'bookmarks') {
             posts = posts.filter(p => userBookmarks.includes(p.id));
         }
+        else if(currentFilter === 'reports') {
+            const reportedIds = [...new Set(reportedPosts.map(r => r.postId))];
+            posts = posts.filter(p => reportedIds.includes(p.id));
+        }
         
         if(posts.length === 0) {
-            container.innerHTML = `<div class="p-20 text-center text-gray-400 text-sm italic">${currentFilter === 'bookmarks' ? 'বুকমার্ক করা কোনো পোস্ট নেই' : 'কিছু পাওয়া যায়নি'}</div>`;
+            let msg = 'কিছু পাওয়া যায়নি';
+            if(currentFilter === 'bookmarks') msg = 'বুকমার্ক করা কোনো পোস্ট নেই';
+            if(currentFilter === 'reports') msg = 'কোনো রিপোর্ট নেই';
+            container.innerHTML = `<div class="p-20 text-center text-gray-400 text-sm italic">${msg}</div>`;
             return;
         }
 
         container.innerHTML = posts.map(c => {
             const repliesCount = allData.filter(r => r.parentId === c.id).length;
             const isOwner = currentUser && c.userId === currentUser.uid;
+            const reportsCount = reportedPosts.filter(r => r.postId === c.id).length;
             
             return `
-            <div class="forum-card bg-white dark:bg-darkCard p-4 rounded-xl border dark:border-darkBorder">
+            <div class="forum-card bg-white dark:bg-darkCard p-4 rounded-xl border dark:border-darkBorder ${currentFilter === 'reports' ? 'ring-1 ring-red-500/30 bg-red-50/10' : ''}">
                 <div class="flex gap-4">
                     <div class="flex flex-col items-center gap-1 bg-gray-50 dark:bg-darkBg p-1.5 rounded-lg min-w-[42px] h-fit">
                         <button onclick="handleVote('${c.id}', 1)" class="text-gray-400 hover:text-accent"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12.781 2.375c-.381-.475-1.181-.475-1.562 0l-8 10A1.001 1.001 0 004 14h4v7a1 1 0 001 1h6a1 1 0 001-1v-7h4a1.001 1.001 0 00.781-1.625l-8-10z"/></svg></button>
@@ -444,6 +476,14 @@
                                 <span class="text-[10px] font-bold text-gray-400 uppercase tracking-tight cursor-pointer hover:text-accent" onclick="openProfile('${c.userId}')">${c.name} • ${formatTime(c.at)}</span>
                             </div>
                             <div class="flex items-center gap-1">
+                                ${isAdmin && currentFilter === 'reports' ? `<span class="bg-red-500 text-white text-[8px] px-1.5 py-0.5 rounded-full font-bold mr-2">${toBN(reportsCount)} Reports</span>` : ''}
+                                
+                                ${isAdmin ? `
+                                    <button onclick="event.stopPropagation(); toggleFeatured('${c.id}', ${c.featured})" class="p-1 ${c.featured ? 'text-yellow-500' : 'text-gray-400'} hover:scale-110" title="Feature Post">
+                                        <svg class="w-4 h-4" fill="${c.featured ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-7.714 2.143L11 21l-2.286-6.857L1 12l7.714-2.143L11 3z"></path></svg>
+                                    </button>
+                                ` : ''}
+
                                 ${c.featured ? '<span class="px-1.5 py-0.5 bg-yellow-500/10 text-yellow-500 text-[9px] font-black uppercase rounded mr-1">Featured</span>' : ''}
                                 ${isOwner || isAdmin ? `
                                     <button onclick="event.stopPropagation(); initEdit('${c.id}')" class="text-gray-400 hover:text-accent p-1"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></button>
@@ -473,7 +513,10 @@
         if(!p || !currentUser) return;
         if(p.userId !== currentUser.uid && !isAdmin) return;
         if(!confirm('মুছে ফেলতে চান?')) return;
+        
+        // If it's a parent post, we might want to clean up reports too
         await deleteDoc(doc(db, POSTS_PATH, id));
+        showToast('পোস্ট মুছে ফেলা হয়েছে');
     };
 
     window.initEdit = (id) => {
