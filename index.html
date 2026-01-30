@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>আলোচনা ফোরাম - আধুনিক ব্লগিং প্ল্যাটফর্ম</title>
+    <title>আলোচনা ফোরাম - Author Edit & Delete</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.2/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
@@ -69,13 +69,11 @@
                 <svg id="theme-icon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"></svg>
             </button>
 
-            <!-- Notification Bell -->
             <div class="relative">
                 <button id="notif-btn" class="p-2 rounded-xl bg-gray-100 dark:bg-darkCard hover:ring-2 ring-accent transition-all relative">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
                     <span id="notif-badge" class="hidden absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-white dark:border-darkBg"></span>
                 </button>
-                
                 <div id="notif-dropdown" class="absolute right-0 mt-3 w-72 bg-white dark:bg-darkCard rounded-2xl shadow-2xl border dark:border-darkBorder overflow-hidden z-[100]">
                     <div class="p-3 border-b dark:border-darkBorder flex justify-between items-center bg-gray-50 dark:bg-darkBg/50">
                         <span class="text-xs font-black uppercase tracking-widest">নোটিফিকেশন</span>
@@ -97,17 +95,17 @@
 
 <main class="max-w-6xl mx-auto px-4 py-6 flex flex-col lg:flex-row gap-6">
     <aside class="w-full lg:w-56">
-        <div class="sticky top-20">
+        <div class="sticky top-20 space-y-4">
             <div class="flex lg:flex-col gap-1 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0">
-                <button id="filter-latest" onclick="setFilter('latest')" class="filter-active flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-left w-full whitespace-nowrap lg:whitespace-normal">
+                <button id="filter-latest" onclick="setFilter('latest')" class="filter-active flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-left w-full">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     সর্বশেষ
                 </button>
-                <button id="filter-popular" onclick="setFilter('popular')" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-left w-full whitespace-nowrap lg:whitespace-normal">
+                <button id="filter-popular" onclick="setFilter('popular')" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-left w-full">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                     জনপ্রিয়
                 </button>
-                <button id="filter-featured" onclick="setFilter('featured')" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-left w-full whitespace-nowrap lg:whitespace-normal">
+                <button id="filter-featured" onclick="setFilter('featured')" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-left w-full">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-7.714 2.143L11 21l-2.286-6.857L1 12l7.714-2.143L11 3z"></path></svg>
                     ফিচার
                 </button>
@@ -177,7 +175,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, increment, query, serverTimestamp, onSnapshot, where, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, increment, query, serverTimestamp, onSnapshot, where } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
 
     const firebaseConfig = {
@@ -205,81 +203,43 @@
     let notifications = [];
     let notificationUnsubscribe = null;
 
-    // Load initial data and then setup auth
-    async function initApp() {
-        await loadComments();
-        
-        onAuthStateChanged(auth, (user) => {
-            window.currentUser = user;
-            window.isAdmin = user?.email === ADMIN_EMAIL;
-            document.getElementById('user-avatar').classList.toggle('hidden', !user);
-            document.getElementById('login-ui').classList.toggle('hidden', !!user);
-            document.getElementById('admin-badge').classList.toggle('hidden', !isAdmin);
-            
-            if (user) {
-                document.getElementById('user-avatar').src = user.photoURL;
-                setupRealtimeNotifications(user.uid);
-            } else {
-                if(notificationUnsubscribe) notificationUnsubscribe();
-                notifications = [];
-                renderNotifications();
-            }
-        });
-    }
-
-    window.googleLogin = async () => { try { await signInWithPopup(auth, provider); } catch(e){} };
-
-    async function loadComments() {
-        try {
-            const snap = await getDocs(query(commentsCol));
-            allData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-            render();
-            if(activeThreadId) updateDetails();
-        } catch(e) {}
-    }
-
-    // --- Real-time Post Updates ---
-    // Listen for any changes in the collection to keep allData synced
+    // --- Realtime Sync ---
     onSnapshot(commentsCol, (snapshot) => {
-        snapshot.docChanges().forEach((change) => {
-            const data = { id: change.doc.id, ...change.doc.data() };
-            if (change.type === "added") {
-                if(!allData.find(item => item.id === data.id)) allData.push(data);
-            }
-            if (change.type === "modified") {
-                const index = allData.findIndex(item => item.id === data.id);
-                if(index !== -1) allData[index] = data;
-            }
-            if (change.type === "removed") {
-                allData = allData.filter(item => item.id !== data.id);
-            }
-        });
+        allData = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
         render();
         if(activeThreadId) updateDetails();
     });
 
-    // --- Notification Logic ---
+    onAuthStateChanged(auth, (user) => {
+        window.currentUser = user;
+        window.isAdmin = user?.email === ADMIN_EMAIL;
+        document.getElementById('user-avatar').classList.toggle('hidden', !user);
+        document.getElementById('login-ui').classList.toggle('hidden', !!user);
+        document.getElementById('admin-badge').classList.toggle('hidden', !isAdmin);
+        if (user) {
+            document.getElementById('user-avatar').src = user.photoURL;
+            setupRealtimeNotifications(user.uid);
+        } else {
+            if(notificationUnsubscribe) notificationUnsubscribe();
+            notifications = [];
+            renderNotifications();
+        }
+    });
+
+    window.googleLogin = async () => { try { await signInWithPopup(auth, provider); } catch(e){} };
+
+    // --- Notification logic ---
     function setupRealtimeNotifications(uid) {
         if(notificationUnsubscribe) notificationUnsubscribe();
-        
-        // Listen for all comments (replies)
         const q = query(commentsCol, where("parentId", "!=", null));
-        
         notificationUnsubscribe = onSnapshot(q, (snapshot) => {
             snapshot.docChanges().forEach((change) => {
                 if (change.type === "added") {
                     const newReply = { id: change.doc.id, ...change.doc.data() };
-                    
-                    // Logic Check:
-                    // 1. Is the reply for MY post?
                     const myPost = allData.find(p => p.id === newReply.parentId && p.userId === uid);
-                    // 2. Is it from someone else?
                     const isFromOthers = newReply.userId !== uid;
-                    // 3. Is it fresh (within last 1 hour of app session)?
-                    const isRecent = newReply.at && (Date.now() - (newReply.at.seconds * 1000) < 3600000);
-
+                    const isRecent = newReply.at && (Date.now() - (newReply.at.seconds * 1000) < 600000); 
                     if (myPost && isFromOthers && isRecent) {
-                        // Prevent duplicates
                         if(!notifications.find(n => n.id === newReply.id)) {
                             notifications.unshift(newReply);
                             document.getElementById('notif-badge').classList.remove('hidden');
@@ -297,44 +257,28 @@
             list.innerHTML = `<div class="p-8 text-center text-gray-400 text-xs italic">কোনো নতুন বার্তা নেই</div>`;
             return;
         }
-
         list.innerHTML = notifications.map(n => `
-            <div onclick="openNotif('${n.parentId}')" class="p-3 border-b dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkBg transition-colors cursor-pointer flex gap-3">
-                <img src="${n.photoURL}" class="w-8 h-8 rounded-lg object-cover">
+            <div onclick="openNotif('${n.parentId}')" class="p-3 border-b dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkBg cursor-pointer flex gap-3">
+                <img src="${n.photoURL}" class="w-8 h-8 rounded-lg">
                 <div class="flex-1">
-                    <p class="text-[11px] leading-tight font-bold text-gray-700 dark:text-gray-200">
-                        <span class="text-accent">${n.name}</span> আপনার পোস্টে মন্তব্য করেছেন
-                    </p>
+                    <p class="text-[11px] leading-tight font-bold"><span class="text-accent">${n.name}</span> আপনার পোস্টে মন্তব্য করেছেন</p>
                     <p class="text-[9px] text-gray-400 mt-1 uppercase font-black">${formatTime(n.at)}</p>
                 </div>
             </div>
         `).join('');
     }
 
-    window.openNotif = (parentId) => {
-        openDetails(parentId);
-        document.getElementById('notif-dropdown').style.display = 'none';
-    };
-
-    window.clearNotifs = () => {
-        notifications = [];
-        renderNotifications();
-        document.getElementById('notif-badge').classList.add('hidden');
-    };
-
+    window.openNotif = (parentId) => { openDetails(parentId); document.getElementById('notif-dropdown').style.display = 'none'; };
+    window.clearNotifs = () => { notifications = []; renderNotifications(); document.getElementById('notif-badge').classList.add('hidden'); };
     document.getElementById('notif-btn').onclick = (e) => {
         e.stopPropagation();
         const drop = document.getElementById('notif-dropdown');
-        const isOpen = drop.style.display === 'block';
-        drop.style.display = isOpen ? 'none' : 'block';
-        if(!isOpen) document.getElementById('notif-badge').classList.add('hidden');
+        drop.style.display = drop.style.display === 'block' ? 'none' : 'block';
+        document.getElementById('notif-badge').classList.add('hidden');
     };
+    window.onclick = () => { document.getElementById('notif-dropdown').style.display = 'none'; };
 
-    window.onclick = () => {
-        document.getElementById('notif-dropdown').style.display = 'none';
-    };
-
-    // --- Regular Forum Logic ---
+    // --- Forum Actions ---
     window.setFilter = (filter) => {
         currentFilter = filter;
         document.querySelectorAll('aside button').forEach(btn => btn.classList.remove('filter-active'));
@@ -355,19 +299,15 @@
         
         container.innerHTML = posts.map(c => {
             const repliesCount = allData.filter(r => r.parentId === c.id).length;
-            const isOwner = currentUser?.uid === c.userId || isAdmin;
+            const isOwner = currentUser?.uid === c.userId;
             
             return `
             <div class="forum-card bg-white dark:bg-darkCard p-4 rounded-xl border dark:border-darkBorder">
                 <div class="flex gap-4">
-                    <div class="flex flex-col items-center gap-1 bg-gray-50 dark:bg-darkBg p-1.5 rounded-lg h-fit min-w-[42px]">
-                        <button onclick="handleVote('${c.id}', 1)" class="vote-btn text-gray-400 hover:text-accent">
-                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12.781 2.375c-.381-.475-1.181-.475-1.562 0l-8 10A1.001 1.001 0 004 14h4v7a1 1 0 001 1h6a1 1 0 001-1v-7h4a1.001 1.001 0 00.781-1.625l-8-10z"/></svg>
-                        </button>
+                    <div class="flex flex-col items-center gap-1 bg-gray-50 dark:bg-darkBg p-1.5 rounded-lg min-w-[42px] h-fit">
+                        <button onclick="handleVote('${c.id}', 1)" class="text-gray-400 hover:text-accent"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12.781 2.375c-.381-.475-1.181-.475-1.562 0l-8 10A1.001 1.001 0 004 14h4v7a1 1 0 001 1h6a1 1 0 001-1v-7h4a1.001 1.001 0 00.781-1.625l-8-10z"/></svg></button>
                         <span class="font-bold text-xs text-accent">${toBN(c.votes || 0)}</span>
-                        <button onclick="handleVote('${c.id}', -1)" class="vote-btn text-gray-400 hover:text-red-500">
-                            <svg class="w-5 h-5 rotate-180" fill="currentColor" viewBox="0 0 24 24"><path d="M12.781 2.375c-.381-.475-1.181-.475-1.562 0l-8 10A1.001 1.001 0 004 14h4v7a1 1 0 001 1h6a1 1 0 001-1v-7h4a1.001 1.001 0 00.781-1.625l-8-10z"/></svg>
-                        </button>
+                        <button onclick="handleVote('${c.id}', -1)" class="text-gray-400 hover:text-red-500"><svg class="w-5 h-5 rotate-180" fill="currentColor" viewBox="0 0 24 24"><path d="M12.781 2.375c-.381-.475-1.181-.475-1.562 0l-8 10A1.001 1.001 0 004 14h4v7a1 1 0 001 1h6a1 1 0 001-1v-7h4a1.001 1.001 0 00.781-1.625l-8-10z"/></svg></button>
                     </div>
 
                     <div class="flex-1">
@@ -377,13 +317,21 @@
                                 <span class="text-[10px] font-bold text-gray-400 uppercase tracking-tight cursor-pointer hover:text-accent" onclick="openProfile('${c.userId}')">${c.name} • ${formatTime(c.at)}</span>
                             </div>
                             <div class="flex items-center gap-1">
-                                ${c.featured ? '<span class="px-1.5 py-0.5 bg-accent/10 text-accent text-[9px] font-black uppercase rounded mr-2">Featured</span>' : ''}
-                                ${isOwner ? `<button onclick="initEdit('${c.id}')" class="text-gray-400 hover:text-blue-500 p-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></button>` : ''}
-                                ${isAdmin ? `<button onclick="deletePost('${c.id}')" class="text-gray-400 hover:text-red-500 p-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>` : ''}
+                                ${c.featured ? '<span class="px-1.5 py-0.5 bg-yellow-500/10 text-yellow-500 text-[9px] font-black uppercase rounded mr-1">Featured</span>' : ''}
+                                
+                                <!-- Post Actions for Owner & Admin -->
+                                ${isOwner || isAdmin ? `
+                                    <button onclick="initEdit('${c.id}')" class="text-gray-400 hover:text-accent p-1"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></button>
+                                    <button onclick="deletePost('${c.id}')" class="text-gray-400 hover:text-red-500 p-1"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                                ` : ''}
+
+                                ${isAdmin ? `
+                                    <button onclick="toggleFeature('${c.id}', ${!c.featured})" class="p-1 ${c.featured ? 'text-yellow-500' : 'text-gray-400 hover:text-yellow-500'}"><svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg></button>
+                                ` : ''}
                             </div>
                         </div>
                         <div class="cursor-pointer" onclick="openDetails('${c.id}')">
-                            <h2 class="text-sm font-semibold mb-2 leading-normal text-gray-800 dark:text-gray-200 line-clamp-3">${c.msg}</h2>
+                            <h2 class="text-sm font-semibold mb-2 leading-normal line-clamp-3">${c.msg}</h2>
                             <div class="flex items-center gap-2 text-gray-400 text-[10px] font-bold">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
                                 <span>${toBN(repliesCount)} মন্তব্য</span>
@@ -395,105 +343,77 @@
         `}).join('');
     }
 
-    window.openProfile = (userId) => {
-        const userPosts = allData.filter(p => p.userId === userId && !p.parentId).sort((a,b) => (b.at?.seconds || 0) - (a.at?.seconds || 0));
-        const userComments = allData.filter(p => p.userId === userId && p.parentId).sort((a,b) => (b.at?.seconds || 0) - (a.at?.seconds || 0));
-        
-        const userInfo = userPosts.length > 0 ? userPosts[0] : (userComments.length > 0 ? userComments[0] : null);
-        if(!userInfo) return;
-
-        document.getElementById('profile-view').style.display = 'block';
-        document.body.style.overflow = 'hidden';
-        
-        document.getElementById('profile-content').innerHTML = `
-            <div class="p-5">
-                <div class="text-center mb-6 bg-gray-50 dark:bg-darkCard p-6 rounded-2xl border dark:border-darkBorder">
-                    <img src="${userInfo.photoURL}" class="w-20 h-20 rounded-2xl border-4 border-accent mx-auto mb-4 shadow-xl">
-                    <h2 class="text-xl font-black mb-1">${userInfo.name}</h2>
-                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">মেম্বার • ${toBN(userPosts.length)} পোস্ট • ${toBN(userComments.length)} মন্তব্য</p>
-                </div>
-                <div class="flex border-b dark:border-darkBorder mb-4">
-                    <button onclick="switchProfileTab('posts')" id="profile-tab-posts" class="flex-1 py-3 text-xs font-bold uppercase tab-active">সব পোস্ট</button>
-                    <button onclick="switchProfileTab('comments')" id="profile-tab-comments" class="flex-1 py-3 text-xs font-bold uppercase text-gray-400">মন্তব্য</button>
-                </div>
-                <div id="profile-tab-content" class="space-y-3"></div>
-            </div>
-        `;
-        window.currentProfileData = { posts: userPosts, comments: userComments };
-        switchProfileTab('posts');
-    };
-
-    window.switchProfileTab = (tab) => {
-        const content = document.getElementById('profile-tab-content');
-        document.getElementById('profile-tab-posts').classList.toggle('tab-active', tab === 'posts');
-        document.getElementById('profile-tab-posts').classList.toggle('text-gray-400', tab !== 'posts');
-        document.getElementById('profile-tab-comments').classList.toggle('tab-active', tab === 'comments');
-        document.getElementById('profile-tab-comments').classList.toggle('text-gray-400', tab !== 'comments');
-        
-        const items = tab === 'posts' ? window.currentProfileData.posts : window.currentProfileData.comments;
-        if(items.length === 0) {
-            content.innerHTML = `<div class="py-10 text-center text-gray-400 text-xs italic">কিছু পাওয়া যায়নি</div>`;
-            return;
-        }
-        content.innerHTML = items.map(p => `
-            <div class="bg-white dark:bg-darkBg p-4 rounded-xl border dark:border-darkBorder cursor-pointer hover:border-accent" onclick="closeProfile(); openDetails('${p.parentId || p.id}')">
-                <div class="text-[8px] font-bold text-gray-400 uppercase mb-1">${formatTime(p.at)}</div>
-                <div class="text-sm font-semibold text-gray-700 dark:text-gray-300 line-clamp-2">${p.msg}</div>
-            </div>
-        `).join('');
-    };
-
-    window.closeProfile = () => { document.getElementById('profile-view').style.display = 'none'; document.body.style.overflow = ''; };
-
-    window.handleVote = async (id, val) => {
-        if(!currentUser) return googleLogin();
-        await updateDoc(doc(commentsCol, id), { votes: increment(val) });
+    // --- Actions ---
+    window.toggleFeature = async (id, status) => { if(isAdmin) await updateDoc(doc(commentsCol, id), { featured: status }); };
+    
+    window.deletePost = async (id) => {
+        const p = allData.find(x => x.id === id);
+        const isOwner = currentUser?.uid === p.userId;
+        if(!(isOwner || isAdmin) || !confirm('মুছে ফেলতে চান?')) return;
+        await deleteDoc(doc(commentsCol, id));
     };
 
     window.initEdit = (id) => {
-        const post = allData.find(p => p.id === id);
-        if(!post) return;
+        const p = allData.find(x => x.id === id);
+        const isOwner = currentUser?.uid === p.userId;
+        if(!(isOwner || isAdmin)) return;
         editModeId = id;
         document.getElementById('modal-title').innerText = "পোস্ট এডিট করুন";
-        document.getElementById('submit-btn').innerText = "আপডেট করুন";
-        document.getElementById('user-comment').value = post.msg;
+        document.getElementById('submit-btn').innerText = "আপডেট";
+        document.getElementById('user-comment').value = p.msg;
         togglePostModal(true);
     };
 
     window.togglePostModal = (show) => {
+        document.getElementById('post-modal-overlay').style.display = show ? 'flex' : 'none';
         if(!show) {
             editModeId = null;
             document.getElementById('modal-title').innerText = "নতুন আলোচনা";
             document.getElementById('submit-btn').innerText = "পাবলিশ";
             document.getElementById('user-comment').value = '';
         }
-        document.getElementById('post-modal-overlay').style.display = show ? 'flex' : 'none';
     };
 
     window.submitPost = async () => {
         const msg = document.getElementById('user-comment').value.trim();
-        if (!msg || !currentUser) return;
-        if(editModeId) await updateDoc(doc(commentsCol, editModeId), { msg, edited: true });
-        else await addDoc(commentsCol, {
-            name: currentUser.displayName, msg, parentId: null,
-            votes: 0, featured: false, photoURL: currentUser.photoURL, userId: currentUser.uid, at: serverTimestamp()
-        });
+        if(!msg || !currentUser) return;
+        if(editModeId) {
+            await updateDoc(doc(commentsCol, editModeId), { msg, edited: true });
+        } else {
+            await addDoc(commentsCol, { name: currentUser.displayName, msg, parentId: null, votes: 0, featured: false, photoURL: currentUser.photoURL, userId: currentUser.uid, at: serverTimestamp() });
+        }
         togglePostModal(false);
     };
 
-    window.deletePost = async (id) => {
-        if(!isAdmin || !confirm('মুছে ফেলতে চান?')) return;
-        await deleteDoc(doc(commentsCol, id));
+    window.postReply = async () => {
+        const input = document.getElementById('reply-input');
+        if(!input.value.trim() || !currentUser || !activeThreadId) return;
+        await addDoc(commentsCol, { name: currentUser.displayName, msg: input.value, parentId: activeThreadId, photoURL: currentUser.photoURL, userId: currentUser.uid, at: serverTimestamp() });
+        input.value = '';
     };
 
-    window.openDetails = (id) => {
-        activeThreadId = id;
-        document.getElementById('details-view').style.display = 'block';
-        document.body.style.overflow = 'hidden';
-        updateDetails();
-    };
+    window.handleVote = async (id, val) => { if(!currentUser) return googleLogin(); await updateDoc(doc(commentsCol, id), { votes: increment(val) }); };
 
-    window.closeView = () => { document.getElementById('details-view').style.display = 'none'; document.body.style.overflow = ''; activeThreadId = null; };
+    // --- Profile & View ---
+    window.openProfile = (userId) => {
+        const posts = allData.filter(p => p.userId === userId && !p.parentId).sort((a,b) => (b.at?.seconds || 0) - (a.at?.seconds || 0));
+        const info = posts[0] || allData.find(p => p.userId === userId);
+        if(!info) return;
+        document.getElementById('profile-view').style.display = 'block';
+        document.getElementById('profile-content').innerHTML = `
+            <div class="p-5 text-center">
+                <img src="${info.photoURL}" class="w-20 h-20 rounded-2xl mx-auto mb-3 border-4 border-accent shadow-xl">
+                <h2 class="text-xl font-black">${info.name}</h2>
+                <p class="text-[10px] text-gray-400 font-bold uppercase mb-6 tracking-widest">মেম্বার • ${toBN(posts.length)} পোস্ট</p>
+                <div class="space-y-3 text-left">
+                    ${posts.map(p => `<div class="p-4 bg-gray-50 dark:bg-darkCard rounded-xl border dark:border-darkBorder cursor-pointer" onclick="closeProfile(); openDetails('${p.id}')"><div class="text-[8px] text-gray-400 uppercase font-bold mb-1">${formatTime(p.at)}</div><div class="text-sm font-semibold line-clamp-2">${p.msg}</div></div>`).join('')}
+                </div>
+            </div>
+        `;
+    };
+    window.closeProfile = () => { document.getElementById('profile-view').style.display = 'none'; };
+    window.openDetails = (id) => { activeThreadId = id; document.getElementById('details-view').style.display = 'block'; updateDetails(); };
+    window.closeView = () => { document.getElementById('details-view').style.display = 'none'; activeThreadId = null; };
 
     function updateDetails() {
         const post = allData.find(c => c.id === activeThreadId);
@@ -503,44 +423,27 @@
             <div class="mb-6">
                 <div class="flex items-center gap-3 mb-4">
                     <img src="${post.photoURL}" class="w-10 h-10 rounded-lg">
-                    <div>
-                        <div class="font-black text-sm leading-tight">${post.name}</div>
-                        <div class="text-[10px] text-gray-400 font-bold uppercase">${formatTime(post.at)}</div>
-                    </div>
+                    <div><div class="font-black text-sm">${post.name}</div><div class="text-[10px] text-gray-400 uppercase font-bold">${formatTime(post.at)}</div></div>
                 </div>
-                <div class="prose dark:prose-invert max-w-none text-base mb-6 border-b dark:border-darkBorder pb-6 whitespace-pre-line text-gray-700 dark:text-gray-300">
-                    ${DOMPurify.sanitize(marked.parse(post.msg))}
-                </div>
-                <h3 class="font-black text-[10px] uppercase tracking-widest text-gray-400 mb-4">মতামত (${toBN(replies.length)})</h3>
+                <div class="prose dark:prose-invert max-w-none text-base mb-6 border-b dark:border-darkBorder pb-6 whitespace-pre-line">${DOMPurify.sanitize(marked.parse(post.msg))}</div>
                 <div class="space-y-4">
                     ${replies.map(r => `
                         <div class="flex gap-3">
-                            <img src="${r.photoURL}" class="w-8 h-8 rounded-lg cursor-pointer" onclick="openProfile('${r.userId}')">
+                            <img src="${r.photoURL}" class="w-8 h-8 rounded-lg">
                             <div class="flex-1">
-                                <div class="bg-gray-100 dark:bg-darkCard p-3 rounded-xl border dark:border-darkBorder">
-                                    <div class="text-xs leading-relaxed text-gray-700 dark:text-gray-300">${r.msg}</div>
+                                <div class="bg-gray-100 dark:bg-darkCard p-3 rounded-xl border dark:border-darkBorder relative">
+                                    <div class="text-xs">${r.msg}</div>
+                                    ${(currentUser?.uid === r.userId || isAdmin) ? `<button onclick="deletePost('${r.id}')" class="absolute -right-2 -top-2 bg-red-500 text-white p-1 rounded-full"><svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg></button>` : ''}
                                 </div>
                                 <div class="text-[8px] font-bold text-gray-400 mt-1 uppercase text-right">${formatTime(r.at)}</div>
                             </div>
-                        </div>
-                    `).join('')}
+                        </div>`).join('')}
                 </div>
             </div>
         `;
     }
 
-    window.postReply = async () => {
-        const input = document.getElementById('reply-input');
-        const msg = input.value.trim();
-        if (!msg || !currentUser || !activeThreadId) return;
-        await addDoc(commentsCol, {
-            name: currentUser.displayName, msg, parentId: activeThreadId,
-            photoURL: currentUser.photoURL, userId: currentUser.uid, at: serverTimestamp()
-        });
-        input.value = '';
-    };
-
-    const toBN = (n) => n.toString().replace(/\d/g, d => "০১২৩৪৫६৭৮৯"[d]);
+    const toBN = (n) => n.toString().replace(/\d/g, d => "০১২৩৪৫৬৭৮৯"[d]);
     function formatTime(ts) {
         if(!ts) return 'এখন';
         const s = Math.floor((new Date() - new Date(ts.seconds * 1000))/1000);
@@ -559,8 +462,6 @@
     };
     setDarkMode(localStorage.theme === 'dark' || window.matchMedia('(prefers-color-scheme: dark)').matches);
     document.getElementById('theme-toggle').onclick = () => setDarkMode(!document.documentElement.classList.contains('dark'));
-
-    initApp();
 </script>
 </body>
 </html>
